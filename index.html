@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>LogMax · Presença</title>
+<style>
+:root{
+  --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
+  --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
+  --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--marinho);color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.marca{font-weight:800;font-size:20px;letter-spacing:-.01em}.marca span{color:#fb923c}
+.dia{display:flex;align-items:center;gap:8px}
+.dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
+.dia button:disabled{opacity:.35;cursor:default}
+.dia strong{min-width:150px;text-align:center;font-size:17px}
+.hoje-tag{background:var(--laranja);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px}
+main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
+.faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.num{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px}
+.num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
+.num .val{font-size:40px;font-weight:800;line-height:1.1;margin-top:4px}
+.num .de{font-size:18px;font-weight:600;color:var(--tx2)}
+.num.principal{background:var(--marinho2);color:#fff;border:0}.num.principal .rot,.num.principal .de{color:#cbd5e1}
+.barra{height:10px;border-radius:999px;background:rgba(148,163,184,.3);overflow:hidden;margin-top:10px}
+.barra i{display:block;height:100%;background:#4ade80;border-radius:999px}
+button.num{font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
+button.num:hover{border-color:var(--laranja)}
+button.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
+button.num.principal.ativo{border-color:#fb923c}
+.semana{margin-top:2px;font-size:14px;font-weight:700;color:var(--vermelho)}
+.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}
+.num.principal .toque{color:#fdba74}
+.painel{background:var(--cartao);border:2px solid var(--laranja);border-radius:14px;padding:14px;margin:-6px 0 20px;scroll-margin-top:12px}
+.painel-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.painel-cab h2{margin:0}
+.fechar{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+.painel-lojas{display:grid;gap:12px;margin-top:12px}
+.painel-loja .pl-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.painel-loja .lista{border:0;padding:0}
+.verde{color:var(--verde)}.vermelho{color:var(--vermelho)}.ambar{color:var(--ambar)}
+h2{font-size:18px;margin:24px 0 10px}
+.faltas{display:grid;gap:10px}
+.falta-loja{background:var(--cartao);border:1px solid #fecaca;border-left:5px solid var(--vermelho);border-radius:12px;padding:12px 14px}
+.falta-loja .cab{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
+.falta-loja ul{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:4px}
+.falta-loja li{font-size:15px}.falta-loja li span{color:var(--tx2)}
+.vazio{background:var(--verde-claro);color:var(--verde);border-radius:12px;padding:14px;font-weight:700}
+.etq{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.etq.v{background:var(--verde-claro);color:var(--verde)}.etq.r{background:var(--vermelho-claro);color:var(--vermelho)}
+.etq.a{background:var(--ambar-claro);color:var(--ambar)}.etq.c{background:#e2e8f0;color:#334155}
+.lojas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.loja{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px}
+.loja .nome{font-weight:800;display:flex;justify-content:space-between;gap:8px}
+.loja .conta{font-size:28px;font-weight:800;margin-top:4px}.loja .conta small{font-size:15px;color:var(--tx2);font-weight:600}
+.loja .barra{background:#e2e8f0}.loja .barra i{background:var(--verde)}
+.loja .etqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+details.loja{padding:0;overflow:hidden}
+details.loja>summary{list-style:none;cursor:pointer;padding:14px;display:block}
+details.loja>summary::-webkit-details-marker{display:none}
+details.loja[open]{grid-column:1/-1;border-color:var(--laranja);box-shadow:0 4px 14px rgba(15,23,42,.08)}
+.abrir{margin-top:10px;font-size:14px;font-weight:700;color:var(--laranja)}
+details.loja[open] .abrir .seta{display:inline-block;transform:rotate(90deg)}
+.lista{border-top:1px solid var(--linha);padding:10px 14px 14px;display:grid;gap:14px}
+.lista h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
+.lista ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:15px}
+.lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:#f8fafc}
+.lista li.r{background:var(--vermelho-claro)}.lista li.a{background:var(--ambar-claro)}
+.lista li span:first-child{min-width:0}
+.ok-todos{color:var(--verde);font-weight:700}
+.rodape{margin-top:28px;font-size:13px;color:var(--tx2)}
+.aviso{background:var(--laranja-claro);border:1px solid #fed7aa;border-radius:12px;padding:14px;margin-bottom:16px}
+.status{font-size:13px;color:#cbd5e1;width:100%;text-align:right}
+@media (max-width:720px){
+  .faixa{grid-template-columns:1fr 1fr}.num.principal{grid-column:1/-1}
+  .num .val{font-size:32px}.dia strong{min-width:120px;font-size:15px}
+  .status{text-align:left}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="topo">
+    <div class="marca">LogMax <span>·</span> Presença</div>
+    <div class="dia">
+      <button id="ant" aria-label="Dia anterior">←</button>
+      <strong id="rotuloDia">…</strong>
+      <button id="prox" aria-label="Próximo dia">→</button>
+    </div>
+    <div class="status" id="status">Carregando…</div>
+  </div>
+</header>
+<main id="conteudo"><p>Carregando…</p></main>
+
+<script>
+/* ===== CONFIGURAÇÃO: endereço do App da Web (Apps Script) da planilha ===== */
+const CSV_URL = "https://script.google.com/macros/s/AKfycbxHMANMPiLYGj1DhRM7aCUolfp8H1AGopQCA4AGThrymMlEC5oJNZqGp6LnBEp0WeaO/exec";
+/* =============================================================== */
+
+const ATUALIZAR_MS = 30 * 1000;       // busca de novo a cada 30 segundos
+const MIN_FALTA = 60;                  // sem OK 60 min depois do início = falta
+const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+
+const url = new URLSearchParams(location.search).get("csv") || CSV_URL;
+const abertas = new Set();
+let filtro = null; // número do topo que está aberto
+let linhas = [], atualizadoEm = "", diaAtual = hojeSP(), diasDisponiveis = [];
+
+function hojeSP() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date()); // AAAA-MM-DD
+}
+function agoraSPmin(dataISO) { // minutos desde 00:00 de dataISO, no horário de SP
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hour12:false }).formatToParts(new Date());
+  const g = t => p.find(x => x.type === t).value;
+  const hoje = `${g("year")}-${g("month")}-${g("day")}`;
+  const dias = (Date.parse(hoje) - Date.parse(dataISO)) / 864e5;
+  return dias * 1440 + (+g("hour") % 24) * 60 + (+g("minute"));
+}
+function brParaISO(d) { const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : null; }
+function rotulo(iso) { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} ${iso.slice(8)}/${iso.slice(5,7)}`; }
+function inicioMin(h) { const m = String(h).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; }
+
+function lerCSV(texto) {
+  const out = []; let linha = [], campo = "", aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) { if (c === '"' && texto[i+1] === '"') { campo += '"'; i++; } else if (c === '"') aspas = false; else campo += c; }
+    else if (c === '"') aspas = true;
+    else if (c === ",") { linha.push(campo); campo = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && texto[i+1] === "\n") i++; linha.push(campo); out.push(linha); linha = []; campo = ""; }
+    else campo += c;
+  }
+  if (campo || linha.length) { linha.push(campo); out.push(linha); }
+  return out;
+}
+
+function situacao(l) {
+  const p = l.presenca.trim().toUpperCase();
+  if (l.vaga) return "vaga";
+  if (p === "OK") return "chegou";
+  if (["FALTA","FALTOU","F"].includes(p)) return "falta";
+  const ini = inicioMin(l.horario);
+  if (ini !== null && agoraSPmin(l.data) >= ini + MIN_FALTA) return "falta";
+  return "aguardando";
+}
+
+async function carregar() {
+  if (!url) { mostrarConfig(); return; }
+  try {
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const tab = lerCSV(await r.text());
+    atualizadoEm = (tab[1] && tab[1][7]) || "";
+    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim())).map(c => {
+      const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
+      return { loja: c[0].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(), codigo: cod, nome,
+               presenca: (c[5] || "").trim(), vaga: !nome || /N[ÃA]O LOCALIZADO/i.test(nome) || cod === "0" };
+    });
+    diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
+    document.getElementById("status").textContent =
+      `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : ""} · tela às ${new Date().toLocaleTimeString("pt-BR")}`;
+    desenhar();
+  } catch (e) {
+    document.getElementById("status").textContent = "Não consegui buscar a planilha agora. Tento de novo em 30 s.";
+    if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira se o App da Web da planilha está implantado com acesso para "Qualquer pessoa".</div>`;
+  }
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+function desenhar() {
+  const hoje = hojeSP();
+  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
+  const i = diasDisponiveis.indexOf(diaAtual);
+  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual);
+  document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
+
+  const doDia = linhas.filter(l => l.data === diaAtual).map(l => ({ ...l, s: situacao(l) }));
+  const pessoas = doDia.filter(l => l.s !== "vaga");
+  const n = s => doDia.filter(l => l.s === s).length;
+  const chegou = n("chegou"), falta = n("falta"), aguard = n("aguardando"), vagas = n("vaga");
+  const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
+  const [segSemana, domSemana] = semanaDe(diaAtual);
+  const vagasSemanaLs = linhas.filter(l => l.vaga && l.data >= segSemana && l.data <= domSemana);
+
+  const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
+  const porLoja = lojas.map(nome => {
+    const ls = doDia.filter(l => l.loja === nome);
+    const c = s => ls.filter(l => l.s === s).length;
+    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), aguard: c("aguardando"), vagas: c("vaga") };
+  });
+  const comFalta = porLoja.filter(l => l.falta > 0).sort((a, b) => b.falta - a.falta);
+
+  const ROT = { chegou: ["Chegou", "v"], falta: ["Falta", "r"], aguardando: ["Sem OK", "a"], vaga: ["Vaga", "r"] };
+  const pessoa = l => `<li class="${l.s === "falta" || l.s === "vaga" ? "r" : l.s === "aguardando" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoboy" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></li>`;
+  const ordem = { falta: 0, aguardando: 1, vaga: 2, chegou: 3 };
+  const porHorario = (a, b) => ordem[a.s] - ordem[b.s] || (inicioMin(a.horario) ?? 0) - (inicioMin(b.horario) ?? 0);
+
+  document.getElementById("conteudo").innerHTML = doDia.length === 0
+    ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}.</div>`
+    : `
+    <section class="faixa" aria-label="Resumo do dia. Toque num número para ver a lista">
+      <button type="button" class="num principal ${filtro === "chegou" ? "ativo" : ""}" data-f="chegou" aria-pressed="${filtro === "chegou"}"><div class="rot">Chegaram</div>
+        <div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div>
+        <div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div></button>
+      <button type="button" class="num ${filtro === "aguardando" ? "ativo" : ""}" data-f="aguardando" aria-pressed="${filtro === "aguardando"}"><div class="rot">Sem OK ainda</div><div class="val ambar">${aguard}</div><div class="toque">ver quem ›</div></button>
+      <button type="button" class="num ${filtro === "falta" ? "ativo" : ""}" data-f="falta" aria-pressed="${filtro === "falta"}"><div class="rot">Faltas</div><div class="val vermelho">${falta}</div><div class="toque">ver onde ›</div></button>
+      <button type="button" class="num ${filtro === "vaga" ? "ativo" : ""}" data-f="vaga" aria-pressed="${filtro === "vaga"}"><div class="rot">Vagas do dia</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemanaLs.length} na semana</div><div class="toque">ver onde ›</div></button>
+    </section>
+    ${filtro ? painelFiltro(doDia, filtro, pessoa, porHorario) + (filtro === "vaga" ? painelVagasSemana(vagasSemanaLs, segSemana, domSemana, porHorario) : "") : ""}
+
+    <h2>Faltas por loja</h2>
+    ${comFalta.length === 0 ? `<div class="vazio">Nenhuma falta ${diaAtual === hoje ? "até agora" : "neste dia"}.</div>` : `<div class="faltas">${comFalta.map(l => `
+      <div class="falta-loja"><div class="cab"><span>${esc(l.nome)}</span><span class="etq r">${l.falta} ${l.falta > 1 ? "faltas" : "falta"}</span></div>
+        <ul>${l.ls.filter(x => x.s === "falta").map(x => `<li><b>${esc(x.nome)}</b>${x.codigo ? " #" + esc(x.codigo) : ""} <span>· ${esc(x.horario)}</span></li>`).join("")}</ul></div>`).join("")}</div>`}
+
+    <h2>Todas as lojas</h2>
+    <div class="lojas">${porLoja.map(l => {
+      const faltando = l.ls.filter(x => x.s === "falta" || x.s === "aguardando").sort(porHorario);
+      const vagasL = l.ls.filter(x => x.s === "vaga").sort(porHorario);
+      const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
+      return `
+      <details class="loja" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
+        <summary>
+          <div class="nome"><span>${esc(l.nome)}</span></div>
+          <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
+          <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
+          <div class="etqs">
+            ${l.aguard ? `<span class="etq a">${l.aguard} sem OK</span>` : ""}
+            ${l.falta ? `<span class="etq r">${l.falta} ${l.falta > 1 ? "faltas" : "falta"}</span>` : ""}
+            ${l.vagas ? `<span class="etq r">${l.vagas} ${l.vagas > 1 ? "vagas" : "vaga"}</span>` : ""}
+            ${!l.aguard && !l.falta && l.total ? `<span class="etq v">todos chegaram</span>` : ""}
+          </div>
+          <div class="abrir"><span class="seta">›</span> ${faltando.length ? `Ver quem falta chegar (${faltando.length})` : "Ver motoboys"}</div>
+        </summary>
+        <div class="lista">
+          <div><h3>Faltando chegar (${faltando.length})</h3>
+            ${faltando.length ? `<ul>${faltando.map(pessoa).join("")}</ul>` : `<div class="ok-todos">Todos já chegaram.</div>`}</div>
+          ${vagasL.length ? `<div><h3>Vagas sem motoboy (${vagasL.length})</h3><ul>${vagasL.map(pessoa).join("")}</ul></div>` : ""}
+          ${chegaram.length ? `<div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>` : ""}
+        </div>
+      </details>`;
+    }).join("")}</div>
+
+    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK até ${MIN_FALTA} min depois do início do turno (ou "FALTA" escrito) = falta. A tela se atualiza sozinha a cada 30 segundos.</p>`;
+}
+
+const TITULO_FILTRO = { falta: "Onde estão as faltas", aguardando: "Quem ainda está sem OK", chegou: "Quem já chegou", vaga: "Onde estão as vagas" };
+function semanaDe(iso) { // segunda e domingo da semana do dia
+  const d = new Date(iso + "T12:00:00"), dow = (d.getDay() + 6) % 7;
+  const seg = new Date(d.getTime() - dow * 864e5), dom = new Date(seg.getTime() + 6 * 864e5);
+  return [seg.toISOString().slice(0, 10), dom.toISOString().slice(0, 10)];
+}
+function painelVagasSemana(ls, seg, dom, porHorario) {
+  const dias = [...new Set(ls.map(l => l.data))].sort();
+  return `<section class="painel painel-semana">
+    <div class="painel-cab"><h2>Vagas na semana (${ls.length})</h2><span class="etq r">${seg.slice(8)}/${seg.slice(5,7)} a ${dom.slice(8)}/${dom.slice(5,7)}</span></div>
+    ${ls.length === 0 ? `<div class="vazio">Nenhuma vaga na semana. Escala completa.</div>` :
+      `<div class="painel-lojas">${dias.map(d => {
+        const doDia = ls.filter(l => l.data === d);
+        const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
+        return `<div class="painel-loja"><div class="pl-cab"><b>${esc(rotulo(d))}</b><span class="etq r">${doDia.length} ${doDia.length > 1 ? "vagas" : "vaga"}</span></div>
+          <div class="lista"><ul>${lojas.map(n => { const v = doDia.filter(l => l.loja === n).sort(porHorario);
+            return `<li class="r"><span><b>${esc(n)}</b> · ${v.map(x => esc(x.horario)).join(", ")}</span><span class="etq r">${v.length}</span></li>`; }).join("")}</ul></div></div>`;
+      }).join("")}</div>`}
+  </section>`;
+}
+function painelFiltro(doDia, f, pessoa, porHorario) {
+  const ls = doDia.filter(l => l.s === f);
+  const lojas = [...new Set(ls.map(l => l.loja))].map(n => ({ n, ls: ls.filter(l => l.loja === n).sort(porHorario) })).sort((a, b) => b.ls.length - a.ls.length || a.n.localeCompare(b.n));
+  return `<section class="painel" id="painel" aria-live="polite">
+    <div class="painel-cab"><h2>${TITULO_FILTRO[f]} (${ls.length})</h2><button type="button" class="fechar" data-f="${f}">Fechar ✕</button></div>
+    ${ls.length === 0 ? `<div class="vazio">${f === "vaga" ? "Nenhuma vaga neste dia. Escala completa." : `Ninguém nesta situação ${f === "falta" ? "até agora" : ""}.`}</div>` :
+      `<div class="painel-lojas">${lojas.map(g => `<div class="painel-loja"><div class="pl-cab"><b>${esc(g.n)}</b><span class="etq ${f === "vaga" || f === "falta" ? "r" : "c"}">${g.ls.length}</span></div><div class="lista"><ul>${g.ls.map(pessoa).join("")}</ul></div></div>`).join("")}</div>`}
+  </section>`;
+}
+
+function mostrarConfig() {
+  document.getElementById("status").textContent = "";
+  document.getElementById("conteudo").innerHTML = `<div class="aviso">Falta colocar o endereço do App da Web da planilha no começo deste arquivo, em <b>CSV_URL</b>.</div>`;
+}
+
+document.getElementById("ant").onclick = () => { const d = diasDisponiveis.filter(x => x < diaAtual).pop(); if (d) { diaAtual = d; desenhar(); } };
+document.getElementById("prox").onclick = () => { const d = diasDisponiveis.find(x => x > diaAtual); if (d) { diaAtual = d; desenhar(); } };
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-f]");
+  if (!b) return;
+  filtro = filtro === b.dataset.f ? null : b.dataset.f;
+  desenhar();
+  if (filtro) document.getElementById("painel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.addEventListener("toggle", e => {
+  const d = e.target;
+  if (d.matches && d.matches("details.loja")) d.open ? abertas.add(d.dataset.loja) : abertas.delete(d.dataset.loja);
+}, true);
+carregar();
+setInterval(carregar, ATUALIZAR_MS);
+setInterval(() => linhas.length && desenhar(), 60 * 1000); // recalcula faltas pelo relógio
+</script>
+</body>
+</html>
