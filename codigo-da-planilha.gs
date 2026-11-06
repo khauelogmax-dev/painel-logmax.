@@ -8,7 +8,9 @@
  */
 const ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL'];
 const DIAS_ANTES = 7, DIAS_DEPOIS = 7;
-const GUARDAR_SEGUNDOS = 20; // várias telas abertas ao mesmo tempo usam a mesma leitura
+const GUARDAR_SEGUNDOS = 25;  // várias telas abertas ao mesmo tempo usam a mesma leitura
+const LINHAS_FINAIS = 700;    // lê só o final de cada aba (onde ficam os dias recentes)
+const COLUNAS = 8;            // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (lê só até a coluna H)
 
 function doGet() {
   const cache = CacheService.getScriptCache();
@@ -31,7 +33,11 @@ function montarCsv() {
   planilha.getSheets().forEach(function (aba) {
     const loja = aba.getName().trim();
     if (ABAS_IGNORADAS.indexOf(loja.toUpperCase()) >= 0) return;
-    const linhas = aba.getDataRange().getDisplayValues();
+    if (/^ontem/i.test(loja) || aba.isSheetHidden()) return;   // cópias de relatório e abas escondidas
+    const ultima = aba.getLastRow();
+    if (ultima < 2) return;
+    const inicio = Math.max(1, ultima - LINHAS_FINAIS + 1);
+    const linhas = aba.getRange(inicio, 1, ultima - inicio + 1, Math.min(COLUNAS, aba.getMaxColumns())).getDisplayValues();
     let col = null; // posição das colunas do bloco atual
 
     linhas.forEach(function (l) {
@@ -59,7 +65,8 @@ function montarCsv() {
 
 /** Para testar no editor: clique em Executar com esta função e veja o resultado em "Registro de execução". */
 function testar() {
+  const t = Date.now();
   const csv = montarCsv();
-  Logger.log(csv.split('\n').length - 1 + ' linhas');
+  Logger.log(csv.split('\n').length - 1 + ' linhas em ' + Math.round((Date.now() - t) / 1000) + ' segundos');
   Logger.log(csv.split('\n').slice(0, 6).join('\n'));
 }
