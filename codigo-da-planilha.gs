@@ -3,11 +3,11 @@
  * Cole este código DENTRO da planilha "ESCALAS LOGMAX - FOOD" (Extensões → Apps Script)
  * e implante como "App da Web". A tela chama este endereço a cada 30 segundos.
  *
- * Entrega SÓ: loja, data, horário, código, nome, presença e telefone (para o botão de WhatsApp).
- * NÃO entrega CPF, PIX nem valores.
- * Período: de HOJE até o DOMINGO desta semana.
+ * Entrega SÓ: loja, data, horário, código, nome e presença.
+ * NÃO entrega telefone, CPF, PIX nem valores.
  */
 const ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL'];
+const DIAS_ANTES = 7, DIAS_DEPOIS = 7;
 const GUARDAR_SEGUNDOS = 25;  // várias telas abertas ao mesmo tempo usam a mesma leitura
 const LINHAS_FINAIS = 700;    // lê só o final de cada aba (onde ficam os dias recentes)
 const COLUNAS = 8;            // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (lê só até a coluna H)
@@ -24,13 +24,11 @@ function doGet() {
 
 function montarCsv() {
   const planilha = SpreadsheetApp.getActiveSpreadsheet();
-  // hoje no horário de São Paulo, e o domingo desta semana
-  const p = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd').split('-');
-  const min = new Date(+p[0], +p[1] - 1, +p[2]);
-  const diaSemana = min.getDay();                                   // 0 = domingo
-  const max = new Date(+p[0], +p[1] - 1, +p[2] + (diaSemana === 0 ? 0 : 7 - diaSemana));
+  const hoje = new Date();
+  const min = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - DIAS_ANTES);
+  const max = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + DIAS_DEPOIS);
   const agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm:ss');
-  const saida = [['LOJA', 'DATA', 'HORARIO', 'CODIGO', 'NOME', 'PRESENCA', 'TELEFONE', 'ATUALIZADO']];
+  const saida = [['LOJA', 'DATA', 'HORARIO', 'CODIGO', 'NOME', 'PRESENCA', '', 'ATUALIZADO']];
 
   planilha.getSheets().forEach(function (aba) {
     const loja = aba.getName().trim();
@@ -46,7 +44,7 @@ function montarCsv() {
       const primeira = String(l[0]).trim().toUpperCase();
       if (primeira === 'DATA') {
         const achar = function (txt) { return l.findIndex(function (c) { return String(c).toUpperCase().indexOf(txt) >= 0; }); };
-        col = { cod: achar('COD'), nome: achar('NOME'), hora: achar('HORARIO'), pres: achar('PRESEN'), tel: achar('TELEFONE') };
+        col = { cod: achar('COD'), nome: achar('NOME'), hora: achar('HORARIO'), pres: achar('PRESEN') };
         return;
       }
       const m = String(l[0]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -54,7 +52,7 @@ function montarCsv() {
       const d = new Date(+m[3], +m[2] - 1, +m[1]);
       if (d < min || d > max) return;
       const pega = function (i) { return i >= 0 ? String(l[i]).trim() : ''; };
-      saida.push([loja, String(l[0]).trim(), pega(col.hora), pega(col.cod), pega(col.nome), pega(col.pres), pega(col.tel), '']);
+      saida.push([loja, String(l[0]).trim(), pega(col.hora), pega(col.cod), pega(col.nome), pega(col.pres), '', '']);
     });
   });
 
