@@ -78,6 +78,8 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:#f8fafc}
 .lista li.r{background:var(--vermelho-claro)}.lista li.a{background:var(--ambar-claro)}
 .lista li span:first-child{min-width:0}
+.lista li .dir{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.zap{background:#1f8f4e;color:#fff;font-weight:700;font-size:.8rem;border-radius:999px;padding:4px 12px;text-decoration:none;white-space:nowrap}.zap:hover{background:#187a41}
 .ok-todos{color:var(--verde);font-weight:700}
 .rodape{margin-top:28px;font-size:13px;color:var(--tx2)}
 .aviso{background:var(--laranja-claro);border:1px solid #fed7aa;border-radius:12px;padding:14px;margin-bottom:16px}
@@ -191,12 +193,15 @@ async function carregar() {
     if (!r.ok) throw new Error("HTTP " + r.status);
     const tab = lerCSV(await r.text());
     atualizadoEm = (tab[1] && tab[1][7]) || "";
-    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim())).map(c => {
+    const hoje = hojeSP(), [, domingo] = semanaDe(hoje);
+    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim()).map(c => {
       const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
       return { loja: c[0].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(), codigo: cod, nome,
-               presenca: (c[5] || "").trim(), vaga: !nome || /N[ÃA]O LOCALIZADO/i.test(nome) || cod === "0" };
-    });
+               presenca: (c[5] || "").trim(), telefone: (c[6] || "").trim(),
+               vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };          // vaga = "NÃO LOCALIZADO" na coluna NOME
+    }).filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
     diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
+    if (diaAtual < hoje) diaAtual = hoje;
     document.getElementById("status").textContent =
       `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : ""} · tela às ${new Date().toLocaleTimeString("pt-BR")}`;
     desenhar();
@@ -270,16 +275,28 @@ function modoTv(ligar) {
 const ROT = { chegou: ["Chegou", "v"], falta: ["Falta chegar", "a"], vaga: ["Sem motoca", "r"] };
 const ORDEM = { falta: 0, vaga: 1, chegou: 2 };
 const porHorario = (a, b) => ORDEM[a.s] - ORDEM[b.s] || (inicioMin(a.horario) ?? 0) - (inicioMin(b.horario) ?? 0);
+function linkZap(tel, msg) {
+  let n = String(tel || "").replace(/\D/g, "");
+  if (n.length === 10 || n.length === 11) n = "55" + n;
+  if (n.length < 12 || n.length > 13) return null;
+  return `https://wa.me/${n}?text=${encodeURIComponent(msg)}`;
+}
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${m >= 60 ? Math.floor(m / 60) + "h" + String(m % 60).padStart(2, "0") : m + " min"}</span>` : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span>${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></span></li>`;
+  const primeiro = (l.nome.split(/\s+/)[0] || "").replace(/^./, c => c.toUpperCase());
+  const msg = l.s === "falta"
+    ? `Olá, ${primeiro}! Aqui é da LogMax. Seu turno na ${l.loja} é ${l.horario} e ainda não temos seu OK. Já está chegando?`
+    : `Olá, ${primeiro}! Aqui é da LogMax, sobre seu turno na ${l.loja} (${l.horario}).`;
+  const zap = l.s !== "vaga" ? linkZap(l.telefone, msg) : null;
+  const botao = zap ? `<a class="zap" href="${zap}" target="_blank" rel="noopener" aria-label="WhatsApp de ${esc(l.nome)}">WhatsApp</a>` : "";
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span>${botao}</span></li>`;
 }
 
 function desenhar() {
   const hoje = hojeSP();
   document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
-  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual);
+  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual && d >= hoje);
   document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
 
   const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
@@ -287,7 +304,7 @@ function desenhar() {
   const n = s => doDia.filter(l => l.s === s).length;
   const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
   const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
-  const [seg, dom] = semanaDe(diaAtual);
+  const seg = hoje, dom = semanaDe(hoje)[1];                       // de hoje até domingo
   const vagasSemana = linhas.filter(l => l.vaga && l.data >= seg && l.data <= dom && noTurno(l));
 
   const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
@@ -311,7 +328,7 @@ function desenhar() {
       ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
       ${btn("falta", "", `<div class="rot">Falta chegar</div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
       ${btn("lojas", "", `<div class="rot">Lojas no dia</div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
-      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} na semana</div><div class="toque">ver onde ›</div>`)}
+      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} até domingo</div><div class="toque">ver onde ›</div>`)}
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
@@ -342,7 +359,7 @@ function desenhar() {
       </details>`;
     }).join("")}</div>`}
 
-    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "Não localizado" = vaga sem motoca. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou. Atualiza sozinha a cada 30 segundos.</p>`;
+    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou. Atualiza sozinha a cada 30 segundos.</p>`;
 }
 
 const TITULO = { falta: "Quem falta chegar", chegou: "Quem já chegou", vaga: "Onde estão as vagas sem motoca" };
@@ -360,8 +377,8 @@ function painelFiltro(doDia, f) {
 function painelVagasSemana(ls, seg, dom) {
   const dias = [...new Set(ls.map(l => l.data))].sort();
   return `<section class="painel">
-    <div class="painel-cab"><h2>Vagas sem motoca na semana (${ls.length})</h2><span class="etq r">${ddmm(seg)} a ${ddmm(dom)}</span></div>
-    ${ls.length === 0 ? `<div class="vazio" style="margin-top:12px">Nenhuma vaga na semana. Escala completa.</div>` :
+    <div class="painel-cab"><h2>Vagas sem motoca de hoje até domingo (${ls.length})</h2><span class="etq r">${ddmm(seg)} a ${ddmm(dom)}</span></div>
+    ${ls.length === 0 ? `<div class="vazio" style="margin-top:12px">Nenhuma vaga até domingo. Escala completa.</div>` :
       `<div class="painel-lojas">${dias.map(d => {
         const doDia = ls.filter(l => l.data === d);
         const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
