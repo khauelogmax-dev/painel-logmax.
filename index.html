@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>LogMax · Presença</title>
+<link rel="icon" type="image/png" href="lume-96.png">
+<link rel="apple-touch-icon" href="lume.png">
 <style>
 :root{
   --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
@@ -16,7 +18,8 @@ html{font-size:16px}
 body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{background:var(--marinho);color:#fff}
 .topo{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-.marca{font-weight:800;font-size:1.25rem;letter-spacing:-.01em}.marca span{color:#fb923c}
+.marca{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}.marca span{color:#fb923c}
+.marca img{width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
 .dia{display:flex;align-items:center;gap:8px}
 .dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
 .dia button:disabled{opacity:.35;cursor:default}
@@ -61,7 +64,8 @@ h2{font-size:1.12rem;margin:24px 0 10px}
 .loja .conta{font-size:1.75rem;font-weight:800;margin-top:4px}.loja .conta small{font-size:.95rem;color:var(--tx2);font-weight:600}
 .loja .barra{background:#e2e8f0}.loja .barra i{background:var(--verde)}
 .loja .etqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-details.loja{padding:0;overflow:hidden}
+details.loja{padding:0;overflow:hidden;border-left-width:6px}
+details.loja.p1{border-left-color:var(--vermelho)}details.loja.p2{border-left-color:#f59e0b}details.loja.p3{border-left-color:var(--verde)}
 details.loja>summary{list-style:none;cursor:pointer;padding:14px;display:block}
 details.loja>summary::-webkit-details-marker{display:none}
 details.loja[open]{grid-column:1/-1;border-color:var(--laranja);box-shadow:0 4px 14px rgba(15,23,42,.08)}
@@ -96,7 +100,7 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 <body>
 <header>
   <div class="topo">
-    <div class="marca">LogMax <span>·</span> Presença</div>
+    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div>LogMax <span>·</span> Presença</div></div>
     <div class="dia">
       <button id="ant" aria-label="Dia anterior">←</button>
       <strong id="rotuloDia">…</strong>
@@ -291,7 +295,9 @@ function desenhar() {
     const ls = doDia.filter(l => l.loja === nome);
     const c = s => ls.filter(l => l.s === s).length;
     return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga") };
-  });
+  })
+  // ordem de importância: 1º mais vagas sem motoca, 2º mais gente para chegar, por último as completas
+  .sort((a, b) => b.vagas - a.vagas || b.falta - a.falta || a.nome.localeCompare(b.nome));
 
   const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
   const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
@@ -309,13 +315,13 @@ function desenhar() {
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
-    <h2 id="todas-lojas">Lojas do dia (${lojas.length})</h2>
+    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar</span></h2>
     <div class="lojas">${porLoja.map(l => {
       const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
       const vagasL = l.ls.filter(x => x.s === "vaga").sort(porHorario);
       const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
       return `
-      <details class="loja" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
+      <details class="loja ${l.vagas ? "p1" : l.falta ? "p2" : "p3"}" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
         <summary>
           <div class="nome"><span>${esc(l.nome)}</span></div>
           <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
@@ -323,7 +329,7 @@ function desenhar() {
           <div class="etqs">
             ${l.falta ? `<span class="etq a">${l.falta} ${l.falta > 1 ? "faltam chegar" : "falta chegar"}</span>` : ""}
             ${l.vagas ? `<span class="etq r">${l.vagas} sem motoca</span>` : ""}
-            ${!l.falta && l.total ? `<span class="etq v">todos chegaram</span>` : ""}
+            ${!l.falta && !l.vagas && l.total ? `<span class="etq v">completa</span>` : ""}
           </div>
           <div class="abrir"><span class="seta">›</span> ${faltando.length ? `Ver quem falta chegar (${faltando.length})` : "Ver motoboys"}</div>
         </summary>
