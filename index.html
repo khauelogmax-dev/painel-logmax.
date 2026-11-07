@@ -12,6 +12,7 @@
   --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
+  --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--mini:#f0fdf4;--luz-bg:#fef9c3;--luz-tx:#854d0e;--sombra:rgba(15,23,42,.08);
 }
 *{box-sizing:border-box}
 html{font-size:16px}
@@ -32,7 +33,7 @@ header{background:var(--marinho);color:#fff}
 main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
 .filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
 .filtros span{font-size:14px;font-weight:700;color:var(--tx2);margin-right:2px}
-.chip{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:#fff;color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
 .faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
 .num{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
@@ -52,22 +53,22 @@ h2{font-size:1.12rem;margin:24px 0 10px}
 .vazio{background:var(--verde-claro);color:var(--verde);border-radius:12px;padding:14px;font-weight:700}
 .etq{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;white-space:nowrap}
 .etq.v{background:var(--verde-claro);color:var(--verde)}.etq.r{background:var(--vermelho-claro);color:var(--vermelho)}
-.etq.a{background:var(--ambar-claro);color:var(--ambar)}.etq.c{background:#e2e8f0;color:#334155}
+.etq.a{background:var(--ambar-claro);color:var(--ambar)}.etq.c{background:var(--cinza);color:var(--cinza-tx)}
 .painel{background:var(--cartao);border:2px solid var(--laranja);border-radius:14px;padding:14px;margin:-6px 0 20px;scroll-margin-top:12px}
 .painel-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}.painel-cab h2{margin:0}
-.fechar{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer}
+.fechar{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:10px;padding:8px 12px;cursor:pointer}
 .painel-lojas{display:grid;gap:12px;margin-top:12px}
 .painel-loja .pl-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .lojas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .loja{background:var(--cartao);border:1px solid var(--linha);border-radius:14px}
 .loja .nome{font-weight:800;display:flex;justify-content:space-between;gap:8px}
 .loja .conta{font-size:1.75rem;font-weight:800;margin-top:4px}.loja .conta small{font-size:.95rem;color:var(--tx2);font-weight:600}
-.loja .barra{background:#e2e8f0}.loja .barra i{background:var(--verde)}
+.loja .barra{background:var(--cinza)}.loja .barra i{background:var(--verde)}
 .loja .etqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 details.loja{padding:0;overflow:hidden;border-left-width:6px}
 @keyframes piscar{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(250,204,21,.9),0 0 10px 2px rgba(250,204,21,.9)}50%{opacity:.25;box-shadow:0 0 0 6px rgba(250,204,21,0),0 0 0 0 rgba(250,204,21,0)}}
 @keyframes brilho{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,0)}50%{box-shadow:0 0 0 4px rgba(250,204,21,.55)}}
-.luz-atraso{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:#854d0e;background:#fef9c3;border-radius:999px;padding:2px 10px 2px 6px;white-space:nowrap}
+.luz-atraso{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:var(--luz-tx);background:var(--luz-bg);border-radius:999px;padding:2px 10px 2px 6px;white-space:nowrap}
 .luz-atraso i{width:.8rem;height:.8rem;border-radius:50%;background:#facc15;display:inline-block;animation:piscar 1s ease-in-out infinite}
 details.loja.com-atraso{animation:brilho 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.luz-atraso i,details.loja.com-atraso{animation:none}}
@@ -75,31 +76,50 @@ details.loja.mini>summary{display:flex;align-items:center;gap:10px;padding:12px 
 details.loja.mini>summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ponto-verde{width:.75rem;height:.75rem;border-radius:50%;background:var(--verde);flex:none}
 .mini-conta{font-size:.85rem;font-weight:800;color:var(--verde);background:var(--verde-claro);border-radius:999px;padding:2px 10px;white-space:nowrap}
-details.loja.mini{background:#f0fdf4}
+details.loja.mini{background:var(--mini)}
 details.loja.mini[open]{border-color:#86efac;border-left-color:var(--verde)}
 .lojas.completas{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
 html.tv .lojas.completas{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 details.loja.p1{border-left-color:var(--vermelho)}details.loja.p2{border-left-color:#f59e0b}details.loja.p3{border-left-color:var(--verde)}
 details.loja>summary{list-style:none;cursor:pointer;padding:14px;display:block}
 details.loja>summary::-webkit-details-marker{display:none}
-details.loja[open]{grid-column:1/-1;border-color:var(--laranja);box-shadow:0 4px 14px rgba(15,23,42,.08)}
+details.loja[open]{grid-column:1/-1;border-color:var(--laranja);box-shadow:0 4px 14px var(--sombra)}
 .abrir{margin-top:10px;font-size:.88rem;font-weight:700;color:var(--laranja)}
 details.loja[open] .abrir .seta{display:inline-block;transform:rotate(90deg)}
 .lista{display:grid;gap:14px}
 details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .lista h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
 .lista ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.95rem}
-.lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:#f8fafc}
+.lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--li)}
 .lista li.r{background:var(--vermelho-claro)}.lista li.a{background:var(--ambar-claro)}
 .lista li span:first-child{min-width:0}
 .lista li .dir{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
 .ok-todos{color:var(--verde);font-weight:700}
 .rodape{margin-top:28px;font-size:13px;color:var(--tx2)}
-.aviso{background:var(--laranja-claro);border:1px solid #fed7aa;border-radius:12px;padding:14px;margin-bottom:16px}
+.aviso{background:var(--laranja-claro);border:1px solid var(--linha);border-radius:12px;padding:14px;margin-bottom:16px}
 #toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
 .toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
 @keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+/* ===== Faixa da semana ===== */
+.semana-faixa{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+.dia-chip{font:inherit;flex:1 0 120px;text-align:left;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:12px;padding:10px 12px;cursor:pointer;border-top:4px solid var(--verde)}
+.dia-chip.tem{border-top-color:var(--vermelho)}
+.dia-chip[aria-current="true"]{outline:2px solid var(--laranja);outline-offset:1px}
+.dia-chip .d{font-weight:800;font-size:.95rem}
+.dia-chip .v{font-weight:800;font-size:.85rem;color:var(--verde)}
+.dia-chip.tem .v{color:var(--vermelho)}
+/* ===== Modo escuro ===== */
+html.escuro{
+  --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
+  --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
+  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
+  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
+  color-scheme:dark}
+html.escuro .toast{background:#b91c1c}html.escuro .toast.ok{background:#15803d}
+html.escuro .lista li.r{background:var(--vermelho-claro)}html.escuro .lista li.a{background:var(--ambar-claro)}
+html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .loja .barra i{background:#22c55e}
 /* ===== Modo TV ===== */
 html.tv{font-size:22px}
 html.tv .topo,html.tv main{max-width:none;padding-left:32px;padding-right:32px}
@@ -125,6 +145,7 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
     </div>
     <div class="acoes">
       <button type="button" id="btnSom" aria-pressed="false">🔕 Ligar som</button>
+      <button type="button" id="btnEscuro" aria-pressed="false">🌙 Modo escuro</button>
       <button type="button" id="btnTv" aria-pressed="false">📺 Modo TV</button>
     </div>
     <div class="status" id="status">Carregando…</div>
@@ -302,6 +323,15 @@ function ligarSom(ligar) {
   guardar("logmax-som", somLigado ? "1" : "0");
 }
 
+/* ===== Modo escuro ===== */
+function modoEscuro(ligar) {
+  document.documentElement.classList.toggle("escuro", ligar);
+  const b = document.getElementById("btnEscuro");
+  b.setAttribute("aria-pressed", String(ligar));
+  b.textContent = ligar ? "☀️ Modo claro" : "🌙 Modo escuro";
+  guardar("logmax-escuro", ligar ? "1" : "0");
+}
+
 /* ===== Modo TV ===== */
 function modoTv(ligar) {
   document.documentElement.classList.toggle("tv", ligar);
@@ -330,6 +360,17 @@ function pessoa(l) {
   return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></span></li>`;
 }
 
+function faixaSemana() { // de hoje até domingo: vagas sem motoca de cada dia (respeita o filtro de turno)
+  const hoje = hojeSP(), dom = semanaDe(hoje)[1], dias = [];
+  for (let d = hoje; d <= dom; d = new Date(Date.parse(d + "T12:00:00") + 864e5).toISOString().slice(0, 10)) dias.push(d);
+  return `<nav class="semana-faixa" aria-label="Vagas sem motoca até domingo">${dias.map(d => {
+    const v = linhas.filter(l => l.data === d && l.vaga && noTurno(l)).length;
+    const tem = linhas.some(l => l.data === d);
+    const nome = d === hoje ? "Hoje" : DIAS[new Date(d + "T12:00:00").getDay()].slice(0, 3);
+    return `<button type="button" class="dia-chip ${v ? "tem" : ""}" data-dia="${d}" aria-current="${d === diaAtual}">
+      <div class="d">${nome} ${ddmm(d)}</div><div class="v">${!tem ? "sem escala" : v ? `${v} ${v > 1 ? "vagas" : "vaga"} sem motoca` : "escala fechada ✓"}</div></button>`;
+  }).join("")}</nav>`;
+}
 function cartaoLoja(l) {
       const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
       const atrasados = l.atrasados;
@@ -399,6 +440,7 @@ function desenhar() {
     <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
       ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
     </div>
+    ${faixaSemana()}
     ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
@@ -446,9 +488,12 @@ function painelVagasSemana(ls, seg, dom) {
 document.getElementById("ant").onclick = () => { const d = diasDisponiveis.filter(x => x < diaAtual).pop(); if (d) { diaAtual = d; desenhar(); } };
 document.getElementById("prox").onclick = () => { const d = diasDisponiveis.find(x => x > diaAtual); if (d) { diaAtual = d; desenhar(); } };
 document.getElementById("btnSom").onclick = () => { ligarSom(!somLigado); if (somLigado) bipe(); };
+document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.documentElement.classList.contains("escuro"));
 document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));
 document.addEventListener("click", e => {
   if (somLigado && audio && audio.state === "suspended") audio.resume();
+  const dc = e.target.closest("[data-dia]");
+  if (dc) { diaAtual = dc.dataset.dia; desenhar(); return; }
   const t = e.target.closest("[data-turno]");
   if (t) { turno = t.dataset.turno; guardar("logmax-turno", turno); desenhar(); return; }
   const b = e.target.closest("[data-f]");
@@ -464,6 +509,7 @@ document.addEventListener("toggle", e => {
 }, true);
 
 /* ===== Início ===== */
+{ const e = new URLSearchParams(location.search).get("escuro"); if (e === "1" || (e !== "0" && lerGuardado("logmax-escuro") === "1")) modoEscuro(true); }
 turno = ["todos", "almoco", "noite"].includes(lerGuardado("logmax-turno")) ? lerGuardado("logmax-turno") : "todos";
 if (new URLSearchParams(location.search).get("tv") === "1" || lerGuardado("logmax-tv") === "1") {
   document.documentElement.classList.add("tv");
