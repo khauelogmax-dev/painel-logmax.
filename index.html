@@ -90,6 +90,8 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .aviso{background:var(--laranja-claro);border:1px solid #fed7aa;border-radius:12px;padding:14px;margin-bottom:16px}
 #toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
 .toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
+@keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 /* ===== Modo TV ===== */
 html.tv{font-size:22px}
 html.tv .topo,html.tv main{max-width:none;padding-left:32px;padding-right:32px}
@@ -211,6 +213,7 @@ async function carregar() {
       `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : ""} · tela às ${new Date().toLocaleTimeString("pt-BR")}`;
     desenhar();
     conferirAtrasos();
+    conferirCompletas();
   } catch (e) {
     document.getElementById("status").textContent = "Não consegui buscar a planilha agora. Tento de novo em 30 s.";
     if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira se o App da Web da planilha está implantado com acesso para "Qualquer pessoa".</div>`;
@@ -226,6 +229,34 @@ function bipe() {
     o.type = "square"; o.frequency.value = 880;
     g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.25, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.2);
     o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + 0.22);
+  });
+}
+function pililim() { // três notas subindo, tipo campainha
+  if (!somLigado || !audio) return;
+  const t = audio.currentTime;
+  [[1046.5, 0], [1318.5, 0.12], [1568, 0.24], [2093, 0.36]].forEach(([f, d]) => {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.3, t + d + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.5);
+    o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + 0.55);
+  });
+}
+function avisoCompleta(loja) {
+  const el = document.createElement("div");
+  el.className = "toast ok"; el.textContent = `✅ ${loja} completa! Todos chegaram.`;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+  pililim();
+}
+const estadoLoja = new Map(); // loja -> completa? (hoje, todos os turnos)
+function conferirCompletas() {
+  const hoje = hojeSP();
+  const lojas = [...new Set(linhas.filter(l => l.data === hoje).map(l => l.loja))];
+  lojas.forEach(nome => {
+    const ls = linhas.filter(l => l.data === hoje && l.loja === nome).map(l => situacao(l));
+    const completa = ls.length > 0 && ls.every(s => s === "chegou");
+    if (estadoLoja.has(nome) && estadoLoja.get(nome) === false && completa) avisoCompleta(nome);
+    estadoLoja.set(nome, completa);
   });
 }
 function aviso(texto) {
@@ -359,7 +390,7 @@ function desenhar() {
       </details>`;
     }).join("")}</div>`}
 
-    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou. Atualiza sozinha a cada 30 segundos.</p>`;
+    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
 }
 
 const TITULO = { falta: "Quem falta chegar", chegou: "Quem já chegou", vaga: "Onde estão as vagas sem motoca" };
