@@ -373,7 +373,7 @@ function desenhar() {
   document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
 
   const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
-  const pessoas = doDia.filter(l => l.s !== "vaga");
+  const pessoas = doDia; // total = todas as vagas da escala do dia (inclusive as sem motoca)
   const n = s => doDia.filter(l => l.s === s).length;
   const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
   const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
@@ -384,7 +384,7 @@ function desenhar() {
   const porLoja = lojas.map(nome => {
     const ls = doDia.filter(l => l.loja === nome);
     const c = s => ls.filter(l => l.s === s).length;
-    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
+    return { nome, ls, total: ls.length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
              atrasados: ls.filter(estaAtrasado).length };
   })
   // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
