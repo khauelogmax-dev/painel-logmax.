@@ -101,14 +101,6 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
 @keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-/* ===== Faixa da semana ===== */
-.semana-faixa{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
-.dia-chip{font:inherit;flex:1 0 120px;text-align:left;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:12px;padding:10px 12px;cursor:pointer;border-top:4px solid var(--verde)}
-.dia-chip.tem{border-top-color:var(--vermelho)}
-.dia-chip[aria-current="true"]{outline:2px solid var(--laranja);outline-offset:1px}
-.dia-chip .d{font-weight:800;font-size:.95rem}
-.dia-chip .v{font-weight:800;font-size:.85rem;color:var(--verde)}
-.dia-chip.tem .v{color:var(--vermelho)}
 /* ===== Modo escuro ===== */
 html.escuro{
   --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
@@ -360,17 +352,6 @@ function pessoa(l) {
   return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></span></li>`;
 }
 
-function faixaSemana() { // de hoje até domingo: vagas sem motoca de cada dia (respeita o filtro de turno)
-  const hoje = hojeSP(), dom = semanaDe(hoje)[1], dias = [];
-  for (let d = hoje; d <= dom; d = new Date(Date.parse(d + "T12:00:00") + 864e5).toISOString().slice(0, 10)) dias.push(d);
-  return `<nav class="semana-faixa" aria-label="Vagas sem motoca até domingo">${dias.map(d => {
-    const v = linhas.filter(l => l.data === d && l.vaga && noTurno(l)).length;
-    const tem = linhas.some(l => l.data === d);
-    const nome = d === hoje ? "Hoje" : DIAS[new Date(d + "T12:00:00").getDay()].slice(0, 3);
-    return `<button type="button" class="dia-chip ${v ? "tem" : ""}" data-dia="${d}" aria-current="${d === diaAtual}">
-      <div class="d">${nome} ${ddmm(d)}</div><div class="v">${!tem ? "sem escala" : v ? `${v} ${v > 1 ? "vagas" : "vaga"} sem motoca` : "escala fechada ✓"}</div></button>`;
-  }).join("")}</nav>`;
-}
 function cartaoLoja(l) {
       const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
       const atrasados = l.atrasados;
@@ -440,7 +421,6 @@ function desenhar() {
     <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
       ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
     </div>
-    ${faixaSemana()}
     ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
@@ -492,8 +472,6 @@ document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.docume
 document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));
 document.addEventListener("click", e => {
   if (somLigado && audio && audio.state === "suspended") audio.resume();
-  const dc = e.target.closest("[data-dia]");
-  if (dc) { diaAtual = dc.dataset.dia; desenhar(); return; }
   const t = e.target.closest("[data-turno]");
   if (t) { turno = t.dataset.turno; guardar("logmax-turno", turno); desenhar(); return; }
   const b = e.target.closest("[data-f]");
