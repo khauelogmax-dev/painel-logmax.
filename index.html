@@ -309,10 +309,11 @@ function desenhar() {
   const porLoja = lojas.map(nome => {
     const ls = doDia.filter(l => l.loja === nome);
     const c = s => ls.filter(l => l.s === s).length;
-    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga") };
+    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
+             atrasados: ls.filter(estaAtrasado).length };
   })
-  // ordem de importância: 1º mais vagas sem motoca, 2º mais gente para chegar, por último as completas
-  .sort((a, b) => b.vagas - a.vagas || b.falta - a.falta || a.nome.localeCompare(b.nome));
+  // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
+  .sort((a, b) => b.vagas - a.vagas || (b.falta > 0) - (a.falta > 0) || b.atrasados - a.atrasados || b.falta - a.falta || a.nome.localeCompare(b.nome));
 
   const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
   const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
@@ -330,10 +331,10 @@ function desenhar() {
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
-    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar</span></h2>
+    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente)</span></h2>
     <div class="lojas">${porLoja.map(l => {
       const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
-      const atrasados = faltando.filter(estaAtrasado).length;
+      const atrasados = l.atrasados;
       const vagasL = l.ls.filter(x => x.s === "vaga").sort(porHorario);
       const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
       return `
