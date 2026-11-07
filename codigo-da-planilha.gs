@@ -45,6 +45,8 @@ function montarCsv() {
       if (primeira === 'DATA') {
         const achar = function (txt) { return l.findIndex(function (c) { return String(c).toUpperCase().indexOf(txt) >= 0; }); };
         col = { cod: achar('COD'), nome: achar('NOME'), hora: achar('HORARIO'), pres: achar('PRESEN') };
+        // abas sem o título "PRESENÇA" (ex.: PAMPLONA): usa a coluna logo depois do HORÁRIO
+        if (col.pres < 0 && col.hora >= 0) col.pres = col.hora + 1;
         return;
       }
       const m = String(l[0]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
