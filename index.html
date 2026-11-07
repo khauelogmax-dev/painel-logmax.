@@ -71,6 +71,14 @@ details.loja{padding:0;overflow:hidden;border-left-width:6px}
 .luz-atraso i{width:.8rem;height:.8rem;border-radius:50%;background:#facc15;display:inline-block;animation:piscar 1s ease-in-out infinite}
 details.loja.com-atraso{animation:brilho 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.luz-atraso i,details.loja.com-atraso{animation:none}}
+details.loja.mini>summary{display:flex;align-items:center;gap:10px;padding:12px 14px}
+details.loja.mini>summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ponto-verde{width:.75rem;height:.75rem;border-radius:50%;background:var(--verde);flex:none}
+.mini-conta{font-size:.85rem;font-weight:800;color:var(--verde);background:var(--verde-claro);border-radius:999px;padding:2px 10px;white-space:nowrap}
+details.loja.mini{background:#f0fdf4}
+details.loja.mini[open]{border-color:#86efac;border-left-color:var(--verde)}
+.lojas.completas{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+html.tv .lojas.completas{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 details.loja.p1{border-left-color:var(--vermelho)}details.loja.p2{border-left-color:#f59e0b}details.loja.p3{border-left-color:var(--verde)}
 details.loja>summary{list-style:none;cursor:pointer;padding:14px;display:block}
 details.loja>summary::-webkit-details-marker{display:none}
@@ -322,48 +330,7 @@ function pessoa(l) {
   return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></span></li>`;
 }
 
-function desenhar() {
-  const hoje = hojeSP();
-  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
-  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual && d >= hoje);
-  document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
-
-  const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
-  const pessoas = doDia.filter(l => l.s !== "vaga");
-  const n = s => doDia.filter(l => l.s === s).length;
-  const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
-  const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
-  const seg = hoje, dom = semanaDe(hoje)[1];                       // de hoje até domingo
-  const vagasSemana = linhas.filter(l => l.vaga && l.data >= seg && l.data <= dom && noTurno(l));
-
-  const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
-  const porLoja = lojas.map(nome => {
-    const ls = doDia.filter(l => l.loja === nome);
-    const c = s => ls.filter(l => l.s === s).length;
-    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
-             atrasados: ls.filter(estaAtrasado).length };
-  })
-  // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
-  .sort((a, b) => b.vagas - a.vagas || (b.falta > 0) - (a.falta > 0) || b.atrasados - a.atrasados || b.falta - a.falta || a.nome.localeCompare(b.nome));
-
-  const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
-  const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
-
-  document.getElementById("conteudo").innerHTML = `
-    <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
-      ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
-    </div>
-    ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
-    <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
-      ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
-      ${btn("falta", "", `<div class="rot">Falta chegar</div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
-      ${btn("lojas", "", `<div class="rot">Lojas no dia</div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
-      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} até domingo</div><div class="toque">ver onde ›</div>`)}
-    </section>
-    ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
-
-    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente)</span></h2>
-    <div class="lojas">${porLoja.map(l => {
+function cartaoLoja(l) {
       const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
       const atrasados = l.atrasados;
       const vagasL = l.ls.filter(x => x.s === "vaga").sort(porHorario);
@@ -388,7 +355,62 @@ function desenhar() {
           ${chegaram.length ? `<div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>` : ""}
         </div>
       </details>`;
-    }).join("")}</div>`}
+}
+function cartaoCompleto(l) {
+  const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
+  return `
+      <details class="loja p3 mini" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
+        <summary><span class="ponto-verde" aria-hidden="true"></span><b>${esc(l.nome)}</b><span class="mini-conta">✓ ${l.chegou}/${l.total}</span></summary>
+        <div class="lista">
+          <div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>
+        </div>
+      </details>`;
+}
+function desenhar() {
+  const hoje = hojeSP();
+  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
+  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual && d >= hoje);
+  document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
+
+  const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
+  const pessoas = doDia.filter(l => l.s !== "vaga");
+  const n = s => doDia.filter(l => l.s === s).length;
+  const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
+  const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
+  const seg = hoje, dom = semanaDe(hoje)[1];                       // de hoje até domingo
+  const vagasSemana = linhas.filter(l => l.vaga && l.data >= seg && l.data <= dom && noTurno(l));
+
+  const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
+  const porLoja = lojas.map(nome => {
+    const ls = doDia.filter(l => l.loja === nome);
+    const c = s => ls.filter(l => l.s === s).length;
+    return { nome, ls, total: ls.filter(l => l.s !== "vaga").length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
+             atrasados: ls.filter(estaAtrasado).length };
+  })
+  // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
+  .sort((a, b) => b.vagas - a.vagas || (b.falta > 0) - (a.falta > 0) || b.atrasados - a.atrasados || b.falta - a.falta || a.nome.localeCompare(b.nome));
+  const completas = porLoja.filter(l => !l.vagas && !l.falta && l.total);
+  const pendentes = porLoja.filter(l => !completas.includes(l));
+
+  const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
+  const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
+
+  document.getElementById("conteudo").innerHTML = `
+    <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
+      ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
+    </div>
+    ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
+    <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
+      ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
+      ${btn("falta", "", `<div class="rot">Falta chegar</div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
+      ${btn("lojas", "", `<div class="rot">Lojas no dia</div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
+      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} até domingo</div><div class="toque">ver onde ›</div>`)}
+    </section>
+    ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
+
+    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente)</span></h2>
+    ${pendentes.length ? `<div class="lojas">${pendentes.map(cartaoLoja).join("")}</div>` : `<div class="vazio">Todas as lojas do dia estão completas.</div>`}
+    ${completas.length ? `<h2>Completas (${completas.length})</h2><div class="lojas completas">${completas.map(cartaoCompleto).join("")}</div>` : ""}`}
 
     <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
 }
