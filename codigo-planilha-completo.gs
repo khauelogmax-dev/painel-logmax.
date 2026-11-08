@@ -23,6 +23,10 @@
  *   código, nome, telefone, CPF e PIX. A lista inteira nunca sai da planilha. O painel público não tem isso.
  *   (4.4: escolha do campo de busca — código, nome, telefone ou CPF — e o PIX no resultado.)
  *
+ * NA VERSÃO 4.5: "Pagamento no Final" (PGF). O botão PGF da tela do operador grava o valor combinado numa aba
+ *   NOVA da planilha chamada "PGF SITE" (criada sozinha; não mexe na PAG FNAL nem em nenhuma outra aba).
+ *   A aba Pagamento no Final do site lê essa lista e tem o botão Pago.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
  *
@@ -33,7 +37,7 @@
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
-const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL'];
+const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE'];
 const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
 const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
@@ -71,9 +75,18 @@ function doPost(e) {
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
   if (pedido.acao === 'ler') {
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
-    return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), online: lmOnline('o', pedido.sessao) });
+    return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), online: lmOnline('o', pedido.sessao) });
   }
   if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q, pedido.campo));
+  if (['pgf', 'pgfPago', 'pgfRemover'].indexOf(pedido.acao) >= 0) {
+    const travaPgf = LockService.getScriptLock();
+    if (!travaPgf.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
+    try {
+      if (pedido.acao === 'pgf') return lmResposta(lmPgfMarcar(pedido));
+      if (pedido.acao === 'pgfPago') return lmResposta(lmPgfPago(pedido.id, !!pedido.pago));
+      return lmResposta(lmPgfRemover(pedido.id));
+    } finally { travaPgf.releaseLock(); }
+  }
   if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   const trava = LockService.getScriptLock();   // uma gravação por vez (separada da montagem da escala)
@@ -479,6 +492,126 @@ function lmBuscar(q, campo) {
   });
   achados.sort(function (a, b) { return b.nota - a.nota || a.nome.localeCompare(b.nome); });
   return { ok: true, campo: campo, total: achados.length, itens: achados.slice(0, 20).map(function (a) { delete a.nota; return a; }) };
+}
+
+/* ============================== PAGAMENTO NO FINAL (aba "PGF SITE") ============================== */
+
+const LM_ABA_PGF = 'PGF SITE';
+const LM_PGF_TITULOS = ['ID', 'DATA', 'LOJA', 'HORÁRIO', 'CÓDIGO', 'NOME', 'TELEFONE', 'CHAVE PIX', 'VALOR', 'MARCADO EM', 'PAGO', 'PAGO EM', 'LINHA DA ESCALA'];
+const LM_PGF_DIAS = 15;   // a tela recebe os PGF dos últimos 15 dias (e dos próximos)
+
+function lmAbaPgf(criar) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let aba = ss.getSheetByName(LM_ABA_PGF);
+  if (!aba && criar) {
+    aba = ss.insertSheet(LM_ABA_PGF);
+    aba.getRange(1, 1, 1, LM_PGF_TITULOS.length).setValues([LM_PGF_TITULOS]).setFontWeight('bold');
+    aba.setFrozenRows(1);
+    ['A', 'B', 'E', 'G', 'H', 'M'].forEach(function (c) { aba.getRange(c + ':' + c).setNumberFormat('@'); });   // como texto
+    aba.getRange('I:I').setNumberFormat('"R$" #,##0.00');
+  }
+  return aba;
+}
+
+function lmNumero(v) {   // "80", "80,50", "R$ 1.080,50" → número
+  let t = String(v == null ? '' : v).replace(/[^\d,.\-]/g, '');
+  if (t.indexOf(',') >= 0) t = t.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(t);
+  return isFinite(n) ? Math.round(n * 100) / 100 : NaN;
+}
+
+function lmPgfLerAba(aba) {
+  if (!aba || aba.getLastRow() < 2) return [];
+  const n = aba.getLastRow() - 1, faixa = aba.getRange(2, 1, n, LM_PGF_TITULOS.length);
+  const vals = faixa.getDisplayValues(), brutos = faixa.getValues();
+  const lista = [];
+  vals.forEach(function (v, i) {
+    if (!String(v[0]).trim()) return;
+    const valor = typeof brutos[i][8] === 'number' ? brutos[i][8] : lmNumero(v[8]);
+    lista.push({ id: String(v[0]).trim(), data: String(v[1]).trim(), loja: String(v[2]).trim(), horario: String(v[3]).trim(),
+                 cod: String(v[4]).trim(), nome: String(v[5]).trim(), tel: String(v[6]).trim(), pix: String(v[7]).trim(),
+                 valor: isFinite(valor) ? valor : 0, marcadoEm: String(v[9]).trim(), pago: String(v[10]).trim().toUpperCase() === 'SIM',
+                 pagoEm: String(v[11]).trim(), linha: String(v[12]).trim(), whats: lmLimparTelefone(v[6]), _linhaAba: i + 2 });
+  });
+  return lista;
+}
+
+// Lista para a tela (guardada 10 min; é refeita a cada mudança)
+function lmPgfLista() {
+  const cache = CacheService.getScriptCache();
+  const c = cache.get('pgf_v1');
+  if (c) { try { return JSON.parse(c); } catch (e) {} }
+  const hoje = new Date(), limite = Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - LM_PGF_DIAS);
+  const lista = lmPgfLerAba(lmAbaPgf(false)).filter(function (x) {
+    const m = x.data.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    return !m || Date.UTC(+m[3], +m[2] - 1, +m[1]) >= limite;
+  }).map(function (x) { delete x._linhaAba; return x; });
+  try { cache.put('pgf_v1', JSON.stringify(lista), 600); } catch (e) {}
+  return lista;
+}
+
+// Botão PGF: grava (ou muda) o valor combinado daquela pessoa naquele dia
+function lmPgfMarcar(p) {
+  const valor = lmNumero(p.valor);
+  if (!(valor > 0) || valor > 10000) return { ok: false, erro: 'Digite um valor válido (ex.: 80 ou 80,50).' };
+  const achou = lmLocalizar(p);
+  if (achou.erro) return achou.erro;
+  const atual = achou.atual, col = achou.col, linha = achou.linha;
+  const limpa = function (x) { return String(x == null ? '' : x).replace(/\s*[\r\n]+\s*/g, ' ').trim(); };
+  const nome = limpa(atual[col.nome]);
+  if (!nome || /N[ÃA]O\s+LOCALIZAD/i.test(nome)) return { ok: false, erro: 'Vaga sem motoca não tem pagamento.' };
+  const cod = col.cod >= 0 ? limpa(atual[col.cod]) : '', tel = col.tel >= 0 ? limpa(atual[col.tel]) : '';
+  const horario = col.hora >= 0 ? limpa(atual[col.hora]) : '', data = limpa(atual[0]);
+
+  let pix = '';   // chave PIX vem do cadastro
+  const cad = lmLerCadastro(false);
+  if (!cad.erro) {
+    const so = function (x) { return String(x).replace(/\D/g, ''); };
+    let m = null;
+    for (let i = 0; i < cad.lista.length && !m; i++) if (cod && so(cad.lista[i][0]) && so(cad.lista[i][0]) === so(cod)) m = cad.lista[i];
+    for (let i = 0; i < cad.lista.length && !m; i++) if (cad.lista[i][1].toUpperCase() === nome.toUpperCase()) m = cad.lista[i];
+    if (m) pix = m[4] || '';
+  }
+
+  const aba = lmAbaPgf(true);
+  const existente = lmPgfLerAba(aba).filter(function (x) { return x.loja === p.loja && x.data === data && x.linha === String(linha); })[0];
+  const agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  let item;
+  if (existente) {
+    if (existente.pago) return { ok: false, erro: 'Esse PGF já foi pago. Desfaça o "Pago" antes de mudar o valor.' };
+    aba.getRange(existente._linhaAba, 9).setValue(valor);
+    aba.getRange(existente._linhaAba, 6, 1, 3).setValues([[nome, tel, pix || existente.pix]]);
+    item = existente; item.valor = valor; item.nome = nome; item.tel = tel; item.pix = pix || existente.pix; item.whats = lmLimparTelefone(tel);
+  } else {
+    const id = Utilities.getUuid().replace(/-/g, '').slice(0, 10);
+    aba.appendRow([id, data, p.loja, horario, cod, nome, tel, pix, valor, agora, '', '', String(linha)]);
+    item = { id: id, data: data, loja: p.loja, horario: horario, cod: cod, nome: nome, tel: tel, pix: pix, valor: valor,
+             marcadoEm: agora, pago: false, pagoEm: '', linha: String(linha), whats: lmLimparTelefone(tel) };
+  }
+  delete item._linhaAba;
+  CacheService.getScriptCache().remove('pgf_v1');
+  return { ok: true, item: item, semPix: !item.pix };
+}
+
+function lmPgfPago(id, pago) {
+  const aba = lmAbaPgf(false);
+  const x = lmPgfLerAba(aba).filter(function (i) { return i.id === String(id); })[0];
+  if (!x) return { ok: false, erro: 'Não achei esse PGF na planilha (pode ter sido apagado).', sumiu: true };
+  const agora = pago ? Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm') : '';
+  aba.getRange(x._linhaAba, 11, 1, 2).setValues([[pago ? 'SIM' : '', agora]]);
+  CacheService.getScriptCache().remove('pgf_v1');
+  x.pago = pago; x.pagoEm = agora; delete x._linhaAba;
+  return { ok: true, item: x };
+}
+
+function lmPgfRemover(id) {
+  const aba = lmAbaPgf(false);
+  const x = lmPgfLerAba(aba).filter(function (i) { return i.id === String(id); })[0];
+  if (!x) return { ok: true, removido: true };
+  if (x.pago) return { ok: false, erro: 'Esse PGF já foi pago. Desfaça o "Pago" antes de remover.' };
+  aba.deleteRow(x._linhaAba);
+  CacheService.getScriptCache().remove('pgf_v1');
+  return { ok: true, removido: true };
 }
 
 /* ============================== QUEM ESTÁ COM A TELA ABERTA ============================== */
