@@ -388,8 +388,10 @@ function minutosAtraso(l) { // minutos desde o início do turno (só faz sentido
   return ini === null ? null : agoraSPmin(l.data) - ini;
 }
 
+let lendo = false;
 async function carregar() {
-  if (!senha) return;
+  if (!senha || lendo) return;
+  lendo = true;
   try {
     const r = await chamar({ acao: "ler", sessao: SESSAO });
     online = r.online || null;
@@ -414,8 +416,9 @@ async function carregar() {
     conferirCompletas();
   } catch (e) {
     falhaLeitura = true; pintarStatus();
-    if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira a internet e se o código novo da planilha foi implantado (Nova versão).</div>`;
-  }
+    console.warn("[LogMax] leitura falhou:", e && e.message);
+    if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso"><b>Não consegui ler a escala.</b><br>Motivo: ${esc((e && e.message) || "desconhecido")}.<br>A tela tenta de novo sozinha a cada 30 segundos.</div>`;
+  } finally { lendo = false; }
 }
 
 /* ===== Som e alertas ===== */
@@ -716,10 +719,18 @@ function painelVagasSemana(ls, seg, dom) {
 }
 
 /* ===== Gravar na planilha ===== */
-async function chamar(dados) {
-  const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)) });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
+async function chamar(dados, limiteSeg = 60) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), limiteSeg * 1000);
+  try {
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)), signal: ctl.signal });
+    if (!r.ok) throw new Error("a planilha respondeu com erro " + r.status);
+    const txt = await r.text();
+    try { return JSON.parse(txt); }
+    catch (e) { throw new Error(/<html/i.test(txt) ? "a planilha devolveu uma página de erro do Google em vez dos dados" : "resposta estranha da planilha"); }
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error(`a planilha não respondeu em ${limiteSeg} segundos`);
+    throw e;
+  } finally { clearTimeout(t); }
 }
 function toast(texto, ok) {
   const t = document.createElement("div");
