@@ -18,18 +18,32 @@
 html{font-size:16px}
 body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{background:var(--marinho);color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-.marca{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}.marca span{color:#fb923c}
-.marca img{width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
+.topo{max-width:1100px;margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
+.marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
+.marca img{width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
+.nome-marca{display:flex;flex-direction:column;line-height:1.1}
+.nome-marca b{font-size:1.2rem;font-weight:800;letter-spacing:-.01em}
+.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fdba74;margin-top:2px}
 .dia{display:flex;align-items:center;gap:8px}
 .dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
 .dia button:disabled{opacity:.35;cursor:default}
 .dia strong{min-width:150px;text-align:center;font-size:1.06rem}
 .hoje-tag{background:var(--laranja);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px}
-.acoes{display:flex;gap:8px;flex-wrap:wrap}
-.acoes button{font:inherit;font-size:14px;font-weight:700;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:8px 12px;cursor:pointer}
-.acoes button[aria-pressed="true"]{background:#fff;color:var(--marinho)}
-.status{font-size:13px;color:#cbd5e1;width:100%;text-align:right}
+.acoes{display:flex;gap:6px;flex-wrap:nowrap;order:2}
+.acoes button{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;min-width:38px;padding:0 10px;font:inherit;font-size:13px;font-weight:700;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;transition:background .15s,border-color .15s}
+.acoes button:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35)}
+.acoes button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.acoes .rot-btn{display:none}
+.acoes button[aria-pressed="true"]{background:#fff;color:var(--marinho);border-color:#fff}
+.acoes .btn-sair{margin-left:4px}
+.status{order:3;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#cbd5e1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 12px 5px 10px;white-space:nowrap;cursor:default}
+.status i{width:8px;height:8px;border-radius:50%;background:#94a3b8;flex:none}
+.status.vivo i{background:#22c55e;animation:pulsaVivo 2s ease-out infinite}
+.status.lento i{background:#f59e0b}.status.lento{color:#fde68a}
+.status.erro i{background:#ef4444}.status.erro{color:#fecaca;border-color:rgba(239,68,68,.45)}
+@keyframes pulsaVivo{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}100%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
+@media (prefers-reduced-motion:reduce){.status.vivo i{animation:none}}
+@media (min-width:900px){.status{order:1;margin-left:auto}.acoes .rot-btn{display:inline}.acoes button{padding:0 12px}}
 main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
 .filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
 .filtros span{font-size:14px;font-weight:700;color:var(--tx2);margin-right:2px}
@@ -128,7 +142,7 @@ html.tv{font-size:22px}
 html.tv .topo,html.tv main{max-width:none;padding-left:32px;padding-right:32px}
 html.tv .lojas{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
 html.tv .num .rot,html.tv .toque,html.tv .etq,html.tv .lista h3,html.tv .status,html.tv .semana,html.tv .acoes button,html.tv .chip{font-size:.75rem}
-html.tv .dia button{width:56px;height:56px;font-size:24px}
+html.tv .acoes button{height:50px;min-width:50px}html.tv .acoes button svg{width:24px;height:24px}html.tv .status{font-size:.7rem}
 html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 @media (max-width:720px){
   .faixa{grid-template-columns:1fr 1fr}.num.principal{grid-column:1/-1}
@@ -160,13 +174,13 @@ html.tv .dias button small{font-size:.6rem}
 <body>
 <header>
   <div class="topo">
-    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div>LogMax <span>·</span> Presença</div></div>
+    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div class="nome-marca"><b>LogMax</b><small>Presença ao vivo</small></div></div>
     <div class="acoes">
-      <button type="button" id="btnSom" aria-pressed="false">🔕 Ligar som</button>
-      <button type="button" id="btnEscuro" aria-pressed="false">🌙 Modo escuro</button>
-      <button type="button" id="btnTv" aria-pressed="false">📺 Modo TV</button>
+      <button type="button" id="btnSom" aria-pressed="false" title="Ligar som" aria-label="Ligar som"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg><span class="rot-btn">Ligar som</span></button>
+      <button type="button" id="btnEscuro" aria-pressed="false" title="Modo escuro" aria-label="Modo escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="rot-btn">Modo escuro</span></button>
+      <button type="button" id="btnTv" aria-pressed="false" title="Modo TV" aria-label="Modo TV"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/></svg><span class="rot-btn">Modo TV</span></button>
     </div>
-    <div class="status" id="status">Carregando…</div>
+    <div class="status carregando" id="status"><i aria-hidden="true"></i><span>Conectando…</span></div>
   </div>
   <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
 </header>
@@ -225,6 +239,28 @@ const SESSAO = (() => {
   if (!id) { id = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try { sessionStorage.setItem("logmax-sessao", id); } catch (e) {} }
   return id;
 })();
+/* ===== Ícones do topo e selo "ao vivo" ===== */
+const ICONES = {sino:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',sinoOff:'<path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>',lua:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',tv:'<rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/>',sairTv:'<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',sair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'};
+function botaoTopo(id, ico, rotulo) {
+  const b = document.getElementById(id); if (!b) return;
+  b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[ico]}</svg><span class="rot-btn">${rotulo}</span>`;
+  b.title = rotulo; b.setAttribute("aria-label", rotulo);
+}
+let ultimaLeitura = 0, falhaLeitura = false;
+function pintarStatus() {
+  const el = document.getElementById("status"); if (!el) return;
+  const s = ultimaLeitura ? Math.max(0, Math.round((Date.now() - ultimaLeitura) / 1000)) : null;
+  const ha = s === null ? "" : s < 5 ? "agora" : s < 60 ? `há ${s} s` : `há ${Math.floor(s / 60)} min`;
+  let cls, txt;
+  if (falhaLeitura) { cls = "erro"; txt = ultimaLeitura ? `Sem conexão · última leitura ${ha}` : "Sem conexão · tentando de novo"; }
+  else if (!ultimaLeitura) { cls = "carregando"; txt = "Conectando…"; }
+  else if (s > 90) { cls = "lento"; txt = `Atrasado · atualizado ${ha}`; }
+  else { cls = "vivo"; txt = `Ao vivo · atualizado ${ha}`; }
+  el.className = "status " + cls;
+  el.innerHTML = `<i aria-hidden="true"></i><span>${txt}</span>`;
+  el.title = `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : "—"}${ultimaLeitura ? " · tela leu às " + new Date(ultimaLeitura).toLocaleTimeString("pt-BR") : ""}`;
+}
+setInterval(pintarStatus, 1000);
 const ddmm = iso => `${iso.slice(8)}/${iso.slice(5,7)}`;
 
 function lerCSV(texto) {
@@ -271,13 +307,12 @@ async function carregar() {
     }).filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
     diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
     if (diaAtual < hoje) diaAtual = hoje;
-    document.getElementById("status").textContent =
-      `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : ""} · tela às ${new Date().toLocaleTimeString("pt-BR")}`;
+    ultimaLeitura = Date.now(); falhaLeitura = false; pintarStatus();
     desenhar();
     conferirAtrasos();
     conferirCompletas();
   } catch (e) {
-    document.getElementById("status").textContent = "Não consegui buscar a planilha agora. Tento de novo em 30 s.";
+    falhaLeitura = true; pintarStatus();
     if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira se o App da Web da planilha está implantado com acesso para "Qualquer pessoa".</div>`;
   }
 }
@@ -385,7 +420,7 @@ function ligarSom(ligar) {
   if (audio && audio.state === "suspended") audio.resume();
   const b = document.getElementById("btnSom");
   b.setAttribute("aria-pressed", String(somLigado));
-  b.textContent = somLigado ? "🔔 Som ligado" : "🔕 Ligar som";
+  botaoTopo("btnSom", somLigado ? "sino" : "sinoOff", somLigado ? "Som ligado" : "Ligar som");
   guardar("logmax-som", somLigado ? "1" : "0");
 }
 
@@ -394,7 +429,7 @@ function modoEscuro(ligar) {
   document.documentElement.classList.toggle("escuro", ligar);
   const b = document.getElementById("btnEscuro");
   b.setAttribute("aria-pressed", String(ligar));
-  b.textContent = ligar ? "☀️ Modo claro" : "🌙 Modo escuro";
+  botaoTopo("btnEscuro", ligar ? "sol" : "lua", ligar ? "Modo claro" : "Modo escuro");
   guardar("logmax-escuro", ligar ? "1" : "0");
 }
 
@@ -403,7 +438,7 @@ function modoTv(ligar) {
   document.documentElement.classList.toggle("tv", ligar);
   const b = document.getElementById("btnTv");
   b.setAttribute("aria-pressed", String(ligar));
-  b.textContent = ligar ? "✕ Sair do modo TV" : "📺 Modo TV";
+  botaoTopo("btnTv", ligar ? "sairTv" : "tv", ligar ? "Sair do modo TV" : "Modo TV");
   try {
     if (ligar && document.fullscreenEnabled && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
     if (!ligar && document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -595,10 +630,10 @@ turno = ["todos", "almoco", "noite"].includes(lerGuardado("logmax-turno")) ? ler
 if (new URLSearchParams(location.search).get("tv") === "1" || lerGuardado("logmax-tv") === "1") {
   document.documentElement.classList.add("tv");
   document.getElementById("btnTv").setAttribute("aria-pressed", "true");
-  document.getElementById("btnTv").textContent = "✕ Sair do modo TV";
+  botaoTopo("btnTv", "sairTv", "Sair do modo TV");
 }
 if (lerGuardado("logmax-som") === "1") { // o navegador só deixa tocar depois do primeiro toque na tela
-  document.getElementById("btnSom").textContent = "🔔 Toque para ativar o som";
+  botaoTopo("btnSom", "sino", "Toque para ativar o som");
   document.addEventListener("click", function primeiro(e) {
     document.removeEventListener("click", primeiro, true);
     if (!e.target.closest("#btnSom")) ligarSom(true);
