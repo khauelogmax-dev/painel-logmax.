@@ -525,6 +525,7 @@ function lmCadastroEstrutura() {
     if (/\bCPF\b/.test(u)) return 'cpf';
     if (/TELEF|CELULAR|WHATS|FONE/.test(u)) return 'telefone';
     if (/NOME/.test(u)) return 'nome';
+    if (/UNIDADE|LOJA/.test(u)) return 'unidade';
     if (/MAIL/.test(u)) return 'email';
     if (/NASC|DATA/.test(u)) return 'data';
     return 'texto';
@@ -553,9 +554,10 @@ function lmCadastroInfo() {
   if (iCod >= 0) linhas.forEach(function (l) { const n = parseInt(String(l[iCod]).replace(/\D/g, ''), 10); if (n > maior && n < 1e7) maior = n; });
   const opcoes = {};
   e.tipos.forEach(function (t, i) {
-    if (t !== 'tipoPix' && t !== 'texto') return;
+    if (t !== 'tipoPix' && t !== 'texto' && t !== 'unidade') return;
     const conta = {};
-    linhas.slice(-400).forEach(function (l) { const v = String(l[i]).trim(); if (v) conta[v] = (conta[v] || 0) + 1; });
+    linhas.slice(t === 'unidade' ? -1500 : -400).forEach(function (l) { const v = String(l[i]).trim(); if (v) conta[v] = (conta[v] || 0) + 1; });
+    if (t === 'unidade') { opcoes[i] = Object.keys(conta).sort(function (a, b) { return a.localeCompare(b); }).slice(0, 60); return; }
     const lista = Object.keys(conta).sort(function (a, b) { return conta[b] - conta[a]; });
     if (t === 'tipoPix' || (lista.length > 0 && lista.length <= 8)) opcoes[i] = lista.slice(0, 10);
   });
@@ -585,7 +587,7 @@ function lmCadastrar(p) {
   }
   for (let i = 1; i < LM_CAD_COLS; i++) {
     if (i === iCod) continue;
-    if (!linhaNova[i] && ['nome', 'cpf', 'telefone', 'pix', 'tipoPix'].indexOf(e.tipos[i]) >= 0) return { ok: false, erro: 'Preencha: ' + e.titulos[i] + '.', campo: i };
+    if (!linhaNova[i] && ['nome', 'cpf', 'telefone', 'pix', 'tipoPix', 'unidade'].indexOf(e.tipos[i]) >= 0) return { ok: false, erro: 'Preencha: ' + e.titulos[i] + '.', campo: i };
   }
 
   // CPF ou código repetido? (lê a planilha agora, não a memória)
