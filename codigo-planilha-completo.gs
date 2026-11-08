@@ -20,7 +20,8 @@
  *
  * NA VERSÃO 4.3: aba "Localizar motoboy" na tela do operador (com senha). A busca é feita AQUI na planilha,
  *   na aba de cadastro dos motoboys, e devolve só quem bate com o que foi digitado (no máximo 20):
- *   código, nome, telefone e CPF. A lista inteira nunca sai da planilha. O painel público não tem isso.
+ *   código, nome, telefone, CPF e PIX. A lista inteira nunca sai da planilha. O painel público não tem isso.
+ *   (4.4: escolha do campo de busca — código, nome, telefone ou CPF — e o PIX no resultado.)
  *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
@@ -72,7 +73,7 @@ function doPost(e) {
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
     return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), online: lmOnline('o', pedido.sessao) });
   }
-  if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q));
+  if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q, pedido.campo));
   if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   const trava = LockService.getScriptLock();   // uma gravação por vez (separada da montagem da escala)
@@ -394,7 +395,7 @@ function lmLimparChegadasVelhas(props) {   // apaga horas anotadas de mais de 10
 
 /* ============================== LOCALIZAR MOTOBOY (cadastro) ============================== */
 
-const LM_CHAVE_CAD = 'cad_v1';
+const LM_CHAVE_CAD = 'cad_v2';
 const LM_CAD_FRESCO_MIN = 10;   // o cadastro é relido da planilha a cada 10 minutos
 
 function lmAbaCadastro() {
@@ -425,47 +426,59 @@ function lmLerCadastro(forcar) {
     cod: achar(function (x) { return /^(COD|CODIGO|ID|MATRICULA)\b/.test(x); }),
     nome: achar(function (x) { return /^NOME/.test(x); }),
     tel: achar(function (x) { return /TELEF|CELULAR|WHATS|FONE/.test(x); }),
-    cpf: achar(function (x) { return /\bCPF\b/.test(x); })
+    cpf: achar(function (x) { return /\bCPF\b/.test(x); }),
+    pix: achar(function (x) { return /^(CHAVE\s*(DO\s*)?)?PIX$/.test(x); })
   };
+  if (col.pix < 0) col.pix = achar(function (x) { return /PIX/.test(x) && !/TIPO/.test(x); });
   const lista = [];
   for (let i = cab + 1; i < vals.length; i++) {
     const l = vals[i], nome = col.nome >= 0 ? String(l[col.nome]).trim() : '';
     if (!nome) continue;
     lista.push([col.cod >= 0 ? String(l[col.cod]).trim() : '', nome,
-                col.tel >= 0 ? String(l[col.tel]).trim() : '', col.cpf >= 0 ? String(l[col.cpf]).trim() : '']);
+                col.tel >= 0 ? String(l[col.tel]).trim() : '', col.cpf >= 0 ? String(l[col.cpf]).trim() : '',
+                col.pix >= 0 ? String(l[col.pix]).trim() : '']);
   }
   const cad = { aba: aba.getName(), linhaTitulos: cab + 1, titulos: { cod: col.cod >= 0 ? vals[cab][col.cod] : '', nome: col.nome >= 0 ? vals[cab][col.nome] : '',
-                tel: col.tel >= 0 ? vals[cab][col.tel] : '', cpf: col.cpf >= 0 ? vals[cab][col.cpf] : '' }, lista: lista };
+                tel: col.tel >= 0 ? vals[cab][col.tel] : '', cpf: col.cpf >= 0 ? vals[cab][col.cpf] : '',
+                pix: col.pix >= 0 ? vals[cab][col.pix] : '' }, lista: lista };
   lmGuardarTexto(LM_CHAVE_CAD, JSON.stringify(cad), Date.now());
   return cad;
 }
 
-// Procura por telefone, CPF, código ou nome. Devolve no máximo 20.
-function lmBuscar(q) {
+// Procura no campo escolhido (codigo | nome | telefone | cpf). Sem campo: tenta adivinhar. Devolve no máximo 20.
+function lmBuscar(q, campo) {
   q = String(q || '').trim();
-  if (q.length < 2) return { ok: false, erro: 'Digite pelo menos 2 letras ou números.' };
+  if (q.length < 1) return { ok: false, erro: 'Digite o que procurar.' };
   const cad = lmLerCadastro(false);
   if (cad.erro) return { ok: false, erro: cad.erro };
   const semAcento = function (x) { return String(x).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
   const digitos = q.replace(/\D/g, '');
-  const soNumero = digitos.length >= 2 && digitos.length >= q.replace(/[\s().\-\/+]/g, '').length;
+  if (['codigo', 'nome', 'telefone', 'cpf'].indexOf(campo) < 0) {
+    const soNumero = digitos.length >= 2 && digitos.length >= q.replace(/[\s().\-\/+]/g, '').length;
+    campo = !soNumero ? 'nome' : digitos.length <= 6 ? 'codigo' : 'telefone';
+  }
+  if (campo === 'nome' && q.length < 2) return { ok: false, erro: 'Digite pelo menos 2 letras do nome.' };
+  if ((campo === 'telefone' || campo === 'cpf') && digitos.length < 4) return { ok: false, erro: 'Digite pelo menos 4 números.' };
+  if (campo === 'codigo' && !q) return { ok: false, erro: 'Digite o código.' };
   const palavras = semAcento(q).split(/\s+/).filter(Boolean);
   const achados = [];
   cad.lista.forEach(function (m) {
     const cod = m[0], nome = m[1], tel = m[2].replace(/\D/g, ''), cpf = m[3].replace(/\D/g, '');
     let nota = 0;
-    if (soNumero) {
-      if (cod && cod.replace(/\D/g, '') === digitos) nota = 3;
-      else if (digitos.length >= 4 && (tel.indexOf(digitos) >= 0 || (digitos.indexOf('55') === 0 && tel.indexOf(digitos.slice(2)) >= 0))) nota = 2;
-      else if (digitos.length >= 4 && cpf.indexOf(digitos) >= 0) nota = 2;
+    if (campo === 'codigo') {
+      if (semAcento(cod).trim() === semAcento(q).trim() || (digitos && cod.replace(/\D/g, '') === digitos)) nota = 3;
+    } else if (campo === 'telefone') {
+      if (tel.indexOf(digitos) >= 0 || (digitos.indexOf('55') === 0 && digitos.length > 11 && tel.indexOf(digitos.slice(2)) >= 0)) nota = 2;
+    } else if (campo === 'cpf') {
+      if (cpf.indexOf(digitos) >= 0) nota = cpf === digitos ? 3 : 2;
     } else {
       const n = semAcento(nome);
       if (palavras.every(function (p) { return n.indexOf(p) >= 0; })) nota = n.indexOf(palavras[0]) === 0 ? 2 : 1;
     }
-    if (nota) achados.push({ nota: nota, cod: cod, nome: nome, tel: m[2], whats: lmLimparTelefone(m[2]), cpf: m[3] });
+    if (nota) achados.push({ nota: nota, cod: cod, nome: nome, tel: m[2], whats: lmLimparTelefone(m[2]), cpf: m[3], pix: m[4] || '' });
   });
   achados.sort(function (a, b) { return b.nota - a.nota || a.nome.localeCompare(b.nome); });
-  return { ok: true, total: achados.length, itens: achados.slice(0, 20).map(function (a) { delete a.nota; return a; }) };
+  return { ok: true, campo: campo, total: achados.length, itens: achados.slice(0, 20).map(function (a) { delete a.nota; return a; }) };
 }
 
 /* ============================== QUEM ESTÁ COM A TELA ABERTA ============================== */
@@ -529,7 +542,8 @@ function conferirCadastro() {
   if (cad.erro) { console.log('PROBLEMA: ' + cad.erro); return; }
   console.log('Aba de cadastro: ' + cad.aba + ' (títulos na linha ' + cad.linhaTitulos + ')');
   console.log('Código: ' + (cad.titulos.cod || 'NÃO ACHEI') + ' | Nome: ' + (cad.titulos.nome || 'NÃO ACHEI') +
-    ' | Telefone: ' + (cad.titulos.tel || 'NÃO ACHEI') + ' | CPF: ' + (cad.titulos.cpf || 'NÃO ACHEI'));
+    ' | Telefone: ' + (cad.titulos.tel || 'NÃO ACHEI') + ' | CPF: ' + (cad.titulos.cpf || 'NÃO ACHEI') +
+    ' | PIX: ' + (cad.titulos.pix || 'NÃO ACHEI'));
   console.log('Motoboys no cadastro: ' + cad.lista.length);
 }
 
