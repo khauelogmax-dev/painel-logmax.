@@ -31,6 +31,9 @@
  *   na mesma ordem da planilha (A = carimbo de data/hora, preenchido sozinho). O COD FUN é sugerido (maior número + 1).
  *   CPF que já existe é bloqueado e a resposta traz o código já cadastrado.
  *
+ * NA VERSÃO 4.7: "Relatar Problema". Ocorrências (leve, média, grave) ficam numa aba NOVA "PROBLEMAS SITE".
+ *   A tela avisa (vermelho piscando + som) quando alguém com problema GRAVE é escalado.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
  *
@@ -41,7 +44,7 @@
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
-const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE'];
+const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
 const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
 const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
@@ -79,10 +82,16 @@ function doPost(e) {
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
   if (pedido.acao === 'ler') {
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
-    return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), online: lmOnline('o', pedido.sessao) });
+    return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), problemas: lmProblemas(), online: lmOnline('o', pedido.sessao) });
   }
   if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q, pedido.campo));
   if (pedido.acao === 'cadastroInfo') return lmResposta(lmCadastroInfo());
+  if (pedido.acao === 'problemaNovo' || pedido.acao === 'problemaEncerrar') {
+    const travaP = LockService.getScriptLock();
+    if (!travaP.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
+    try { return lmResposta(pedido.acao === 'problemaNovo' ? lmProblemaNovo(pedido) : lmProblemaEncerrar(pedido.id, pedido.motivo)); }
+    finally { travaP.releaseLock(); }
+  }
   if (pedido.acao === 'cadastrar') {
     const travaCad = LockService.getScriptLock();
     if (!travaCad.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
@@ -617,6 +626,78 @@ function lmCadastrar(p) {
   CacheService.getScriptCache().remove(LM_CHAVE_CAD + '_0');   // a busca já encontra o motoca novo
   CacheService.getScriptCache().remove(LM_CHAVE_CAD);
   return { ok: true, codigo: iCod >= 0 ? String(linhaNova[iCod]) : '', nome: iNome >= 0 ? linhaNova[iNome] : '', linha: nova, proximoCodigo: Number(linhaNova[iCod] || maior) + 1 };
+}
+
+/* ============================== RELATAR PROBLEMA (aba "PROBLEMAS SITE") ============================== */
+
+const LM_ABA_PROB = 'PROBLEMAS SITE';
+const LM_PROB_TITULOS = ['ID', 'DATA E HORA', 'COD FUN', 'NOME', 'GRAVIDADE', 'O QUE ACONTECEU', 'REGISTRADO POR', 'ATIVO', 'ENCERRADO EM', 'MOTIVO DO ENCERRAMENTO'];
+
+function lmAbaProb(criar) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let aba = ss.getSheetByName(LM_ABA_PROB);
+  if (!aba && criar) {
+    aba = ss.insertSheet(LM_ABA_PROB);
+    aba.getRange(1, 1, 1, LM_PROB_TITULOS.length).setValues([LM_PROB_TITULOS]).setFontWeight('bold');
+    aba.setFrozenRows(1);
+    ['A', 'B', 'C', 'I'].forEach(function (c) { aba.getRange(c + ':' + c).setNumberFormat('@'); });
+  }
+  return aba;
+}
+
+function lmProbLerAba(aba) {
+  if (!aba || aba.getLastRow() < 2) return [];
+  const vals = aba.getRange(2, 1, aba.getLastRow() - 1, LM_PROB_TITULOS.length).getDisplayValues();
+  const lista = [];
+  vals.forEach(function (v, i) {
+    if (!String(v[0]).trim()) return;
+    lista.push({ id: String(v[0]).trim(), quando: String(v[1]).trim(), cod: String(v[2]).trim(), nome: String(v[3]).trim(),
+                 gravidade: String(v[4]).trim().toLowerCase(), texto: String(v[5]).trim(), por: String(v[6]).trim(),
+                 ativo: String(v[7]).trim().toUpperCase() !== 'NÃO', encerradoEm: String(v[8]).trim(), motivo: String(v[9]).trim(), _linhaAba: i + 2 });
+  });
+  return lista;
+}
+
+function lmProblemas() {   // lista para a tela (guardada 10 min; refeita a cada mudança)
+  const cache = CacheService.getScriptCache();
+  const c = cache.get('prob_v1');
+  if (c) { try { return JSON.parse(c); } catch (e) {} }
+  const lista = lmProbLerAba(lmAbaProb(false)).map(function (x) { delete x._linhaAba; return x; }).slice(-600);
+  try { cache.put('prob_v1', JSON.stringify(lista), 600); } catch (e) {}
+  return lista;
+}
+
+function lmProblemaNovo(p) {
+  const grav = String(p.gravidade || '').toLowerCase();
+  if (['leve', 'media', 'grave'].indexOf(grav) < 0) return { ok: false, erro: 'Escolha a gravidade: leve, média ou grave.' };
+  const texto = String(p.texto || '').replace(/\s+/g, ' ').trim();
+  if (texto.length < 5) return { ok: false, erro: 'Conte o que aconteceu (pelo menos algumas palavras).' };
+  const cod = String(p.codigo || '').replace(/\D/g, '');
+  if (!cod) return { ok: false, erro: 'Digite o código (COD FUN) do motoca.' };
+  const cad = lmLerCadastro(false);
+  let nome = '';
+  if (!cad.erro) {
+    for (let i = 0; i < cad.lista.length; i++) if (String(cad.lista[i][0]).replace(/\D/g, '') === cod) { nome = cad.lista[i][1]; break; }
+    if (!nome) return { ok: false, erro: 'Não achei o COD FUN ' + cod + ' no cadastro.' };
+  }
+  const aba = lmAbaProb(true);
+  const id = Utilities.getUuid().replace(/-/g, '').slice(0, 10);
+  const quando = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  const por = String(p.por || '').replace(/\s+/g, ' ').trim().slice(0, 60);
+  aba.appendRow([id, quando, cod, nome, grav === 'media' ? 'média' : grav, texto.slice(0, 1000), por, 'SIM', '', '']);
+  CacheService.getScriptCache().remove('prob_v1');
+  return { ok: true, item: { id: id, quando: quando, cod: cod, nome: nome, gravidade: grav === 'media' ? 'média' : grav, texto: texto.slice(0, 1000), por: por, ativo: true, encerradoEm: '', motivo: '' } };
+}
+
+function lmProblemaEncerrar(id, motivo) {
+  const aba = lmAbaProb(false);
+  const x = lmProbLerAba(aba).filter(function (i) { return i.id === String(id); })[0];
+  if (!x) return { ok: false, erro: 'Não achei esse registro.' };
+  const quando = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  aba.getRange(x._linhaAba, 8, 1, 3).setValues([['NÃO', quando, String(motivo || '').slice(0, 300)]]);
+  CacheService.getScriptCache().remove('prob_v1');
+  x.ativo = false; x.encerradoEm = quando; x.motivo = String(motivo || ''); delete x._linhaAba;
+  return { ok: true, item: x };
 }
 
 /* ============================== PAGAMENTO NO FINAL (aba "PGF SITE") ============================== */

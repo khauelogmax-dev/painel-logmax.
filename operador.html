@@ -201,7 +201,7 @@ html.escuro body.trancado{background:radial-gradient(900px 520px at 50% -10%,#14
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
 html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
-body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar,body.trancado #pgfTela,body.trancado #cadTela{display:none}
+body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar,body.trancado #pgfTela,body.trancado #cadTela,body.trancado #probTela{display:none}
 @media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
 /* ===== Faixa de dias ===== */
 .dias{padding:0 16px 14px}
@@ -335,6 +335,32 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .cad-ok{background:var(--verde-claro);color:var(--verde);border-radius:10px;padding:10px 12px;font-weight:600}
 .cad-dup{background:var(--vermelho-claro);color:var(--vermelho);border-radius:10px;padding:10px 12px;font-weight:600;line-height:1.5}
 .cad-pergunta{font-size:1.05rem;font-weight:600;margin:6px 0 16px}
+/* ===== Problemas ===== */
+.etq-grave,.etq-media,.etq-leve{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800;white-space:nowrap}
+.etq-grave{background:#dc2626;color:#fff}.etq-media{background:#f59e0b;color:#fff}.etq-leve{background:var(--cinza);color:var(--cinza-tx)}
+@keyframes piscaGrave{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(220,38,38,.7)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(220,38,38,0)}}
+.etq-grave.pisca{animation:piscaGrave 1s ease-in-out infinite}
+.luz-grave{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:#fff;background:#dc2626;border-radius:999px;padding:2px 10px 2px 6px;white-space:nowrap;animation:piscaGrave 1s ease-in-out infinite}
+.luz-grave i{width:.7rem;height:.7rem;border-radius:50%;background:#fff;display:inline-block}
+.alerta-grave{background:#dc2626;color:#fff;border-radius:12px;padding:10px 12px;margin:10px 0 0;font-size:.88rem;line-height:1.4;animation:piscaGrave 1s ease-in-out infinite}
+.alerta-grave div{opacity:.95;margin-top:4px}
+.btn-perigo{background:#dc2626!important;color:#fff!important}
+@media (prefers-reduced-motion:reduce){.etq-grave.pisca,.luz-grave,.alerta-grave{animation:none}}
+.grav button[data-grav="leve"][aria-pressed="true"]{background:#64748b;color:#fff}
+.grav button[data-grav="media"][aria-pressed="true"]{background:#f59e0b;color:#fff}
+.grav button[data-grav="grave"][aria-pressed="true"]{background:#dc2626;color:#fff}
+.cad-campo textarea{font:inherit;font-size:1rem;padding:11px 12px;border-radius:10px;border:2px solid var(--linha);background:var(--li);color:var(--tx);width:100%;box-sizing:border-box;resize:vertical}
+.cad-campo textarea:focus{outline:none;border-color:var(--laranja)}
+.prob-filtro{width:100%;box-sizing:border-box;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);margin-bottom:10px}
+.prob-card{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid #94a3b8;border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.prob-card.g-media{border-left-color:#f59e0b}.prob-card.g-grave{border-left-color:#dc2626}
+.prob-card.encerrado{opacity:.6}
+.prob-topo{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.prob-topo .cod{color:var(--tx2);font-weight:700}
+.prob-quando{margin-left:auto;font-size:.8rem;color:var(--tx2)}
+.prob-card p{margin:6px 0;font-size:.92rem}
+.prob-rodape{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.8rem;color:var(--tx2)}
+.loc-prob{margin-top:10px;padding-top:10px;border-top:1px dashed var(--linha);font-size:.85rem;display:grid;gap:4px}
+.loc-prob .encerrado{opacity:.6}
 </style>
 </head>
 <body class="trancado">
@@ -359,9 +385,27 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 <nav class="abas-op" id="abasOp" aria-label="Telas do operador">
   <button type="button" data-aba="presenca" aria-pressed="true">Presença</button>
   <button type="button" data-aba="localizar" aria-pressed="false"><span class="t-longo">Localizar Motoca</span><span class="t-curto">Localizar</span></button>
-  <button type="button" data-aba="pgf" aria-pressed="false"><span class="t-longo">Pagamento no Final</span><span class="t-curto">Pagamento</span></button>
+  <button type="button" data-aba="pgf" aria-pressed="false"><span class="t-longo">Pagamento no Final</span><span class="t-curto">PGF</span></button>
   <button type="button" data-aba="cadastro" aria-pressed="false"><span class="t-longo">Novo Cadastro</span><span class="t-curto">Cadastro</span></button>
+  <button type="button" data-aba="problema" aria-pressed="false"><span class="t-longo">Relatar Problema</span><span class="t-curto">Problemas</span></button>
 </nav>
+<section id="probTela" class="cad-tela" hidden>
+  <h2>Relatar Problema</h2>
+  <p class="loc-dica">Registre qualquer problema com um motoca. Os <b>graves</b> fazem a tela piscar em vermelho e apitar quando ele for escalado.</p>
+  <form id="formProb" class="cad-form" autocomplete="off" novalidate>
+    <div class="cad-campo"><label for="probCod">Código do motoca (COD FUN)</label><input id="probCod" inputmode="numeric" placeholder="Ex.: 123"><small id="probQuem"></small></div>
+    <div class="cad-campo"><label>Gravidade</label>
+      <div class="segmento grav" role="group" aria-label="Gravidade"><button type="button" data-grav="leve" aria-pressed="false">Leve</button><button type="button" data-grav="media" aria-pressed="false">Média</button><button type="button" data-grav="grave" aria-pressed="false">Grave</button></div>
+      <small id="probGravDica">Escolha a gravidade.</small></div>
+    <div class="cad-campo"><label for="probTexto">O que aconteceu?</label><textarea id="probTexto" rows="3" placeholder="Ex.: não apareceu no turno e não avisou"></textarea></div>
+    <div class="cad-campo"><label for="probPor">Quem está registrando</label><input id="probPor" placeholder="Seu nome (opcional)"></div>
+    <div class="erro" id="erroProb"></div>
+    <div class="cad-botoes"><button class="btn-chegou" id="btnProb">Registrar problema</button></div>
+  </form>
+  <h3 class="sec">Problemas registrados</h3>
+  <input id="probFiltro" class="prob-filtro" type="search" placeholder="Filtrar por código ou nome">
+  <div id="probLista"></div>
+</section>
 <section id="cadTela" class="cad-tela" hidden>
   <h2>Novo Cadastro</h2>
   <p class="loc-dica">Os dados vão para a aba de cadastro dos motoboys da planilha, na mesma ordem das colunas.</p>
@@ -521,6 +565,7 @@ async function carregar() {
     online = r.online || null;
     telefones = r.tel || {};
     if (Array.isArray(r.pgf)) pgfLista = r.pgf;
+    if (Array.isArray(r.problemas)) problemas = r.problemas;
     if (r.senha) { sair(r.erro); return; }
     if (!r.ok) throw new Error(r.erro || "erro");
     const tab = lerCSV(r.csv || "");
@@ -540,6 +585,8 @@ async function carregar() {
     desenhar();
     conferirAtrasos();
     conferirCompletas();
+    conferirGraves();
+    desenharProblemas();
   } catch (e) {
     falhaLeitura = true; pintarStatus();
     console.warn("[LogMax] leitura falhou:", e && e.message);
@@ -700,7 +747,7 @@ function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${botaoPgf(l)}</small></div><div class="dir">${botao(l)}</div></li>`;
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${botaoPgf(l)}${l.vaga ? "" : etqProblema(l.codigo)}</small></div><div class="dir">${botao(l)}</div></li>`;
 }
 
 /* ===== WhatsApp do motoboy (só nesta tela, que tem senha) ===== */
@@ -738,7 +785,7 @@ function cartaoLoja(l) {
       return `
       <details class="loja ${l.vagas ? "p1" : l.falta ? "p2" : "p3"} ${atrasados ? "com-atraso" : ""}" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
         <summary>
-          <div class="nome"><span>${esc(l.nome)}</span>${atrasados ? `<span class="luz-atraso" title="${atrasados} ${atrasados > 1 ? "motoboys atrasados" : "motoboy atrasado"}"><i aria-hidden="true"></i>${atrasados} ${atrasados > 1 ? "atrasados" : "atrasado"}</span>` : ""}</div>
+          <div class="nome"><span>${esc(l.nome)}</span>${l.graves ? `<span class="luz-grave" title="Motoca com problema grave escalado"><i aria-hidden="true"></i>${l.graves} grave${l.graves > 1 ? "s" : ""}</span>` : ""}${atrasados ? `<span class="luz-atraso" title="${atrasados} ${atrasados > 1 ? "motoboys atrasados" : "motoboy atrasado"}"><i aria-hidden="true"></i>${atrasados} ${atrasados > 1 ? "atrasados" : "atrasado"}</span>` : ""}</div>
           <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
           <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
           <div class="etqs">
@@ -760,7 +807,7 @@ function cartaoCompleto(l) {
   const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
   return `
       <details class="loja p3 mini" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
-        <summary><span class="ponto-verde" aria-hidden="true"></span><b>${esc(l.nome)}</b><span class="mini-conta">✓ ${l.chegou}/${l.total}</span></summary>
+        <summary><span class="ponto-verde" aria-hidden="true"></span><b>${esc(l.nome)}</b>${l.graves ? `<span class="luz-grave"><i aria-hidden="true"></i>${l.graves}</span>` : ""}<span class="mini-conta">✓ ${l.chegou}/${l.total}</span></summary>
         <div class="lista">
           <div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>
         </div>
@@ -918,7 +965,7 @@ function desenhar() {
     const ls = doDia.filter(l => l.loja === nome);
     const c = s => ls.filter(l => l.s === s).length;
     return { nome, ls, total: ls.length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
-             atrasados: ls.filter(estaAtrasado).length };
+             atrasados: ls.filter(estaAtrasado).length, graves: ls.filter(x => !x.vaga && probGrave(x.codigo)).length };
   })
   // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
   .sort((a, b) => b.vagas - a.vagas || (b.falta > 0) - (a.falta > 0) || b.atrasados - a.atrasados || b.falta - a.falta || a.nome.localeCompare(b.nome));
@@ -1046,6 +1093,7 @@ function abrirCodigo(l) {
       <label for="campoCodigo">Código do motoboy</label>
       <input id="campoCodigo" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Ex.: 123" required>
       <p class="janela-dica">O nome vem sozinho da planilha. A presença (Chegou) continua separada.</p>
+      <div id="alertaGrave"></div>
       <div class="erro" id="erroCodigo"></div>
       <div class="janela-botoes">
         <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
@@ -1056,6 +1104,18 @@ function abrirCodigo(l) {
   const campo = el.querySelector("#campoCodigo"), btnS = el.querySelector("#btnSalvarCodigo");
   const fechar = () => el.remove();
   campo.focus();
+  let graveConfirmado = "";
+  const conferir = () => {   // código com problema GRAVE: pisca vermelho + som
+    const cod = campo.value.replace(/\D/g, ""), box = el.querySelector("#alertaGrave");
+    const graves = cod ? probAtivos(cod).filter(p => p.gravidade === "grave") : [];
+    if (!graves.length) { box.innerHTML = ""; btnS.textContent = "Salvar"; btnS.classList.remove("btn-perigo"); return false; }
+    if (box.dataset.cod !== cod) { box.dataset.cod = cod; alarmeGrave(true); }
+    box.innerHTML = `<div class="alerta-grave" role="alert"><b>⚠ PROBLEMA GRAVE registrado para o COD ${esc(cod)}${graves[0].nome ? " · " + esc(graves[0].nome) : ""}</b>
+      ${graves.slice(0, 2).map(g => `<div>${esc(g.quando)} · ${esc(g.texto)}</div>`).join("")}</div>`;
+    btnS.textContent = graveConfirmado === cod ? "Escalar mesmo assim" : "Salvar"; btnS.classList.add("btn-perigo");
+    return true;
+  };
+  campo.addEventListener("input", () => { graveConfirmado = ""; conferir(); });
   el.querySelector("#btnCancelar").onclick = fechar;
   el.addEventListener("click", e => { if (e.target === el) fechar(); });
   el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
@@ -1063,6 +1123,9 @@ function abrirCodigo(l) {
     ev.preventDefault();
     const codigo = campo.value.trim();
     if (!codigo) return;
+    if (conferir() && graveConfirmado !== codigo.replace(/\D/g, "")) {   // pede uma segunda confirmação
+      graveConfirmado = codigo.replace(/\D/g, ""); alarmeGrave(true); conferir(); return;
+    }
     btnS.disabled = true; btnS.textContent = "Gravando…";
     el.querySelector("#erroCodigo").textContent = "";
     try {
@@ -1089,16 +1152,18 @@ function abrirCodigo(l) {
 
 /* ===== Abas: Presença | Localizar motoboy ===== */
 function mostrarAba(aba) {
-  const loc = aba === "localizar", pg = aba === "pgf", cad = aba === "cadastro";
+  const loc = aba === "localizar", pg = aba === "pgf", cad = aba === "cadastro", pr = aba === "problema";
   document.getElementById("localizar").hidden = !loc;
   document.getElementById("pgfTela").hidden = !pg;
   document.getElementById("cadTela").hidden = !cad;
-  document.getElementById("conteudo").hidden = loc || pg || cad;
-  document.body.classList.toggle("aba-localizar", loc || cad);
+  document.getElementById("probTela").hidden = !pr;
+  document.getElementById("conteudo").hidden = loc || pg || cad || pr;
+  document.body.classList.toggle("aba-localizar", loc || cad || pr);
   document.body.classList.toggle("aba-pgf", pg);
   document.querySelectorAll("#abasOp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
-  try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : location.pathname + location.search); } catch (e) {}
+  try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : pr ? "#problema" : location.pathname + location.search); } catch (e) {}
   if (cad) abrirCadastro();
+  if (pr) desenharProblemas();
   if (loc) setTimeout(() => document.getElementById("campoBusca").focus(), 50);
   if (pg) desenharPgf();
 }
@@ -1128,6 +1193,7 @@ function cartaoMotoboy(m) {
       <div><dt>CPF</dt><dd>${m.cpf ? `${esc(fmtCpf(m.cpf))} <button type="button" class="btn-mini" data-copiar="${esc(m.cpf.replace(/\D/g, ""))}">Copiar</button>` : "—"}</dd></div>
       <div><dt>PIX</dt><dd>${m.pix ? `<span class="pix">${esc(m.pix)}</span> <button type="button" class="btn-mini" data-copiar="${esc(m.pix)}">Copiar</button>` : "—"}</dd></div>
     </dl>
+    ${probDe(m.cod).length ? `<div class="loc-prob"><b>Problemas registrados:</b>${probDe(m.cod).slice(-5).reverse().map(p => `<div class="${p.ativo ? "" : "encerrado"}">${etqGrav(p.gravidade)} ${esc(p.quando.slice(0, 10))} · ${esc(p.texto)}${p.ativo ? "" : " (encerrado)"}</div>`).join("")}</div>` : ""}
     <div class="loc-escala">${esc2.length
       ? `<b>Na escala:</b><ul>${esc2.slice(0, 8).map(l => `<li>${esc(rotulo(l.data))} · ${esc(l.loja)} · ${esc(fmtHora(l.horario))}${situacao(l) === "chegou" ? " · ✓ chegou" : ""}</li>`).join("")}</ul>`
       : "Não está na escala de hoje até domingo."}</div>
@@ -1292,6 +1358,139 @@ document.getElementById("cadConteudo").addEventListener("change", async e => {
   } catch (err) {}
 });
 
+/* ===== Relatar Problema ===== */
+let problemas = [];
+const soNum = c => String(c || "").replace(/\D/g, "");
+const semAcento = x => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+const probDe = cod => { const c = soNum(cod); return c ? problemas.filter(p => soNum(p.cod) === c) : []; };
+const probAtivos = cod => probDe(cod).filter(p => p.ativo);
+const probGrave = cod => probAtivos(cod).some(p => p.gravidade === "grave");
+const etqGrav = g => g === "grave" ? `<span class="etq-grave">GRAVE</span>` : g === "média" || g === "media" ? `<span class="etq-media">média</span>` : `<span class="etq-leve">leve</span>`;
+function etqProblema(cod) {
+  const a = probAtivos(cod);
+  if (!a.length) return "";
+  if (a.some(p => p.gravidade === "grave")) return `<span class="etq-grave pisca" title="Problema grave registrado">⚠ GRAVE</span>`;
+  if (a.some(p => p.gravidade === "média")) return `<span class="etq-media" title="Problema médio registrado">⚠ média</span>`;
+  return `<span class="etq-leve" title="Problema leve registrado">leve</span>`;
+}
+function alarmeGrave(forcar) {   // sirene curta (duas notas alternando)
+  if (!forcar && !somLigado) return;
+  try { if (!audio) audio = new (window.AudioContext || window.webkitAudioContext)(); if (audio.state === "suspended") audio.resume(); } catch (e) { return; }
+  const t = audio.currentTime;
+  for (let k = 0; k < 6; k++) {
+    const o = audio.createOscillator(), g = audio.createGain(), d = k * 0.2;
+    o.type = "square"; o.frequency.value = k % 2 ? 660 : 990;
+    g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.22, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.18);
+    o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + 0.2);
+  }
+}
+const jaAvisadosGraves = new Set();
+function conferirGraves() {   // alguém com problema GRAVE na escala de hoje? avisa uma vez (com som, se ligado)
+  const hoje = hojeSP();
+  const novos = linhas.filter(l => l.data >= hoje && !l.vaga && probGrave(l.codigo)).filter(l => {
+    const k = l.loja + "|" + l.data + "|" + l.linha; if (jaAvisadosGraves.has(k)) return false; jaAvisadosGraves.add(k); return true;
+  });
+  if (!novos.length) return;
+  const l = novos[0];
+  toast(novos.length === 1 ? `⚠ ${l.nome} (#${l.codigo}) tem PROBLEMA GRAVE e está escalado na ${l.loja} · ${rotulo(l.data)}`
+                           : `⚠ ${novos.length} motocas com PROBLEMA GRAVE estão na escala: ${[...new Set(novos.map(x => x.loja))].join(", ")}`);
+  alarmeGrave(false);
+}
+let gravEscolhida = "";
+const DICA_GRAV = { leve: "Leve: só fica anotado.", media: "Média: aparece um aviso amarelo quando ele estiver na escala.", grave: "Grave: pisca em vermelho e apita sempre que ele for escalado." };
+document.querySelector("#formProb .grav").addEventListener("click", e => {
+  const b = e.target.closest("[data-grav]"); if (!b) return;
+  gravEscolhida = b.dataset.grav;
+  document.querySelectorAll("#formProb [data-grav]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  document.getElementById("probGravDica").textContent = DICA_GRAV[gravEscolhida];
+});
+try { document.getElementById("probPor").value = localStorage.getItem("logmax-prob-por") || ""; } catch (e) {}
+let esperaProb = null;
+document.getElementById("probCod").addEventListener("input", () => {
+  clearTimeout(esperaProb);
+  const cod = soNum(document.getElementById("probCod").value), quem = document.getElementById("probQuem");
+  quem.className = ""; quem.textContent = "";
+  if (!cod) return;
+  esperaProb = setTimeout(async () => {
+    try {
+      const r = await chamar({ acao: "buscar", q: cod, campo: "codigo" }, 30);
+      if (soNum(document.getElementById("probCod").value) !== cod) return;
+      const m = r.ok && r.itens[0];
+      const ja = probAtivos(cod).length;
+      quem.className = m ? "cad-aviso bom" : "cad-aviso ruim";
+      quem.textContent = m ? `${m.nome}${ja ? ` · já tem ${ja} problema${ja > 1 ? "s" : ""} em aberto` : ""}` : "Código não encontrado no cadastro.";
+    } catch (e) {}
+  }, 500);
+});
+document.getElementById("formProb").addEventListener("submit", async e => {
+  e.preventDefault();
+  const erro = document.getElementById("erroProb"), btn = document.getElementById("btnProb");
+  const cod = soNum(document.getElementById("probCod").value), texto = document.getElementById("probTexto").value.trim(), por = document.getElementById("probPor").value.trim();
+  erro.innerHTML = "";
+  if (!cod) { erro.textContent = "Digite o código do motoca."; return; }
+  if (!gravEscolhida) { erro.textContent = "Escolha a gravidade."; return; }
+  if (texto.length < 5) { erro.textContent = "Conte o que aconteceu."; return; }
+  try { localStorage.setItem("logmax-prob-por", por); } catch (err) {}
+  btn.disabled = true; btn.textContent = "Registrando…";
+  try {
+    const r = await chamar({ acao: "problemaNovo", codigo: cod, gravidade: gravEscolhida, texto, por }, 40);
+    if (r.senha) { sair(r.erro); return; }
+    if (!r.ok) { erro.textContent = r.erro || "Não registrou."; }
+    else {
+      problemas.push(r.item);
+      erro.innerHTML = `<div class="cad-ok">✓ Registrado: ${etqGrav(r.item.gravidade)} ${esc(r.item.nome)} #${esc(r.item.cod)}</div>`;
+      document.getElementById("probCod").value = ""; document.getElementById("probTexto").value = ""; document.getElementById("probQuem").textContent = "";
+      gravEscolhida = ""; document.querySelectorAll("#formProb [data-grav]").forEach(x => x.setAttribute("aria-pressed", "false"));
+      document.getElementById("probGravDica").textContent = "Escolha a gravidade.";
+      desenharProblemas(); desenhar();
+    }
+  } catch (err) { erro.textContent = "Não registrou: " + ((err && err.message) || "confira a internet") + "."; }
+  btn.disabled = false; btn.textContent = "Registrar problema";
+});
+const quandoNum = q => { const m = String(q).match(/(\d{2})\/(\d{2})\/(\d{4})\s*(\d{2})?:?(\d{2})?/); return m ? +(m[3] + m[2] + m[1] + (m[4] || "00") + (m[5] || "00")) : 0; };
+function desenharProblemas() {
+  const el = document.getElementById("probLista");
+  if (!el || document.getElementById("probTela").hidden) return;
+  const f = semAcento(document.getElementById("probFiltro").value.trim()), fn = soNum(f);
+  const lista = problemas.filter(p => !f || (fn && soNum(p.cod) === fn) || semAcento(p.nome).includes(f))
+    .sort((a, b) => (b.ativo - a.ativo) || quandoNum(b.quando) - quandoNum(a.quando)).slice(0, 60);
+  el.innerHTML = lista.length ? lista.map(p => `<article class="prob-card${p.ativo ? "" : " encerrado"} g-${p.gravidade === "média" ? "media" : p.gravidade}">
+      <div class="prob-topo">${etqGrav(p.gravidade)} <b>${esc(p.nome || "?")}</b> <span class="cod">#${esc(p.cod)}</span><span class="prob-quando">${esc(p.quando)}</span></div>
+      <p>${esc(p.texto)}</p>
+      <div class="prob-rodape">${p.por ? `Registrado por ${esc(p.por)}` : ""}${p.ativo ? `<button type="button" class="btn-desfazer" data-encerrar="${esc(p.id)}">Encerrar</button>` : `<span>Encerrado em ${esc(p.encerradoEm)}${p.motivo ? " · " + esc(p.motivo) : ""}</span>`}</div>
+    </article>`).join("") : `<p class="loc-info">${f ? "Nada encontrado com esse filtro." : "Nenhum problema registrado ainda."}</p>`;
+}
+document.getElementById("probFiltro").addEventListener("input", desenharProblemas);
+document.getElementById("probLista").addEventListener("click", async e => {
+  const b = e.target.closest("[data-encerrar]"); if (!b) return;
+  const p = problemas.find(x => x.id === b.dataset.encerrar); if (!p) return;
+  const motivo = await perguntarTexto(`Encerrar o problema de ${p.nome}?`, "Motivo (ex.: conversamos e foi resolvido)");
+  if (motivo === null) return;
+  b.disabled = true; b.textContent = "Encerrando…";
+  try {
+    const r = await chamar({ acao: "problemaEncerrar", id: p.id, motivo });
+    if (r.senha) { sair(r.erro); return; }
+    if (!r.ok) { toast(r.erro || "Não encerrou."); }
+    else { Object.assign(p, r.item); toast(`Problema de ${p.nome} encerrado`, true); desenhar(); }
+  } catch (err) { toast("Não encerrou: " + ((err && err.message) || "confira a internet") + "."); }
+  desenharProblemas();
+});
+function perguntarTexto(titulo, dica) {
+  return new Promise(resolve => {
+    const el = document.createElement("div");
+    el.className = "janela-fundo";
+    el.innerHTML = `<form class="janela" role="dialog" aria-modal="true"><h2>${esc(titulo)}</h2>
+      <textarea id="txtPergunta" rows="3" placeholder="${esc(dica)}" style="width:100%;box-sizing:border-box;font:inherit;padding:10px;border-radius:10px;border:2px solid var(--linha);background:var(--li);color:var(--tx)"></textarea>
+      <div class="janela-botoes"><button type="button" class="btn-cancelar" data-r="0">Cancelar</button><button class="btn-chegou">Encerrar</button></div></form>`;
+    document.body.appendChild(el);
+    const t = el.querySelector("#txtPergunta"); t.focus();
+    const fim = v => { el.remove(); resolve(v); };
+    el.querySelector("form").onsubmit = ev => { ev.preventDefault(); fim(t.value.trim()); };
+    el.addEventListener("click", ev => { if (ev.target.closest('[data-r="0"]') || ev.target === el) fim(null); });
+    el.addEventListener("keydown", ev => { if (ev.key === "Escape") fim(null); });
+  });
+}
+
 /* ===== Entrada com senha ===== */
 let iniciado = false;
 function telaEntrada(erro) {
@@ -1326,7 +1525,7 @@ function telaEntrada(erro) {
   };
 }
 function liberar(nomePlanilha) {
-  if (["#localizar", "#pgf", "#cadastro"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
+  if (["#localizar", "#pgf", "#cadastro", "#problema"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
   document.getElementById("entrada").innerHTML = "";
   document.body.classList.remove("trancado");
   const ft = document.getElementById("faixaTeste");
@@ -1350,7 +1549,7 @@ function abrirAjuda() {
   el.className = "ajuda-fundo";
   el.innerHTML = `<div class="ajuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
       <div class="ajuda-cab"><h2 id="tituloAjuda">Como ler esta tela</h2><button type="button" class="ajuda-fechar" aria-label="Fechar">✕</button></div>
-      <ul><li><b>Chegou</b>: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha. <b>Desfazer</b> volta para N/D.</li><li><b>PGF (Pagamento no Final)</b>: na Presença, toque em <b>PGF</b> embaixo do motoboy, digite o valor combinado e aperte Enter. Ele vai para a aba <b>Pagamento no Final</b>, com telefone, loja, chave PIX (do cadastro), valor e data. Lá o operador que paga toca em <b>Pago</b>. Fica guardado na aba "PGF SITE" da planilha.</li><li><b>WhatsApp</b>: o botão verde ao lado do Chegou abre o WhatsApp do motoboy com uma mensagem pronta (se estiver atrasado, já pergunta se está chegando). O telefone vem da planilha e só aparece nesta tela, que tem senha.</li><li><b>Colocar motoboy / Trocar</b>: digite só o código do motoboy; o nome vem sozinho da planilha. Quem já está com OK não pode ser trocado (use Desfazer antes).</li><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 14:59. Noite = começa às 15:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
+      <ul><li><b>Chegou</b>: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha. <b>Desfazer</b> volta para N/D.</li><li><b>Problemas</b>: na aba Relatar Problema, registre leve, média ou grave pelo código. Grave: o motoca aparece com "⚠ GRAVE" piscando na Presença, a loja ganha um alerta vermelho, toca alarme (com o som ligado) e, ao escalar pelo site, a janela pisca e pede confirmação. "Encerrar" tira o alerta e guarda o histórico.</li><li><b>PGF (Pagamento no Final)</b>: na Presença, toque em <b>PGF</b> embaixo do motoboy, digite o valor combinado e aperte Enter. Ele vai para a aba <b>Pagamento no Final</b>, com telefone, loja, chave PIX (do cadastro), valor e data. Lá o operador que paga toca em <b>Pago</b>. Fica guardado na aba "PGF SITE" da planilha.</li><li><b>WhatsApp</b>: o botão verde ao lado do Chegou abre o WhatsApp do motoboy com uma mensagem pronta (se estiver atrasado, já pergunta se está chegando). O telefone vem da planilha e só aparece nesta tela, que tem senha.</li><li><b>Colocar motoboy / Trocar</b>: digite só o código do motoboy; o nome vem sozinho da planilha. Quem já está com OK não pode ser trocado (use Desfazer antes).</li><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 14:59. Noite = começa às 15:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
   const fechar = () => { el.remove(); document.removeEventListener("keydown", tecla); };
   const tecla = e => { if (e.key === "Escape") fechar(); };
   el.addEventListener("click", e => { if (e.target === el || e.target.closest(".ajuda-fechar")) fechar(); });
