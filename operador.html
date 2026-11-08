@@ -16,7 +16,7 @@
 }
 *{box-sizing:border-box}
 html{font-size:16px}
-body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{font-variant-numeric:tabular-nums;margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{background:var(--marinho);color:#fff}
 .topo{max-width:1100px;margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
@@ -46,11 +46,18 @@ header{background:var(--marinho);color:#fff}
 @media (min-width:900px){.status{order:1;margin-left:auto}.acoes .rot-btn{display:inline}.acoes button{padding:0 12px}}
 main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
 .filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
-.filtros span{font-size:14px;font-weight:700;color:var(--tx2);margin-right:2px}
+.segmento{display:inline-flex;gap:2px;padding:3px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px}
+.segmento button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:var(--tx2);border-radius:9px;padding:7px 18px;cursor:pointer;transition:background .15s,color .15s}
+.segmento button:not([aria-pressed="true"]):hover{background:var(--li);color:var(--tx)}
+.segmento button[aria-pressed="true"]{background:var(--marinho);color:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25)}
+html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#0b1322}
+.dica-turno{font-size:13px;font-weight:600;color:var(--tx2)}
+.num .curto{display:none}
+@media (max-width:720px){.num .curto{display:inline}}
 .chip{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
 .faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
-.num{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
+.num{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
 .num:hover{border-color:var(--laranja)}
 .num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
 .num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
@@ -145,8 +152,15 @@ html.tv .num .rot,html.tv .toque,html.tv .etq,html.tv .lista h3,html.tv .status,
 html.tv .acoes button{height:50px;min-width:50px}html.tv .acoes button svg{width:24px;height:24px}html.tv .status{font-size:.7rem}
 html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 @media (max-width:720px){
-  .faixa{grid-template-columns:1fr 1fr}.num.principal{grid-column:1/-1}
-  .num .val{font-size:2rem}.dia strong{min-width:120px;font-size:.95rem}
+  .faixa{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:16px}
+  .num{padding:9px 8px 8px;border-radius:12px;min-width:0}
+  .num .rot{font-size:10px;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .num .val{font-size:1.5rem;margin-top:2px;white-space:nowrap}.num .de{font-size:.78rem}
+  .num .barra{height:5px;margin-top:5px}
+  .num .toque{display:none}.num .semana{font-size:10.5px;margin-top:1px;white-space:nowrap}
+  .num .longo{display:none}
+  .segmento{display:flex;width:100%}.segmento button{flex:1;padding:8px 6px}
+  .filtros{gap:6px}.dia strong{min-width:120px;font-size:.95rem}
   .status{text-align:left}
 }
 /* ===== Operador ===== */
@@ -601,21 +615,23 @@ function desenhar() {
   const pendentes = porLoja.filter(l => !completas.includes(l));
 
   const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
-  const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
+  const DICA_TURNO = { todos: "Todos os turnos do dia", almoco: "Turnos que começam até 15:59", noite: "Turnos que começam às 16:00 ou depois" };
+  const chipTurno = (v, t) => `<button type="button" data-turno="${v}" aria-pressed="${turno === v}" title="${DICA_TURNO[v]}">${t}</button>`;
 
   document.getElementById("conteudo").innerHTML = `
-    <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
-      ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
+    <div class="filtros">
+      <div class="segmento" role="group" aria-label="Filtrar por turno">${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço")}${chipTurno("noite", "Noite")}</div>
+      ${turno !== "todos" ? `<span class="dica-turno">${turno === "almoco" ? "começa até 15:59" : "começa às 16:00 ou depois"}</span>` : ""}
     </div>
     ${online ? `<div class="online" title="Telas abertas agora (atualiza a cada 30 s)"><span class="ponto-on" aria-hidden="true"></span><b>Online agora:</b>
       <span>${online.o} ${online.o === 1 ? "operador" : "operadores"}</span><span class="sep">·</span>
       <span>${online.p} ${online.p === 1 ? "tela do painel" : "telas do painel"}</span></div>` : ""}
     ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
-      ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
-      ${btn("falta", "", `<div class="rot">Falta chegar</div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
-      ${btn("lojas", "", `<div class="rot">Lojas no dia</div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
-      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} até domingo</div><div class="toque">ver onde ›</div>`)}
+      ${btn("chegou", "principal", `<div class="rot"><span class="longo">Chegaram</span><span class="curto">Chegaram</span></div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
+      ${btn("falta", "", `<div class="rot"><span class="longo">Falta chegar</span><span class="curto">Faltam</span></div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
+      ${btn("lojas", "", `<div class="rot"><span class="longo">Lojas no dia</span><span class="curto">Lojas</span></div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
+      ${btn("vaga", "", `<div class="rot"><span class="longo">Vagas sem motoca</span><span class="curto">Vagas</span></div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} <span class="longo">até domingo</span><span class="curto">até dom.</span></div><div class="toque">ver onde ›</div>`)}
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
