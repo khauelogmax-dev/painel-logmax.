@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>LogMax · Operador</title>
+<link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" type="image/png" href="lume-96.png">
 <link rel="apple-touch-icon" href="lume.png">
 <style>
@@ -16,7 +17,8 @@
 }
 *{box-sizing:border-box}
 html{font-size:16px}
-body{font-variant-numeric:tabular-nums;margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@font-face{font-family:"Inter";src:url("inter.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased}
 header{background:var(--marinho);color:#fff}
 .topo{max-width:1100px;margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
@@ -36,6 +38,7 @@ header{background:var(--marinho);color:#fff}
 .acoes .rot-btn{display:none}
 .acoes button[aria-pressed="true"]{background:#fff;color:var(--marinho);border-color:#fff}
 .acoes .btn-sair{margin-left:4px}
+.acoes-ajuda{order:4}
 .status{order:3;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#cbd5e1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 12px 5px 10px;white-space:nowrap;cursor:default}
 .status i{width:8px;height:8px;border-radius:50%;background:#94a3b8;flex:none}
 .status.vivo i{background:#22c55e;animation:pulsaVivo 2s ease-out infinite}
@@ -114,13 +117,22 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--li)}
 .lista li.r{background:var(--vermelho-claro)}.lista li.a{background:var(--ambar-claro)}
 .lista li span:first-child{min-width:0}
-.lista li .dir{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.lista li .dir{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end;flex:none;max-width:60%}
+.lista li .quem{flex:1;min-width:0}
+.lista li .quem b{font-weight:700}
+.lista li .cod{margin-left:6px;font-size:.82em;font-weight:600;color:var(--tx2)}
+.lista li .quem small{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:3px;font-size:.84rem;color:var(--tx2)}
+.lista li .quem small .etq{font-size:.75rem;padding:1px 8px}
+.lista li .hr{white-space:nowrap;font-weight:600}
 .ok-todos{color:var(--verde);font-weight:700}
 .rodape{margin-top:28px;font-size:13px;color:var(--tx2)}
 .aviso{background:var(--laranja-claro);border:1px solid var(--linha);border-radius:12px;padding:14px;margin-bottom:16px}
-#toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
-.toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-.toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
+#toasts{position:fixed;left:0;right:0;bottom:14px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{position:relative;pointer-events:auto;max-width:420px;width:100%;background:var(--vermelho);color:#fff;font-size:.9rem;font-weight:600;line-height:1.35;border-radius:12px;padding:11px 40px 11px 14px;box-shadow:0 10px 30px rgba(15,23,42,.28);cursor:pointer;animation:entra .25s ease-out}
+.toast::after{content:"✕";position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.85rem;opacity:.75}
+.toast:hover::after{opacity:1}
+.toast.ok{background:var(--verde);font-size:.95rem;font-weight:700}
+@media (min-width:900px){#toasts{left:auto;right:20px;bottom:20px;align-items:flex-end;padding:0}.toast{width:380px}}
 @keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
 /* ===== Comemoração: tudo fechado ===== */
 .festa{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(6,13,28,.88);cursor:pointer;animation:entra .3s ease-out;overflow:hidden}
@@ -176,17 +188,21 @@ html.escuro .btn-chegou{color:#0b1322}
 .btn-chegou:disabled{opacity:.6;cursor:wait}
 .btn-desfazer{font:inherit;background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:.82rem;cursor:pointer;padding:6px 2px}
 .lista li{min-height:52px}
-.entrada{max-width:380px;margin:12vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:18px;padding:24px;box-shadow:0 10px 30px var(--sombra);text-align:center}
-.entrada img{width:84px;height:84px;border-radius:50%;border:3px solid #fb923c;object-fit:cover}
-.entrada h1{font-size:1.3rem;margin:10px 0 4px}
-.entrada p{color:var(--tx2);margin:0 0 16px}
+.entrada{max-width:380px;margin:10vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:22px;padding:30px 24px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;position:relative}
+.entrada img{width:104px;height:104px;border-radius:50%;border:4px solid #fb923c;object-fit:cover;margin-top:-82px;background:var(--marinho);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.entrada h1{font-size:1.5rem;font-weight:800;letter-spacing:-.01em;margin:12px 0 4px}
+.entrada h1 span{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--laranja);margin-top:2px}
+.entrada p{color:var(--tx2);margin:0 0 18px;font-size:.92rem}
+body.trancado{background:radial-gradient(900px 520px at 50% -10%,#1d3a6e 0%,var(--marinho) 55%,#0a1428 100%);min-height:100vh;padding:16px;box-sizing:border-box}
+body.trancado #entrada{padding-top:40px}
+html.escuro body.trancado{background:radial-gradient(900px 520px at 50% -10%,#14284d 0%,#060d1c 60%)}
 .entrada input[type=password]{width:100%;font:inherit;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
 .entrada label{display:flex;gap:8px;justify-content:center;align-items:center;margin:12px 0;font-size:14px;color:var(--tx2)}
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
 html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
 body.trancado header,body.trancado main{display:none}
-@media (max-width:560px){.lista li{flex-wrap:wrap}.btn-chegou{min-width:96px}}
+@media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
 /* ===== Faixa de dias ===== */
 .dias{padding:0 16px 14px}
 .dias .trilho{max-width:1100px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -207,6 +223,25 @@ html.tv .dias{padding-left:32px;padding-right:32px}
 html.tv .dias .trilho{max-width:none}
 html.tv .dias button{min-width:90px;padding:8px 14px}
 html.tv .dias button small{font-size:.6rem}
+/* ===== Carregando (cartões cinza) ===== */
+.esq{border-radius:14px;background:linear-gradient(90deg,var(--cinza) 0%,var(--li) 50%,var(--cinza) 100%);background-size:200% 100%;animation:brilhoEsq 1.4s ease-in-out infinite}
+.esq-seg{height:42px;width:260px;max-width:100%;border-radius:12px;margin-bottom:14px}
+.esq-num{height:110px}
+.esq-tit{height:22px;width:180px;border-radius:8px;margin:24px 0 12px}
+.esq-loja{height:150px}
+@keyframes brilhoEsq{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media (max-width:720px){.esq-num{height:72px}.esq-seg{width:100%}}
+@media (prefers-reduced-motion:reduce){.esq{animation:none}}
+/* ===== Ajuda ===== */
+.ajuda-fundo{position:fixed;inset:0;z-index:90;background:rgba(6,13,28,.6);display:grid;place-items:center;padding:16px;animation:entra .2s ease-out}
+.ajuda{width:100%;max-width:520px;max-height:85vh;overflow:auto;background:var(--cartao);color:var(--tx);border-radius:18px;padding:18px 20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.ajuda-cab{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px}
+.ajuda-cab h2{margin:0;font-size:1.1rem}
+.ajuda-fechar{font:inherit;width:36px;height:36px;border-radius:10px;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);cursor:pointer}
+.ajuda ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.ajuda li{font-size:.92rem;line-height:1.45;color:var(--tx2);padding-left:14px;position:relative}
+.ajuda li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--laranja)}
+.ajuda li b{color:var(--tx)}
 </style>
 </head>
 <body class="trancado">
@@ -221,11 +256,19 @@ html.tv .dias button small{font-size:.6rem}
       <button type="button" id="btnTv" aria-pressed="false" title="Modo TV" aria-label="Modo TV"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/></svg><span class="rot-btn">Modo TV</span></button>
       <button class="btn-sair" type="button" id="btnSair" title="Sair" aria-label="Sair"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span class="rot-btn">Sair</span></button>
     </div>
+    <div class="acoes acoes-ajuda">
+  <button type="button" id="btnAjuda" title="Ajuda" aria-label="Ajuda"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="rot-btn">Ajuda</span></button>
+    </div>
     <div class="status carregando" id="status"><i aria-hidden="true"></i><span>Conectando…</span></div>
   </div>
   <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
 </header>
-<main id="conteudo"><p>Carregando…</p></main>
+<main id="conteudo"><div class="esqueleto" role="status" aria-label="Carregando a escala">
+  <div class="esq esq-seg"></div>
+  <div class="faixa"><div class="esq esq-num"></div><div class="esq esq-num"></div><div class="esq esq-num"></div><div class="esq esq-num"></div></div>
+  <div class="esq esq-tit"></div>
+  <div class="lojas"><div class="esq esq-loja"></div><div class="esq esq-loja"></div><div class="esq esq-loja"></div></div>
+</div></main>
 <div id="toasts" aria-live="assertive"></div>
 
 <script>
@@ -521,10 +564,12 @@ function textoChegada(l) {   // só para quem chegou pelo botão Chegou (OK dado
   const a = atrasoChegada(l);
   return a !== null && a >= ALERTA_MIN ? `<span class="etq r">chegou ${c.h} · ${fmtMin(a)} atrasado</span>` : `<span class="etq c">chegou ${c.h}</span>`;
 }
+// "11:00 AS 15:00" → "11:00–15:00"
+function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-|–|ATÉ)\s*(\d{1,2}:\d{2})/i); return m ? `${m[1]}–${m[2]}` : String(h); }
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} ${botao(l)}</span></li>`;
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}</small></div><div class="dir">${botao(l)}</div></li>`;
 }
 
 function botao(l) {
@@ -635,11 +680,10 @@ function desenhar() {
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
-    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente)</span></h2>
+    <h2 id="todas-lojas">Lojas do dia (${lojas.length})</h2>
     ${pendentes.length ? `<div class="lojas">${pendentes.map(cartaoLoja).join("")}</div>` : `<div class="vazio">Todas as lojas do dia estão completas.</div>`}
     ${completas.length ? `<h2>Completas (${completas.length})</h2><div class="lojas completas">${completas.map(cartaoCompleto).join("")}</div>` : ""}`}
-
-    <p class="rodape">Tela do operador: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha (ou <b>Desfazer</b> para voltar a N/D). OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo (no domingo, já mostra a semana seguinte). Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
+`;
 }
 
 const TITULO = { falta: "Quem falta chegar", chegou: "Quem já chegou", vaga: "Onde estão as vagas sem motoca" };
@@ -664,7 +708,7 @@ function painelVagasSemana(ls, seg, dom) {
         const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
         return `<div class="painel-loja"><div class="pl-cab"><b>${esc(rotulo(d))}</b><span class="etq r">${doDia.length} ${doDia.length > 1 ? "vagas" : "vaga"}</span></div>
           <div class="lista"><ul>${lojas.map(n => { const v = doDia.filter(l => l.loja === n);
-            return `<li class="r"><span><b>${esc(n)}</b> · ${v.map(x => esc(x.horario)).join(", ")}</span><span class="etq r">${v.length}</span></li>`; }).join("")}</ul></div></div>`;
+            return `<li class="r"><span><b>${esc(n)}</b> · ${v.map(x => esc(fmtHora(x.horario))).join(", ")}</span><span class="etq r">${v.length}</span></li>`; }).join("")}</ul></div></div>`;
       }).join("")}</div>`}
   </section>`;
 }
@@ -719,8 +763,8 @@ function telaEntrada(erro) {
   document.getElementById("entrada").innerHTML = `
     <form class="entrada" id="formEntrada">
       <img src="lume.png" alt="Lume, assistente da LogMax">
-      <h1>LogMax · Operador</h1>
-      <p>Área dos operadores: marcar chegada</p>
+      <h1>LogMax <span>Operador</span></h1>
+      <p>Entre com a senha da equipe para marcar as chegadas.</p>
       <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
       <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
       <button class="btn-entrar" id="btnEntrar">Entrar</button>
@@ -762,7 +806,25 @@ function sair(erro) {
   telaEntrada(erro);
 }
 
+/* ===== Ajuda ("?") ===== */
+function abrirAjuda() {
+  if (document.querySelector(".ajuda-fundo")) return;
+  const el = document.createElement("div");
+  el.className = "ajuda-fundo";
+  el.innerHTML = `<div class="ajuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
+      <div class="ajuda-cab"><h2 id="tituloAjuda">Como ler esta tela</h2><button type="button" class="ajuda-fechar" aria-label="Fechar">✕</button></div>
+      <ul><li><b>Chegou</b>: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha. <b>Desfazer</b> volta para N/D.</li><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: o turno começou há ${ALERTA_MIN} min ou mais e ainda não tem OK.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 15:59. Noite = começa às 16:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
+  const fechar = () => { el.remove(); document.removeEventListener("keydown", tecla); };
+  const tecla = e => { if (e.key === "Escape") fechar(); };
+  el.addEventListener("click", e => { if (e.target === el || e.target.closest(".ajuda-fechar")) fechar(); });
+  document.addEventListener("keydown", tecla);
+  document.body.appendChild(el);
+  el.querySelector(".ajuda-fechar").focus();
+}
+
 /* ===== Cliques ===== */
+document.getElementById("toasts").addEventListener("click", e => { const t = e.target.closest(".toast"); if (t) t.remove(); });
+document.getElementById("btnAjuda").onclick = abrirAjuda;
 document.getElementById("btnSair").onclick = () => sair();
 document.getElementById("trilhoDias").addEventListener("click", e => {
   const b = e.target.closest("[data-dia]");
