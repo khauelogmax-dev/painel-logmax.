@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>LogMax · Marcar chegada</title>
+<link rel="icon" type="image/png" href="lume-96.png">
+<link rel="apple-touch-icon" href="lume.png">
+<style>
+:root{
+  --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
+  --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
+  --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
+  --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--sombra:rgba(15,23,42,.08);
+}
+html.escuro{
+  --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
+  --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
+  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
+  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--sombra:rgba(0,0,0,.45);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input{font:inherit}
+header{background:var(--marinho);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.topo{max-width:900px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.marca{font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:8px}.marca span{color:#fb923c}
+.marca img{width:2.3rem;height:2.3rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
+.dia{display:flex;align-items:center;gap:6px}
+.dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
+.dia button:disabled{opacity:.3;cursor:default}
+.dia strong{min-width:128px;text-align:center}
+.hoje-tag{background:var(--laranja);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px;vertical-align:2px}
+.mini-acoes{display:flex;gap:6px}
+.mini-acoes button{border-radius:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:7px 10px;font-size:14px;font-weight:700;cursor:pointer}
+.status{font-size:12px;color:#cbd5e1;width:100%}
+.teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
+main{max-width:900px;margin:0 auto;padding:14px 16px 80px}
+.controles{display:grid;gap:10px;margin-bottom:14px}
+.busca{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
+html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+.resumo{display:flex;gap:10px;flex-wrap:wrap}
+.resumo div{flex:1;min-width:130px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:10px 14px}
+.resumo small{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
+.resumo b{font-size:1.6rem}
+.loja{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid #f59e0b;border-radius:14px;margin-bottom:12px;overflow:hidden}
+.loja.tem-vaga{border-left-color:var(--vermelho)}
+.loja-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px 6px}
+.loja-cab h2{margin:0;font-size:1.05rem}
+.conta{font-weight:800;color:var(--tx2);white-space:nowrap}
+ul{list-style:none;margin:0;padding:0 10px 10px;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+li.p{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border-radius:12px;background:var(--li)}
+li.p.atraso{background:var(--ambar-claro)}
+li.p.vaga{background:var(--vermelho-claro)}
+li.p.feito{background:var(--verde-claro)}
+.quem{flex:1;min-width:0}
+.quem b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quem small{color:var(--tx2);font-size:13px}
+.etq{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:800;margin-right:6px}
+.etq.a{background:var(--ambar);color:#fff}html.escuro .etq.a{color:#0b1322}
+.etq.c{background:var(--cinza);color:var(--cinza-tx)}
+.btn{border:0;border-radius:12px;padding:0 16px;min-height:46px;min-width:118px;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap}
+.btn.chegou{background:var(--laranja);color:#fff}
+html.escuro .btn.chegou{color:#0b1322}
+.btn.chegou:active{transform:scale(.97)}
+.btn:disabled{opacity:.6;cursor:wait}
+.feito-tag{font-weight:800;color:var(--verde);white-space:nowrap}
+.desfazer{background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:13px;cursor:pointer;padding:6px 4px}
+details.ja{border-top:1px dashed var(--linha);margin:0 10px 10px;padding-top:6px}
+details.ja>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--verde);padding:6px 4px;list-style:none}
+details.ja>summary::-webkit-details-marker{display:none}
+details.ja ul{padding:4px 0 0}
+h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin:22px 0 8px}
+details.completa{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid var(--verde);border-radius:14px;margin-bottom:8px}
+details.completa>summary{cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;font-weight:800;list-style:none}
+details.completa>summary::-webkit-details-marker{display:none}
+.vazio{background:var(--verde-claro);color:var(--verde);border-radius:12px;padding:14px;font-weight:700}
+.aviso{background:var(--laranja-claro);border:1px solid var(--linha);border-radius:12px;padding:14px}
+/* entrada */
+.entrada{max-width:380px;margin:12vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:18px;padding:24px;box-shadow:0 10px 30px var(--sombra);text-align:center}
+.entrada img{width:84px;height:84px;border-radius:50%;border:3px solid #fb923c;object-fit:cover}
+.entrada h1{font-size:1.3rem;margin:10px 0 4px}
+.entrada p{color:var(--tx2);margin:0 0 16px}
+.entrada input[type=password]{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
+.entrada label{display:flex;gap:8px;justify-content:center;align-items:center;margin:12px 0;font-size:14px;color:var(--tx2)}
+.entrada .btn{width:100%;background:var(--marinho);color:#fff}
+html.escuro .entrada .btn{background:var(--laranja);color:#0b1322}
+.erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
+#toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{max-width:520px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:entra .25s ease-out}
+.toast.ok{background:#15803d}
+@keyframes entra{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:560px){
+  .topo{gap:8px}.marca{font-size:1rem}.dia strong{min-width:110px;font-size:.95rem}
+  .btn{min-width:100px;padding:0 12px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+/* ===== CONFIGURAÇÃO: endereço do App da Web (Apps Script) ===== */
+const API_PADRAO = "https://script.google.com/macros/s/AKfycbxHMANMPiLYGj1DhRM7aCUolfp8H1AGopQCA4AGThrymMlEC5oJNZqGp6LnBEp0WeaO/exec";
+/* Para testar com a cópia da planilha: abrir operador.html?api=ENDERECO_DA_COPIA */
+/* =============================================================== */
+
+const params = new URLSearchParams(location.search);
+const API = params.get("api") || API_PADRAO;
+const MODO_TESTE = !!params.get("api");
+const ATUALIZAR_MS = 30 * 1000;
+const ALERTA_MIN = 10;
+const NOITE_A_PARTIR = 16 * 60;
+const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+const CHAVE_SENHA = "logmax-op-senha:" + API;
+
+const guardar = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const lerGuardado = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+let senha = lerGuardado(CHAVE_SENHA) || "";
+let nomePlanilha = "";
+let linhas = [], atualizadoEm = "", diaAtual = hojeSP();
+let turno = lerGuardado("logmax-op-turno") || "todos";
+let busca = "";
+const gravando = new Map();   // chave -> "chegou" | "desfazer"
+const trocas = new Map();     // chave -> { presenca, quando }  (mudança feita aqui, até a planilha confirmar)
+const abertos = new Set();    // seções "já chegaram" abertas
+let timer = null;
+
+if (lerGuardado("logmax-escuro") === "1") document.documentElement.classList.add("escuro");
+
+/* ===== utilidades ===== */
+function hojeSP() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date()); }
+function agoraSPmin(dataISO) {
+  const p = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hour12:false }).formatToParts(new Date());
+  const g = t => p.find(x => x.type === t).value;
+  return (Date.parse(`${g("year")}-${g("month")}-${g("day")}`) - Date.parse(dataISO)) / 864e5 * 1440 + (+g("hour") % 24) * 60 + (+g("minute"));
+}
+function somaDias(iso, n) { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function domingoDe(iso) { const d = new Date(iso + "T12:00:00"); return somaDias(iso, (7 - d.getDay()) % 7); }
+function brParaISO(d) { const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : null; }
+function rotulo(iso) { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} ${iso.slice(8)}/${iso.slice(5,7)}`; }
+function inicioMin(h) { const m = String(h).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function semAcento(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase(); }
+
+function lerCSV(texto) {
+  const out = []; let linha = [], campo = "", aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) { if (c === '"' && texto[i+1] === '"') { campo += '"'; i++; } else if (c === '"') aspas = false; else campo += c; }
+    else if (c === '"') aspas = true;
+    else if (c === ",") { linha.push(campo); campo = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && texto[i+1] === "\n") i++; linha.push(campo); out.push(linha); linha = []; campo = ""; }
+    else campo += c;
+  }
+  if (campo || linha.length) { linha.push(campo); out.push(linha); }
+  return out;
+}
+
+function toast(texto, ok) {
+  const t = document.createElement("div");
+  t.className = "toast" + (ok ? " ok" : "");
+  t.textContent = texto;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(() => t.remove(), ok ? 2500 : 6000);
+}
+
+async function chamar(dados) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+/* ===== entrada com senha ===== */
+function telaEntrada(erro) {
+  clearInterval(timer);
+  document.getElementById("app").innerHTML = `
+    <form class="entrada" id="formEntrada">
+      <img src="lume.png" alt="Lume, assistente da LogMax">
+      <h1>Marcar chegada</h1>
+      <p>Área dos operadores da LogMax</p>
+      <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
+      <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
+      <button class="btn" id="btnEntrar">Entrar</button>
+      <div class="erro" id="erroEntrada">${esc(erro || "")}</div>
+      ${MODO_TESTE ? '<p style="margin-top:12px;font-weight:700;color:var(--ambar)">Modo teste: usando outro endereço de planilha</p>' : ""}
+    </form>`;
+  const campo = document.getElementById("campoSenha");
+  campo.focus();
+  document.getElementById("formEntrada").onsubmit = async ev => {
+    ev.preventDefault();
+    const btn = document.getElementById("btnEntrar");
+    btn.disabled = true; btn.textContent = "Conferindo…";
+    senha = campo.value;
+    try {
+      const r = await chamar({ acao: "entrar" });
+      if (!r.ok) { document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btn.disabled = false; btn.textContent = "Entrar"; return; }
+      nomePlanilha = r.planilha || "";
+      guardar(CHAVE_SENHA, document.getElementById("lembrar").checked ? senha : null);
+      iniciar();
+    } catch (e) {
+      document.getElementById("erroEntrada").textContent = "Não consegui falar com a planilha. Confira a internet.";
+      btn.disabled = false; btn.textContent = "Entrar";
+    }
+  };
+}
+
+function sair() { senha = ""; guardar(CHAVE_SENHA, null); telaEntrada(); }
+
+/* ===== tela principal ===== */
+function iniciar() {
+  document.getElementById("app").innerHTML = `
+    <header>
+      ${MODO_TESTE || /c[óo]pia|teste/i.test(nomePlanilha) ? `<div class="teste">MODO TESTE · ${esc(nomePlanilha || "planilha de teste")}</div>` : ""}
+      <div class="topo">
+        <div class="marca"><img src="lume-96.png" alt=""><div>LogMax <span>·</span> Chegadas</div></div>
+        <div class="dia">
+          <button id="ant" aria-label="Dia anterior">←</button>
+          <strong id="rotuloDia">…</strong>
+          <button id="prox" aria-label="Próximo dia">→</button>
+        </div>
+        <div class="mini-acoes">
+          <button id="btnEscuro" aria-label="Modo escuro">🌙</button>
+          <button id="btnSair">Sair</button>
+        </div>
+        <div class="status" id="status">Carregando a escala…</div>
+      </div>
+    </header>
+    <main>
+      <div class="controles">
+        <input class="busca" id="busca" type="search" placeholder="Procurar motoboy ou loja…" autocomplete="off">
+        <div class="chips" id="chipsTurno">
+          <button class="chip" data-turno="todos">Todos</button>
+          <button class="chip" data-turno="almoco">Almoço</button>
+          <button class="chip" data-turno="noite">Noite</button>
+        </div>
+        <div class="resumo" id="resumo"></div>
+      </div>
+      <div id="lista"><p>Carregando…</p></div>
+    </main>`;
+  document.getElementById("btnSair").onclick = sair;
+  document.getElementById("btnEscuro").onclick = () => {
+    const ligado = document.documentElement.classList.toggle("escuro");
+    guardar("logmax-escuro", ligado ? "1" : "0");
+  };
+  document.getElementById("ant").onclick = () => mudarDia(-1);
+  document.getElementById("prox").onclick = () => mudarDia(1);
+  document.getElementById("busca").oninput = e => { busca = e.target.value; desenhar(); };
+  document.querySelectorAll("#chipsTurno .chip").forEach(b => b.onclick = () => {
+    turno = b.dataset.turno; guardar("logmax-op-turno", turno); desenhar();
+  });
+  document.getElementById("lista").addEventListener("click", aoClicar);
+  document.getElementById("lista").addEventListener("toggle", e => {
+    const d = e.target; if (d.dataset && d.dataset.loja) d.open ? abertos.add(d.dataset.loja) : abertos.delete(d.dataset.loja);
+  }, true);
+  carregar();
+  clearInterval(timer);
+  timer = setInterval(carregar, ATUALIZAR_MS);
+}
+
+function diasPermitidos() {
+  const hoje = hojeSP();
+  return { min: somaDias(hoje, -1), max: domingoDe(hoje) };   // de ontem até domingo
+}
+function mudarDia(n) {
+  const { min, max } = diasPermitidos();
+  const novo = somaDias(diaAtual, n);
+  if (novo < min || novo > max) return;
+  diaAtual = novo; desenhar();
+}
+
+async function carregar() {
+  try {
+    const r = await fetch(API + (API.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const tab = lerCSV(await r.text());
+    atualizadoEm = (tab[1] && tab[1][7]) || "";
+    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
+      const nome = c[4].trim();
+      return { loja: c[0].trim(), dataBR: c[1].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(),
+               codigo: (c[3] || "").trim(), nome, presenca: (c[5] || "").trim(), linha: +c[6],
+               chave: c[0].trim() + "|" + c[6], vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };
+    });
+    // a planilha já confirmou a mudança? então esquece a troca guardada aqui
+    const agora = Date.now();
+    trocas.forEach((t, k) => {
+      const l = linhas.find(x => x.chave === k);
+      if (!l || ehOK(l.presenca) === ehOK(t.presenca) || agora - t.quando > 90000) trocas.delete(k);
+    });
+    const { min } = diasPermitidos();
+    if (diaAtual < min) diaAtual = hojeSP();
+    document.getElementById("status").textContent =
+      `Planilha lida ${atualizadoEm ? "em " + atualizadoEm : ""} · atualiza sozinho a cada 30 s`;
+    desenhar();
+  } catch (e) {
+    const st = document.getElementById("status");
+    if (st) st.textContent = "Não consegui ler a planilha agora. Tento de novo em 30 s.";
+    if (!linhas.length && document.getElementById("lista"))
+      document.getElementById("lista").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira a internet ou fale com o Thiago.</div>`;
+  }
+}
+
+const ehOK = p => String(p).trim().toUpperCase() === "OK";
+function presencaDe(l) { return trocas.has(l.chave) ? trocas.get(l.chave).presenca : l.presenca; }
+function situacao(l) {
+  if (l.vaga) return "vaga";
+  const p = presencaDe(l).trim().toUpperCase();
+  if (p === "OK") return "chegou";
+  if (p === "" || p === "N/D") return "falta";
+  return "outro";   // ex.: FALTOU — só muda direto na planilha
+}
+function noTurno(l) {
+  if (turno === "todos") return true;
+  const ini = inicioMin(l.horario) ?? 0;
+  return turno === "noite" ? ini >= NOITE_A_PARTIR : ini < NOITE_A_PARTIR;
+}
+function atraso(l) {
+  if (l.data > hojeSP()) return null;
+  const ini = inicioMin(l.horario);
+  if (ini === null) return null;
+  const min = agoraSPmin(l.data) - ini;
+  return min >= ALERTA_MIN ? min : null;
+}
+const porHora = (a, b) => (inicioMin(a.horario) ?? 9999) - (inicioMin(b.horario) ?? 9999) || a.nome.localeCompare(b.nome);
+
+function linhaPessoa(l) {
+  const s = situacao(l), g = gravando.get(l.chave);
+  const det = `${esc(l.horario || "sem horário")}${l.codigo ? " · cód. " + esc(l.codigo) : ""}`;
+  if (s === "vaga") {
+    return `<li class="p vaga"><div class="quem"><b>Vaga sem motoca</b><small>${det}</small></div></li>`;
+  }
+  if (s === "chegou") {
+    return `<li class="p feito"><div class="quem"><b>${esc(l.nome)}</b><small>${det}</small></div>
+      ${g ? `<button class="btn" disabled>Desfazendo…</button>`
+          : `<span class="feito-tag">✓ Chegou</span><button class="desfazer" data-acao="desfazer" data-chave="${esc(l.chave)}">Desfazer</button>`}</li>`;
+  }
+  if (s === "outro") {
+    return `<li class="p"><div class="quem"><b>${esc(l.nome)}</b><small>${det}</small></div>
+      <span class="etq c" title="Para mudar, edite direto na planilha">${esc(presencaDe(l))}</span></li>`;
+  }
+  const at = atraso(l);
+  const atTxt = at ? (at >= 60 ? `${Math.floor(at / 60)}h${String(at % 60).padStart(2, "0")}` : `${at} min`) : "";
+  return `<li class="p${at ? " atraso" : ""}"><div class="quem"><b>${esc(l.nome)}</b><small>${at ? `<span class="etq a">atrasado ${atTxt}</span>` : ""}${det}</small></div>
+    <button class="btn chegou" data-acao="chegou" data-chave="${esc(l.chave)}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button></li>`;
+}
+
+function desenhar() {
+  const lista = document.getElementById("lista");
+  if (!lista) return;
+  const hoje = hojeSP(), { min, max } = diasPermitidos();
+  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
+  document.getElementById("ant").disabled = diaAtual <= min;
+  document.getElementById("prox").disabled = diaAtual >= max;
+  document.querySelectorAll("#chipsTurno .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.turno === turno));
+
+  const termo = semAcento(busca.trim());
+  const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l))
+    .filter(l => !termo || semAcento(l.nome).includes(termo) || semAcento(l.loja).includes(termo) || l.codigo === busca.trim());
+
+  const total = doDia.length, chegaram = doDia.filter(l => situacao(l) === "chegou").length;
+  const faltam = doDia.filter(l => situacao(l) === "falta").length, vagas = doDia.filter(l => l.vaga).length;
+  document.getElementById("resumo").innerHTML = `
+    <div><small>Falta chegar</small><b style="color:var(--ambar)">${faltam}</b></div>
+    <div><small>Chegaram</small><b style="color:var(--verde)">${chegaram}</b> <span style="color:var(--tx2);font-weight:700">de ${total}</span></div>
+    <div><small>Vagas sem motoca</small><b style="color:var(--vermelho)">${vagas}</b></div>`;
+
+  if (!doDia.length) {
+    lista.innerHTML = `<div class="aviso">${termo ? "Ninguém encontrado com essa busca." : "Não há escala para este dia na planilha."}</div>`;
+    return;
+  }
+
+  const lojas = {};
+  doDia.forEach(l => (lojas[l.loja] = lojas[l.loja] || []).push(l));
+  const grupos = Object.entries(lojas).map(([nome, ls]) => {
+    ls.sort(porHora);
+    const pend = ls.filter(l => situacao(l) === "falta");
+    return { nome, ls, pend, vagas: ls.filter(l => l.vaga).length,
+             atrasos: pend.filter(atraso).length,
+             primeira: Math.min(...pend.map(l => inicioMin(l.horario) ?? 9999)),
+             chegaram: ls.filter(l => situacao(l) === "chegou").length };
+  });
+  const abertasLojas = grupos.filter(g => g.pend.length || g.vagas || g.ls.some(l => situacao(l) === "outro"))
+    .sort((a, b) => b.atrasos - a.atrasos || a.primeira - b.primeira || a.nome.localeCompare(b.nome));
+  const completas = grupos.filter(g => !abertasLojas.includes(g)).sort((a, b) => a.nome.localeCompare(b.nome));
+
+  let html = "";
+  if (!abertasLojas.length) html += `<div class="vazio">Todo mundo deste dia já chegou. 🎉</div>`;
+  abertasLojas.forEach(g => {
+    const feitos = g.ls.filter(l => situacao(l) === "chegou");
+    const resto = g.ls.filter(l => situacao(l) !== "chegou");
+    html += `<section class="loja${g.vagas ? " tem-vaga" : ""}">
+      <div class="loja-cab"><h2>${esc(g.nome)}</h2><span class="conta">${g.chegaram} de ${g.ls.length}</span></div>
+      <ul>${resto.map(linhaPessoa).join("")}</ul>
+      ${feitos.length ? `<details class="ja" data-loja="${esc(g.nome)}"${abertos.has(g.nome) || termo ? " open" : ""}>
+        <summary>✓ Já chegaram (${feitos.length}) ▸</summary><ul>${feitos.map(linhaPessoa).join("")}</ul></details>` : ""}
+    </section>`;
+  });
+  if (completas.length) {
+    html += `<h3 class="sec">Lojas completas (${completas.length})</h3>`;
+    completas.forEach(g => {
+      html += `<details class="completa" data-loja="c:${esc(g.nome)}"${abertos.has("c:" + g.nome) || termo ? " open" : ""}>
+        <summary><span>${esc(g.nome)}</span><span style="color:var(--verde)">${g.chegaram} de ${g.ls.length} ✓</span></summary>
+        <ul>${g.ls.map(linhaPessoa).join("")}</ul></details>`;
+    });
+  }
+  lista.innerHTML = html;
+}
+
+async function aoClicar(ev) {
+  const b = ev.target.closest("button[data-acao]");
+  if (!b) return;
+  const l = linhas.find(x => x.chave === b.dataset.chave);
+  if (!l || gravando.has(l.chave)) return;
+  const acao = b.dataset.acao;
+  if (acao === "desfazer" && !confirm(`Tirar o OK de ${l.nome} (${l.loja})?`)) return;
+
+  gravando.set(l.chave, acao);
+  desenhar();
+  try {
+    const r = await chamar({ acao, loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome });
+    if (r.senha) { gravando.delete(l.chave); toast(r.erro || "Senha não aceita."); sair(); return; }
+    if (r.ok) {
+      trocas.set(l.chave, { presenca: r.presenca || (acao === "chegou" ? "OK" : "N/D"), quando: Date.now() });
+      toast(acao === "chegou" ? `✓ ${l.nome} chegou · ${l.loja}` : `OK tirado de ${l.nome}`, true);
+    } else {
+      toast(r.erro || "Não gravou. Tente de novo.");
+      if (r.mudou) setTimeout(carregar, 300);
+    }
+  } catch (e) {
+    toast("Não gravou. Confira a internet e tente de novo.");
+  } finally {
+    gravando.delete(l.chave);
+    desenhar();
+  }
+}
+
+/* ===== começo ===== */
+if (senha) {
+  chamar({ acao: "entrar" }).then(r => {
+    if (r.ok) { nomePlanilha = r.planilha || ""; iniciar(); }
+    else { guardar(CHAVE_SENHA, null); telaEntrada(r.erro); }
+  }).catch(() => telaEntrada("Não consegui falar com a planilha. Confira a internet."));
+} else {
+  telaEntrada();
+}
+</script>
+</body>
+</html>
