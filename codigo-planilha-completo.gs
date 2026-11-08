@@ -18,6 +18,10 @@
  * NA VERSÃO 4.2: a tela do operador (com senha) recebe também o TELEFONE, para o botão do WhatsApp.
  *   O painel público NÃO recebe telefone.
  *
+ * NA VERSÃO 4.3: aba "Localizar motoboy" na tela do operador (com senha). A busca é feita AQUI na planilha,
+ *   na aba de cadastro dos motoboys, e devolve só quem bate com o que foi digitado (no máximo 20):
+ *   código, nome, telefone e CPF. A lista inteira nunca sai da planilha. O painel público não tem isso.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
  *
@@ -25,6 +29,7 @@
  *   testarTudo           → monta a escala e mostra quantas linhas, quantos segundos e quais abas são lentas.
  *   diagnosticarLentidao → mede o tempo de cada aba, uma por uma (sem dados pessoais).
  *   conferirNomePorCodigo → diz, em cada loja, se a coluna NOME puxa o nome pelo código (fórmula).
+ *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL'];
@@ -67,6 +72,7 @@ function doPost(e) {
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
     return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), online: lmOnline('o', pedido.sessao) });
   }
+  if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q));
   if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   const trava = LockService.getScriptLock();   // uma gravação por vez (separada da montagem da escala)
@@ -386,6 +392,82 @@ function lmLimparChegadasVelhas(props) {   // apaga horas anotadas de mais de 10
   });
 }
 
+/* ============================== LOCALIZAR MOTOBOY (cadastro) ============================== */
+
+const LM_CHAVE_CAD = 'cad_v1';
+const LM_CAD_FRESCO_MIN = 10;   // o cadastro é relido da planilha a cada 10 minutos
+
+function lmAbaCadastro() {
+  const abas = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  for (let i = 0; i < abas.length; i++) if (/CADASTRO/i.test(abas[i].getName())) return abas[i];
+  return null;
+}
+
+// Lê a aba de cadastro e acha as colunas pelo título. Guarda só na memória interna da planilha (não sai daqui).
+function lmLerCadastro(forcar) {
+  if (!forcar) {
+    const g = lmLerTexto(LM_CHAVE_CAD);
+    if (g && Date.now() - g.t < LM_CAD_FRESCO_MIN * 60000) { try { return JSON.parse(g.texto); } catch (e) {} }
+  }
+  const aba = lmAbaCadastro();
+  if (!aba) return { erro: 'Não achei a aba de cadastro dos motoboys (uma aba com "CADASTRO" no nome).' };
+  const ultima = aba.getLastRow(), ncol = Math.min(aba.getLastColumn(), 40);
+  if (ultima < 2) return { erro: 'A aba de cadastro está vazia.' };
+  const vals = aba.getRange(1, 1, ultima, ncol).getDisplayValues();
+  let cab = -1;
+  for (let i = 0; i < Math.min(15, vals.length); i++) {
+    if (vals[i].some(function (c) { return /^\s*NOME/i.test(String(c)); })) { cab = i; break; }
+  }
+  if (cab < 0) return { erro: 'Não achei a linha de títulos (com "NOME") no cadastro.' };
+  const t = vals[cab].map(function (c) { return String(c).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); });
+  const achar = function (teste) { for (let j = 0; j < t.length; j++) if (teste(t[j])) return j; return -1; };
+  const col = {
+    cod: achar(function (x) { return /^(COD|CODIGO|ID|MATRICULA)\b/.test(x); }),
+    nome: achar(function (x) { return /^NOME/.test(x); }),
+    tel: achar(function (x) { return /TELEF|CELULAR|WHATS|FONE/.test(x); }),
+    cpf: achar(function (x) { return /\bCPF\b/.test(x); })
+  };
+  const lista = [];
+  for (let i = cab + 1; i < vals.length; i++) {
+    const l = vals[i], nome = col.nome >= 0 ? String(l[col.nome]).trim() : '';
+    if (!nome) continue;
+    lista.push([col.cod >= 0 ? String(l[col.cod]).trim() : '', nome,
+                col.tel >= 0 ? String(l[col.tel]).trim() : '', col.cpf >= 0 ? String(l[col.cpf]).trim() : '']);
+  }
+  const cad = { aba: aba.getName(), linhaTitulos: cab + 1, titulos: { cod: col.cod >= 0 ? vals[cab][col.cod] : '', nome: col.nome >= 0 ? vals[cab][col.nome] : '',
+                tel: col.tel >= 0 ? vals[cab][col.tel] : '', cpf: col.cpf >= 0 ? vals[cab][col.cpf] : '' }, lista: lista };
+  lmGuardarTexto(LM_CHAVE_CAD, JSON.stringify(cad), Date.now());
+  return cad;
+}
+
+// Procura por telefone, CPF, código ou nome. Devolve no máximo 20.
+function lmBuscar(q) {
+  q = String(q || '').trim();
+  if (q.length < 2) return { ok: false, erro: 'Digite pelo menos 2 letras ou números.' };
+  const cad = lmLerCadastro(false);
+  if (cad.erro) return { ok: false, erro: cad.erro };
+  const semAcento = function (x) { return String(x).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+  const digitos = q.replace(/\D/g, '');
+  const soNumero = digitos.length >= 2 && digitos.length >= q.replace(/[\s().\-\/+]/g, '').length;
+  const palavras = semAcento(q).split(/\s+/).filter(Boolean);
+  const achados = [];
+  cad.lista.forEach(function (m) {
+    const cod = m[0], nome = m[1], tel = m[2].replace(/\D/g, ''), cpf = m[3].replace(/\D/g, '');
+    let nota = 0;
+    if (soNumero) {
+      if (cod && cod.replace(/\D/g, '') === digitos) nota = 3;
+      else if (digitos.length >= 4 && (tel.indexOf(digitos) >= 0 || (digitos.indexOf('55') === 0 && tel.indexOf(digitos.slice(2)) >= 0))) nota = 2;
+      else if (digitos.length >= 4 && cpf.indexOf(digitos) >= 0) nota = 2;
+    } else {
+      const n = semAcento(nome);
+      if (palavras.every(function (p) { return n.indexOf(p) >= 0; })) nota = n.indexOf(palavras[0]) === 0 ? 2 : 1;
+    }
+    if (nota) achados.push({ nota: nota, cod: cod, nome: nome, tel: m[2], whats: lmLimparTelefone(m[2]), cpf: m[3] });
+  });
+  achados.sort(function (a, b) { return b.nota - a.nota || a.nome.localeCompare(b.nome); });
+  return { ok: true, total: achados.length, itens: achados.slice(0, 20).map(function (a) { delete a.nota; return a; }) };
+}
+
 /* ============================== QUEM ESTÁ COM A TELA ABERTA ============================== */
 
 function lmOnline(tipo, id) {   // 'o' = operador, 'p' = painel
@@ -439,6 +521,16 @@ function conferirNomePorCodigo() {
     });
     console.log(aba.getName() + ': ' + com + ' linhas com fórmula no NOME, ' + sem + ' sem fórmula');
   });
+}
+
+/** Mostra quais colunas do cadastro a busca usa (só os títulos e quantos motoboys; nenhum dado pessoal). */
+function conferirCadastro() {
+  const cad = lmLerCadastro(true);
+  if (cad.erro) { console.log('PROBLEMA: ' + cad.erro); return; }
+  console.log('Aba de cadastro: ' + cad.aba + ' (títulos na linha ' + cad.linhaTitulos + ')');
+  console.log('Código: ' + (cad.titulos.cod || 'NÃO ACHEI') + ' | Nome: ' + (cad.titulos.nome || 'NÃO ACHEI') +
+    ' | Telefone: ' + (cad.titulos.tel || 'NÃO ACHEI') + ' | CPF: ' + (cad.titulos.cpf || 'NÃO ACHEI'));
+  console.log('Motoboys no cadastro: ' + cad.lista.length);
 }
 
 /** Mede o tempo de cada aba, uma por uma (mostra só nome e tamanho das abas, nenhum dado de motoboy). */

@@ -201,7 +201,7 @@ html.escuro body.trancado{background:radial-gradient(900px 520px at 50% -10%,#14
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
 html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
-body.trancado header,body.trancado main{display:none}
+body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar{display:none}
 @media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
 /* ===== Faixa de dias ===== */
 .dias{padding:0 16px 14px}
@@ -262,6 +262,33 @@ html.tv .dias button small{font-size:.6rem}
 .btn-whats svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .lnk-whats{font-size:.8rem;font-weight:700;color:#15803d;text-decoration:underline}
 html.escuro .lnk-whats{color:#4ade80}
+/* ===== Abas do operador + Localizar ===== */
+.abas-op{max-width:1100px;margin:0 auto;padding:14px 16px 0;display:flex;gap:4px;border-bottom:1px solid var(--linha)}
+.abas-op button{font:inherit;font-size:.95rem;font-weight:700;border:0;background:none;color:var(--tx2);padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.abas-op button[aria-pressed="true"]{color:var(--tx);border-bottom-color:var(--laranja)}
+.abas-op button:hover{color:var(--tx)}
+body.aba-localizar .dias{display:none}
+.localizar{max-width:760px;margin:0 auto;padding:18px 16px 48px}
+.localizar h2{margin:0 0 4px;font-size:1.25rem}
+.loc-dica{margin:0 0 14px;color:var(--tx2);font-size:.92rem}
+.loc-busca{display:flex;gap:8px;margin-bottom:16px}
+.loc-busca input{flex:1;min-width:0;font:inherit;font-size:1.05rem;padding:12px 14px;border-radius:12px;border:2px solid var(--linha);background:var(--cartao);color:var(--tx)}
+.loc-busca input:focus{outline:none;border-color:var(--laranja)}
+.loc-info{color:var(--tx2);font-size:.88rem;margin:0 0 10px}
+.loc-card{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.loc-cab{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.loc-cab b{font-size:1.05rem}
+.loc-cab .cod{font-weight:700;color:var(--tx2)}
+.loc-dados{display:grid;gap:6px;margin:0}
+.loc-dados div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.loc-dados dt{width:72px;flex:none;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
+.loc-dados dd{margin:0;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn-mini{font:inherit;font-size:.78rem;font-weight:700;border:1px solid var(--linha);background:var(--li);color:var(--tx);border-radius:8px;padding:3px 9px;cursor:pointer;text-decoration:none}
+.btn-mini.verde{background:#16a34a;border-color:#16a34a;color:#fff}
+@media (max-width:560px){.loc-dados div{display:block}.loc-dados dt{width:auto;margin-bottom:3px}}
+.loc-escala{margin-top:10px;padding-top:10px;border-top:1px dashed var(--linha);font-size:.88rem;color:var(--tx2)}
+.loc-escala b{color:var(--tx)}
+.loc-escala ul{margin:4px 0 0;padding-left:18px}
 </style>
 </head>
 <body class="trancado">
@@ -283,6 +310,19 @@ html.escuro .lnk-whats{color:#4ade80}
   </div>
   <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
 </header>
+<nav class="abas-op" id="abasOp" aria-label="Telas do operador">
+  <button type="button" data-aba="presenca" aria-pressed="true">Presença</button>
+  <button type="button" data-aba="localizar" aria-pressed="false">Localizar motoboy</button>
+</nav>
+<section id="localizar" class="localizar" hidden>
+  <h2>Localizar motoboy</h2>
+  <p class="loc-dica">Procure por <b>telefone</b>, <b>nome</b>, <b>código</b> ou <b>CPF</b>. A busca é feita no cadastro da planilha.</p>
+  <form id="formBusca" class="loc-busca" autocomplete="off">
+    <input id="campoBusca" type="search" placeholder="Ex.: 11 98765-4321, João, 123…" aria-label="O que procurar">
+    <button class="btn-chegou" id="btnBuscar">Buscar</button>
+  </form>
+  <div id="resultadoBusca" aria-live="polite"></div>
+</section>
 <main id="conteudo"><div class="esqueleto" role="status" aria-label="Carregando a escala">
   <div class="esq esq-seg"></div>
   <div class="faixa"><div class="esq esq-num"></div><div class="esq esq-num"></div><div class="esq esq-num"></div><div class="esq esq-num"></div></div>
@@ -865,6 +905,68 @@ function abrirCodigo(l) {
   };
 }
 
+/* ===== Abas: Presença | Localizar motoboy ===== */
+function mostrarAba(aba) {
+  const loc = aba === "localizar";
+  document.getElementById("localizar").hidden = !loc;
+  document.getElementById("conteudo").hidden = loc;
+  document.body.classList.toggle("aba-localizar", loc);
+  document.querySelectorAll("#abasOp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
+  try { history.replaceState(null, "", loc ? "#localizar" : location.pathname + location.search); } catch (e) {}
+  if (loc) setTimeout(() => document.getElementById("campoBusca").focus(), 50);
+}
+document.getElementById("abasOp").addEventListener("click", e => { const b = e.target.closest("[data-aba]"); if (b) mostrarAba(b.dataset.aba); });
+
+/* ===== Localizar motoboy (a busca é feita na planilha; só volta quem bate) ===== */
+const fmtCpf = c => { const d = String(c).replace(/\D/g, ""); return d.length === 11 ? `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}` : String(c); };
+const fmtFone = t => { let d = String(t).replace(/\D/g, ""); if (d.length >= 12 && d.startsWith("55")) d = d.slice(2);
+  return d.length === 11 ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}` : d.length === 10 ? `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}` : String(t); };
+async function copiar(texto, botao) {
+  try { await navigator.clipboard.writeText(texto); }
+  catch (e) { const t = document.createElement("textarea"); t.value = texto; document.body.appendChild(t); t.select(); try { document.execCommand("copy"); } catch (e2) {} t.remove(); }
+  const antes = botao.textContent; botao.textContent = "Copiado ✓"; setTimeout(() => { botao.textContent = antes; }, 1500);
+}
+function escalaDoMotoboy(cod, nome) {   // onde ele está na escala carregada (de hoje até o último dia liberado)
+  const n = String(nome).trim().toUpperCase();
+  return linhas.filter(l => (cod && l.codigo === cod) || (!cod && l.nome.toUpperCase() === n)).sort((a, b) => a.data.localeCompare(b.data) || (inicioMin(a.horario) ?? 0) - (inicioMin(b.horario) ?? 0));
+}
+function cartaoMotoboy(m) {
+  const esc2 = escalaDoMotoboy(m.cod, m.nome);
+  const pn = String(m.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
+  const wa = m.whats ? `https://wa.me/${m.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da LogMax.`)}` : "";
+  return `<article class="loc-card">
+    <div class="loc-cab"><b>${esc(m.nome)}</b>${m.cod ? `<span class="cod">#${esc(m.cod)}</span>` : ""}</div>
+    <dl class="loc-dados">
+      <div><dt>Telefone</dt><dd>${m.tel ? `${esc(fmtFone(m.tel))} <button type="button" class="btn-mini" data-copiar="${esc(m.tel.replace(/\D/g, ""))}">Copiar</button>${wa ? ` <a class="btn-mini verde" href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}` : "—"}</dd></div>
+      <div><dt>CPF</dt><dd>${m.cpf ? `${esc(fmtCpf(m.cpf))} <button type="button" class="btn-mini" data-copiar="${esc(m.cpf.replace(/\D/g, ""))}">Copiar</button>` : "—"}</dd></div>
+    </dl>
+    <div class="loc-escala">${esc2.length
+      ? `<b>Na escala:</b><ul>${esc2.slice(0, 8).map(l => `<li>${esc(rotulo(l.data))} · ${esc(l.loja)} · ${esc(fmtHora(l.horario))}${situacao(l) === "chegou" ? " · ✓ chegou" : ""}</li>`).join("")}</ul>`
+      : "Não está na escala de hoje até domingo."}</div>
+  </article>`;
+}
+let buscaAtual = 0;
+async function buscarMotoboy() {
+  const q = document.getElementById("campoBusca").value.trim(), out = document.getElementById("resultadoBusca");
+  if (q.length < 2) { out.innerHTML = `<p class="loc-info">Digite pelo menos 2 letras ou números.</p>`; return; }
+  const minha = ++buscaAtual;
+  out.innerHTML = `<p class="loc-info">Procurando…</p>`;
+  try {
+    const r = await chamar({ acao: "buscar", q }, 30);
+    if (minha !== buscaAtual) return;
+    if (r.senha) { sair(r.erro); return; }
+    if (!r.ok) { out.innerHTML = `<div class="aviso">${esc(r.erro || "Não consegui procurar agora.")}</div>`; return; }
+    out.innerHTML = !r.itens.length ? `<div class="aviso">Ninguém encontrado com "${esc(q)}".</div>`
+      : `<p class="loc-info">${r.total} encontrado${r.total > 1 ? "s" : ""}${r.total > r.itens.length ? ` (mostrando os ${r.itens.length} primeiros)` : ""}</p>${r.itens.map(cartaoMotoboy).join("")}`;
+  } catch (e) {
+    if (minha === buscaAtual) out.innerHTML = `<div class="aviso">Não consegui procurar: ${esc((e && e.message) || "confira a internet")}.</div>`;
+  }
+}
+document.getElementById("formBusca").addEventListener("submit", e => { e.preventDefault(); buscarMotoboy(); });
+let esperaBusca = null;
+document.getElementById("campoBusca").addEventListener("input", () => { clearTimeout(esperaBusca); if (document.getElementById("campoBusca").value.trim().length >= 3) esperaBusca = setTimeout(buscarMotoboy, 700); });
+document.getElementById("resultadoBusca").addEventListener("click", e => { const b = e.target.closest("[data-copiar]"); if (b) copiar(b.dataset.copiar, b); });
+
 /* ===== Entrada com senha ===== */
 let iniciado = false;
 function telaEntrada(erro) {
@@ -899,6 +1001,7 @@ function telaEntrada(erro) {
   };
 }
 function liberar(nomePlanilha) {
+  if (location.hash === "#localizar") setTimeout(() => mostrarAba("localizar"), 0);
   document.getElementById("entrada").innerHTML = "";
   document.body.classList.remove("trancado");
   const ft = document.getElementById("faixaTeste");
