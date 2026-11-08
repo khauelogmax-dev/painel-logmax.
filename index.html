@@ -195,6 +195,13 @@ function semanaDe(iso) {
   const seg = new Date(d.getTime() - dow * 864e5), dom = new Date(seg.getTime() + 6 * 864e5);
   return [seg.toISOString().slice(0, 10), dom.toISOString().slice(0, 10)];
 }
+// último dia que dá para ver: o domingo desta semana; NO DOMINGO, libera até o domingo seguinte
+function ultimoDia(iso) {
+  const dom = semanaDe(iso)[1];
+  if (dom !== iso) return dom;
+  const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 7);
+  return d.toISOString().slice(0, 10);
+}
 const ddmm = iso => `${iso.slice(8)}/${iso.slice(5,7)}`;
 
 function lerCSV(texto) {
@@ -232,7 +239,7 @@ async function carregar() {
     if (!r.ok) throw new Error("HTTP " + r.status);
     const tab = lerCSV(await r.text());
     atualizadoEm = (tab[1] && tab[1][7]) || "";
-    const hoje = hojeSP(), [, domingo] = semanaDe(hoje);
+    const hoje = hojeSP(), domingo = ultimoDia(hoje);
     linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim()).map(c => {
       const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
       return { loja: c[0].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(), codigo: cod, nome,
@@ -443,7 +450,7 @@ function desenhar() {
   const n = s => doDia.filter(l => l.s === s).length;
   const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
   const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
-  const seg = hoje, dom = semanaDe(hoje)[1];                       // de hoje até domingo
+  const seg = hoje, dom = ultimoDia(hoje);                          // de hoje até domingo (no domingo: até o próximo)
   const vagasSemana = linhas.filter(l => l.vaga && l.data >= seg && l.data <= dom && noTurno(l));
 
   const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
@@ -478,7 +485,7 @@ function desenhar() {
     ${pendentes.length ? `<div class="lojas">${pendentes.map(cartaoLoja).join("")}</div>` : `<div class="vazio">Todas as lojas do dia estão completas.</div>`}
     ${completas.length ? `<h2>Completas (${completas.length})</h2><div class="lojas completas">${completas.map(cartaoCompleto).join("")}</div>` : ""}`}
 
-    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
+    <p class="rodape">OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo (no domingo, já mostra a semana seguinte). Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
 }
 
 const TITULO = { falta: "Quem falta chegar", chegou: "Quem já chegou", vaga: "Onde estão as vagas sem motoca" };
