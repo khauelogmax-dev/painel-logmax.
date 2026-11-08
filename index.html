@@ -347,9 +347,13 @@ function minutosAtraso(l) { // minutos desde o início do turno (só faz sentido
   return ini === null ? null : agoraSPmin(l.data) - ini;
 }
 
+let lendo = false;
 async function carregar() {
+  if (lendo) return;          // não empilha pedidos se a planilha estiver lenta
+  lendo = true;
+  const ctl = new AbortController(), limite = setTimeout(() => ctl.abort(), 60000);
   try {
-    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now() + "&v=" + SESSAO, { cache: "no-store" });
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now() + "&v=" + SESSAO, { cache: "no-store", signal: ctl.signal });
     if (!r.ok) throw new Error("HTTP " + r.status);
     const tab = lerCSV(await r.text());
     atualizadoEm = (tab[1] && tab[1][7]) || "";
@@ -369,7 +373,7 @@ async function carregar() {
   } catch (e) {
     falhaLeitura = true; pintarStatus();
     if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira se o App da Web da planilha está implantado com acesso para "Qualquer pessoa".</div>`;
-  }
+  } finally { clearTimeout(limite); lendo = false; }
 }
 
 /* ===== Som e alertas ===== */
