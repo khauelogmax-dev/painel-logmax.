@@ -15,8 +15,11 @@
  * NA VERSÃO 4.1: tela do operador pode COLOCAR motoboy na vaga ou TROCAR quem está, digitando só o código.
  *   O código vai na coluna COD; o NOME vem sozinho pela fórmula da planilha. O OK continua separado.
  *
+ * NA VERSÃO 4.2: a tela do operador (com senha) recebe também o TELEFONE, para o botão do WhatsApp.
+ *   O painel público NÃO recebe telefone.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
- * NUNCA entrega telefone, CPF, PIX nem valores.
+ * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
  *
  * FUNÇÕES PARA RODAR NO EDITOR (botão Executar):
  *   testarTudo           → monta a escala e mostra quantas linhas, quantos segundos e quais abas são lentas.
@@ -34,6 +37,7 @@ const LM_LIMITE_MONTAR_MS = 270000;           // 4,5 minutos
 const LM_MAX_ERROS_SENHA = 15;                // 15 senhas erradas em 10 min → bloqueia 10 min
 const LM_ONLINE_SEG = 90;                     // tela que não avisa há 90 s sai do "Online agora"
 const LM_CHAVE = 'escala_v4';
+const LM_CHAVE_TEL = 'tel_v4';                 // telefones guardados à parte (só vão para o operador)
 const LM_PEDACO = 40000;                      // tamanho de cada pedaço guardado
 const LM_PREFIXO_CHEGADA = 'ch|';
 
@@ -59,7 +63,10 @@ function doPost(e) {
   }
 
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
-  if (pedido.acao === 'ler') return lmResposta({ ok: true, csv: lmEscala(), online: lmOnline('o', pedido.sessao) });
+  if (pedido.acao === 'ler') {
+    const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
+    return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), online: lmOnline('o', pedido.sessao) });
+  }
   if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   const trava = LockService.getScriptLock();   // uma gravação por vez (separada da montagem da escala)
@@ -87,8 +94,10 @@ function lmEscala() {
     try {
       const outra = lmLerGuardada();   // outra tela pode ter acabado de montar
       if (outra && Date.now() - outra.t < LM_FRESCO_SEG * 1000) return outra.csv;
-      const csv = lmMontar().csv;
-      lmGuardar(csv, Date.now());
+      const r = lmMontar();
+      lmGuardarTexto(LM_CHAVE_TEL, JSON.stringify(r.tel), Date.now());
+      lmGuardar(r.csv, Date.now());
+      const csv = r.csv;
       return csv;
     } finally {
       trava.releaseLock();
@@ -99,27 +108,40 @@ function lmEscala() {
   return depois ? depois.csv : lmCsv([]);
 }
 
-function lmGuardar(csv, t) {
+// Guarda um texto grande em pedaços (a memória do Google aceita no máximo ~100 KB por item).
+function lmGuardarTexto(chave, texto, t) {
   const partes = [];
-  for (let i = 0; i < csv.length; i += LM_PEDACO) partes.push(csv.slice(i, i + LM_PEDACO));
+  for (let i = 0; i < texto.length; i += LM_PEDACO) partes.push(texto.slice(i, i + LM_PEDACO));
+  if (!partes.length) partes.push('');
   const obj = {};
-  partes.forEach(function (p, i) { obj[LM_CHAVE + '_' + i] = p; });
-  obj[LM_CHAVE] = JSON.stringify({ n: partes.length, t: t });
-  try { CacheService.getScriptCache().putAll(obj, LM_GUARDA_SEG); } catch (e) { console.warn('Não consegui guardar a escala: ' + e); }
+  partes.forEach(function (p, i) { obj[chave + '_' + i] = p; });
+  obj[chave] = JSON.stringify({ n: partes.length, t: t });
+  try { CacheService.getScriptCache().putAll(obj, LM_GUARDA_SEG); } catch (e) { console.warn('Não consegui guardar ' + chave + ': ' + e); }
 }
-
-function lmLerGuardada() {
+function lmLerTexto(chave) {
   const cache = CacheService.getScriptCache();
-  const m = cache.get(LM_CHAVE);
+  const m = cache.get(chave);
   if (!m) return null;
   let meta;
   try { meta = JSON.parse(m); } catch (e) { return null; }
   const chaves = [];
-  for (let i = 0; i < meta.n; i++) chaves.push(LM_CHAVE + '_' + i);
+  for (let i = 0; i < meta.n; i++) chaves.push(chave + '_' + i);
   const v = cache.getAll(chaves);
-  let csv = '';
-  for (let i = 0; i < chaves.length; i++) { if (v[chaves[i]] == null) return null; csv += v[chaves[i]]; }
-  return { csv: csv, t: meta.t };
+  let texto = '';
+  for (let i = 0; i < chaves.length; i++) { if (v[chaves[i]] == null) return null; texto += v[chaves[i]]; }
+  return { texto: texto, t: meta.t };
+}
+function lmGuardar(csv, t) { lmGuardarTexto(LM_CHAVE, csv, t); }
+function lmLerGuardada() { const g = lmLerTexto(LM_CHAVE); return g ? { csv: g.texto, t: g.t } : null; }
+function lmLerTelefones() {
+  const g = lmLerTexto(LM_CHAVE_TEL);
+  if (!g) return {};
+  try { return JSON.parse(g.texto || '{}'); } catch (e) { return {}; }
+}
+function lmMudarTelefone(loja, linha, tel) {
+  const mapa = lmLerTelefones();
+  if (tel) mapa[loja + '|' + linha] = tel; else delete mapa[loja + '|' + linha];
+  lmGuardarTexto(LM_CHAVE_TEL, JSON.stringify(mapa), Date.now());
 }
 
 // Depois do Chegou/Desfazer/troca: muda só a linha daquela pessoa na escala guardada.
@@ -145,6 +167,7 @@ function lmAtualizarGuardada(loja, linha, presenca, chegada) { lmMudarGuardada(l
 function lmColunas(l) {
   const achar = function (txt) { return l.findIndex(function (c) { return String(c).toUpperCase().indexOf(txt) >= 0; }); };
   const col = { cod: achar('COD'), nome: achar('NOME'), hora: achar('HORARIO'), pres: achar('PRESEN') };
+  col.tel = achar('TELEF'); if (col.tel < 0) col.tel = achar('CELULAR'); if (col.tel < 0) col.tel = achar('FONE');
   if (col.pres < 0 && col.hora >= 0) col.pres = col.hora + 1;   // abas sem título "PRESENÇA" (ex.: PAMPLONA)
   return col;
 }
@@ -163,6 +186,7 @@ function lmMontar() {
   const min = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - LM_DIAS_ANTES);
   const max = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + LM_DIAS_DEPOIS);
   const chegadas = lmLerChegadas();
+  const tel = {};   // "LOJA|linha" → telefone só com números (só vai para a tela do operador)
   const saida = [];
   const lentas = [], puladas = [];
 
@@ -184,6 +208,8 @@ function lmMontar() {
       if (d < min || d > max) return;
       const pega = function (k) { return k >= 0 ? String(l[k]).replace(/\s*[\r\n]+\s*/g, ' ').trim() : ''; };
       const data = String(l[0]).trim(), nome = pega(col.nome);
+      const fone = lmLimparTelefone(pega(col.tel));
+      if (fone) tel[loja + '|' + (inicio + i)] = fone;
       saida.push([loja, data, pega(col.hora), pega(col.cod), nome, pega(col.pres), String(inicio + i), '',
                   lmChegadaTexto(chegadas, loja, data, inicio + i, nome)]);
     });
@@ -193,7 +219,14 @@ function lmMontar() {
 
   if (lentas.length) console.warn('Abas lentas: ' + lentas.join(', '));
   if (puladas.length) console.warn('Passou de 4,5 min. Abas que ficaram de fora desta vez: ' + puladas.join(', '));
-  return { csv: lmCsv(saida), segundos: (Date.now() - comeco) / 1000, lentas: lentas, puladas: puladas, linhas: saida.length };
+  return { csv: lmCsv(saida), tel: tel, segundos: (Date.now() - comeco) / 1000, lentas: lentas, puladas: puladas, linhas: saida.length };
+}
+
+// "(11) 98765-4321" → "5511987654321"; devolve "" se não parecer um telefone do Brasil
+function lmLimparTelefone(t) {
+  let d = String(t || '').replace(/\D/g, '');
+  if (d.length === 10 || d.length === 11) d = '55' + d;
+  return (d.length === 12 || d.length === 13) && d.indexOf('55') === 0 ? d : '';
 }
 
 function lmCsv(linhas) {
@@ -309,7 +342,9 @@ function lmTrocarCodigo(p) {
   }
   lmApagarChegada(p.loja, String(atual[0]).trim(), linha);   // hora de chegada era da pessoa anterior
   lmMudarGuardada(p.loja, linha, { 3: novo, 4: nome, 8: '' });
-  return { ok: true, nome: nome, codigo: novo };
+  const fone = col.tel >= 0 ? lmLimparTelefone(aba.getRange(linha, col.tel + 1).getDisplayValue()) : '';
+  lmMudarTelefone(p.loja, linha, fone);
+  return { ok: true, nome: nome, codigo: novo, tel: fone };
 }
 
 /* ============================== HORA DA CHEGADA (guardada no Apps Script, não na planilha) ============================== */
@@ -377,6 +412,8 @@ function lmOnline(tipo, id) {   // 'o' = operador, 'p' = painel
 function testarTudo() {
   const r = lmMontar();
   lmGuardar(r.csv, Date.now());
+  lmGuardarTexto(LM_CHAVE_TEL, JSON.stringify(r.tel), Date.now());
+  console.log('Telefones encontrados: ' + Object.keys(r.tel).length + ' (só vão para a tela do operador).');
   console.log('Escala montada: ' + r.linhas + ' linhas em ' + r.segundos.toFixed(1) + ' segundos (' +
     Math.round(Utilities.newBlob(r.csv).getBytes().length / 1024) + ' KB).');
   console.log(r.lentas.length ? 'Abas lentas (mais de 5 s): ' + r.lentas.join(', ') : 'Nenhuma aba lenta.');

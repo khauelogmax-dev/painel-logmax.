@@ -256,6 +256,12 @@ html.tv .dias button small{font-size:.6rem}
 .janela-dica{font-size:.8rem;color:var(--tx2);margin:8px 0 0}
 .janela-botoes{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
 .btn-cancelar{font:inherit;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:10px;padding:0 16px;min-height:42px;cursor:pointer}
+/* ===== WhatsApp ===== */
+.btn-whats{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:10px;background:#16a34a;color:#fff;flex:none;text-decoration:none;transition:background .15s}
+.btn-whats:hover{background:#15803d}
+.btn-whats svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.lnk-whats{font-size:.8rem;font-weight:700;color:#15803d;text-decoration:underline}
+html.escuro .lnk-whats{color:#4ade80}
 </style>
 </head>
 <body class="trancado">
@@ -346,6 +352,7 @@ const SESSAO = (() => {
   return id;
 })();
 let online = null;   // { o: operadores, p: telas do painel }
+let telefones = {};  // "LOJA|linha" → telefone (só a tela do operador recebe)
 /* ===== Ícones do topo e selo "ao vivo" ===== */
 const ICONES = {sino:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',sinoOff:'<path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/>',lua:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',tv:'<rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/>',sairTv:'<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',sair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'};
 function botaoTopo(id, ico, rotulo) {
@@ -409,6 +416,7 @@ async function carregar() {
   try {
     const r = await chamar({ acao: "ler", sessao: SESSAO });
     online = r.online || null;
+    telefones = r.tel || {};
     if (r.senha) { sair(r.erro); return; }
     if (!r.ok) throw new Error(r.erro || "erro");
     const tab = lerCSV(r.csv || "");
@@ -588,7 +596,25 @@ function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}</small></div><div class="dir">${botao(l)}</div></li>`;
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</small></div><div class="dir">${botao(l)}</div></li>`;
+}
+
+/* ===== WhatsApp do motoboy (só nesta tela, que tem senha) ===== */
+const ICO_MSG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+function linkWhats(l) {
+  const t = telefones[l.chave];
+  if (!t || l.vaga) return "";
+  const pn = String(l.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
+  const ini = fmtHora(l.horario).split("–")[0];
+  const quando = l.data === hojeSP() ? "" : ` de ${DIAS[new Date(l.data + "T12:00:00").getDay()].toLowerCase()} (${ddmm(l.data)})`;
+  const msg = l.s === "falta" && estaAtrasado(l)
+    ? `Oi ${pn}, tudo bem? Aqui é da LogMax. Seu turno na ${l.loja} começou às ${ini}. Você já está chegando?`
+    : `Oi ${pn}, tudo bem? Aqui é da LogMax, sobre o seu turno${quando} na ${l.loja} (${fmtHora(l.horario)}).`;
+  return `https://wa.me/${t}?text=${encodeURIComponent(msg)}`;
+}
+function botaoWhats(l) {
+  const u = linkWhats(l);
+  return u ? `<a class="btn-whats" href="${esc(u)}" target="_blank" rel="noopener" title="Chamar ${esc(l.nome)} no WhatsApp" aria-label="Chamar ${esc(l.nome)} no WhatsApp">${ICO_MSG}</a>` : "";
 }
 
 function botao(l) {
@@ -597,7 +623,7 @@ function botao(l) {
   if (l.s === "chegou") return g ? `<button type="button" class="btn-chegou" disabled>Desfazendo…</button>`
     : `<span class="etq v">✓ Chegou</span><button type="button" class="btn-desfazer" data-acao="desfazer" data-chave="${k}">Desfazer</button>`;
   if (!podeMarcar(l)) return `<span class="etq c" title="Para mudar, edite direto na planilha">${esc(presencaDe(l))}</span>`;
-  return `<button type="button" class="btn-chegou" data-acao="chegou" data-chave="${k}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button>`;
+  return `${botaoWhats(l)}<button type="button" class="btn-chegou" data-acao="chegou" data-chave="${k}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button>`;
 }
 
 function cartaoLoja(l) {
@@ -824,6 +850,7 @@ function abrirCodigo(l) {
         fechar();
         toast(`✓ ${r.nome}${r.codigo ? " #" + r.codigo : ""} agora na ${l.loja} · ${fmtHora(l.horario)}`, true);
         l.nome = r.nome; l.codigo = r.codigo; l.vaga = /N[ÃA]O\s+LOCALIZAD/i.test(r.nome); l.chegada = null;
+        if ("tel" in r) { if (r.tel) telefones[l.chave] = r.tel; else delete telefones[l.chave]; }
         trocas.delete(l.chave);
         desenhar(); setTimeout(carregar, 500);
       } else {
@@ -895,7 +922,7 @@ function abrirAjuda() {
   el.className = "ajuda-fundo";
   el.innerHTML = `<div class="ajuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
       <div class="ajuda-cab"><h2 id="tituloAjuda">Como ler esta tela</h2><button type="button" class="ajuda-fechar" aria-label="Fechar">✕</button></div>
-      <ul><li><b>Chegou</b>: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha. <b>Desfazer</b> volta para N/D.</li><li><b>Colocar motoboy / Trocar</b>: digite só o código do motoboy; o nome vem sozinho da planilha. Quem já está com OK não pode ser trocado (use Desfazer antes).</li><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 14:59. Noite = começa às 15:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
+      <ul><li><b>Chegou</b>: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha. <b>Desfazer</b> volta para N/D.</li><li><b>WhatsApp</b>: o botão verde ao lado do Chegou abre o WhatsApp do motoboy com uma mensagem pronta (se estiver atrasado, já pergunta se está chegando). O telefone vem da planilha e só aparece nesta tela, que tem senha.</li><li><b>Colocar motoboy / Trocar</b>: digite só o código do motoboy; o nome vem sozinho da planilha. Quem já está com OK não pode ser trocado (use Desfazer antes).</li><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 14:59. Noite = começa às 15:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
   const fechar = () => { el.remove(); document.removeEventListener("keydown", tecla); };
   const tecla = e => { if (e.key === "Escape") fechar(); };
   el.addEventListener("click", e => { if (e.target === el || e.target.closest(".ajuda-fechar")) fechar(); });
