@@ -48,7 +48,7 @@ function doPost(e) {
       csv = opMontarCsv();
       try { cache.put('op_escala', csv, OP_GUARDAR_SEGUNDOS); } catch (err) { /* grande demais para guardar: tudo bem */ }
     }
-    return opResposta({ ok: true, csv: csv });
+    return opResposta({ ok: true, csv: csv, online: opOnline('o', pedido.sessao) });
   }
 
   if (pedido.acao !== 'chegou' && pedido.acao !== 'desfazer') return opResposta({ ok: false, erro: 'Ação desconhecida.' });
@@ -113,6 +113,32 @@ function opMontarCsv() {
   return saida.map(function (linha) {
     return linha.map(function (c) { return /[",\n]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c; }).join(',');
   }).join('\n');
+}
+
+/* ===== Quem está com a tela aberta agora =====
+ * Cada tela avisa a cada 30 s. Quem não avisa há mais de 90 s sai da conta.
+ * Tipos: 'o' = tela do operador, 'p' = painel público. Guardado só na memória rápida (CacheService). */
+const OP_ONLINE_SEG = 90;
+function opOnline(tipo, id) {
+  const cache = CacheService.getScriptCache(), agora = Date.now();
+  const ler = function () { try { return JSON.parse(cache.get('online') || '{}'); } catch (e) { return {}; } };
+  let mapa = ler();
+  if (id && /^[A-Za-z0-9]{6,40}$/.test(String(id))) {
+    const trava = LockService.getScriptLock();
+    if (trava.tryLock(2000)) {
+      try {
+        mapa = ler();
+        mapa[id] = [tipo, agora];
+        Object.keys(mapa).forEach(function (k) { if (agora - mapa[k][1] > OP_ONLINE_SEG * 1000) delete mapa[k]; });
+        cache.put('online', JSON.stringify(mapa), 600);
+      } catch (e) { /* se falhar, só não conta desta vez */ } finally { trava.releaseLock(); }
+    }
+  }
+  const conta = { o: 0, p: 0 };
+  Object.keys(mapa).forEach(function (k) {
+    if (agora - mapa[k][1] <= OP_ONLINE_SEG * 1000) conta[mapa[k][0]] = (conta[mapa[k][0]] || 0) + 1;
+  });
+  return conta;
 }
 
 /* ===== Hora da chegada (guardada no Apps Script, não na planilha) ===== */

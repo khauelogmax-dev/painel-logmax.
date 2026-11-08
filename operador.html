@@ -136,6 +136,11 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
   .status{text-align:left}
 }
 /* ===== Operador ===== */
+.online{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:10px 14px;margin:-4px 0 14px;font-size:.95rem}
+.online .sep{color:var(--tx2)}
+.ponto-on{width:.7rem;height:.7rem;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulsa 2s ease-out infinite}
+@keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+@media (prefers-reduced-motion:reduce){.ponto-on{animation:none}}
 .faixa-teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
 .btn-chegou{font:inherit;font-weight:800;font-size:.95rem;border:0;border-radius:10px;background:var(--laranja);color:#fff;padding:0 16px;min-height:42px;min-width:104px;cursor:pointer;white-space:nowrap}
 html.escuro .btn-chegou{color:#0b1322}
@@ -230,6 +235,14 @@ function ultimoDia(iso) {
   const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 7);
   return d.toISOString().slice(0, 10);
 }
+// identificador desta aba (para contar quantas telas estão abertas); não tem nada pessoal
+const SESSAO = (() => {
+  let id = null;
+  try { id = sessionStorage.getItem("logmax-sessao"); } catch (e) {}
+  if (!id) { id = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try { sessionStorage.setItem("logmax-sessao", id); } catch (e) {} }
+  return id;
+})();
+let online = null;   // { o: operadores, p: telas do painel }
 const ddmm = iso => `${iso.slice(8)}/${iso.slice(5,7)}`;
 
 function lerCSV(texto) {
@@ -267,7 +280,8 @@ function minutosAtraso(l) { // minutos desde o início do turno (só faz sentido
 async function carregar() {
   if (!senha) return;
   try {
-    const r = await chamar({ acao: "ler" });
+    const r = await chamar({ acao: "ler", sessao: SESSAO });
+    online = r.online || null;
     if (r.senha) { sair(r.erro); return; }
     if (!r.ok) throw new Error(r.erro || "erro");
     const tab = lerCSV(r.csv || "");
@@ -526,6 +540,9 @@ function desenhar() {
     <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
       ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
     </div>
+    ${online ? `<div class="online" title="Telas abertas agora (atualiza a cada 30 s)"><span class="ponto-on" aria-hidden="true"></span><b>Online agora:</b>
+      <span>${online.o} ${online.o === 1 ? "operador" : "operadores"}</span><span class="sep">·</span>
+      <span>${online.p} ${online.p === 1 ? "tela do painel" : "telas do painel"}</span></div>` : ""}
     ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}

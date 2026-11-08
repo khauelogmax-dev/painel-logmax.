@@ -202,6 +202,13 @@ function ultimoDia(iso) {
   const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 7);
   return d.toISOString().slice(0, 10);
 }
+// identificador desta aba (para contar quantas telas estão abertas); não tem nada pessoal
+const SESSAO = (() => {
+  let id = null;
+  try { id = sessionStorage.getItem("logmax-sessao"); } catch (e) {}
+  if (!id) { id = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try { sessionStorage.setItem("logmax-sessao", id); } catch (e) {} }
+  return id;
+})();
 const ddmm = iso => `${iso.slice(8)}/${iso.slice(5,7)}`;
 
 function lerCSV(texto) {
@@ -235,7 +242,7 @@ function minutosAtraso(l) { // minutos desde o início do turno (só faz sentido
 
 async function carregar() {
   try {
-    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now() + "&v=" + SESSAO, { cache: "no-store" });
     if (!r.ok) throw new Error("HTTP " + r.status);
     const tab = lerCSV(await r.text());
     atualizadoEm = (tab[1] && tab[1][7]) || "";
