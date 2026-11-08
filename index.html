@@ -101,6 +101,17 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 .toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
 @keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+/* ===== Comemoração: tudo fechado ===== */
+.festa{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(6,13,28,.88);cursor:pointer;animation:entra .3s ease-out;overflow:hidden}
+.festa-texto{position:relative;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.festa-texto img{width:clamp(90px,14vw,170px);height:clamp(90px,14vw,170px);border-radius:50%;border:5px solid #facc15;object-fit:cover;animation:pula .6s ease-in-out infinite alternate}
+.grito{font-size:clamp(40px,8.5vw,128px);font-weight:900;line-height:1.02;letter-spacing:-.01em;color:#facc15;text-shadow:0 0 24px rgba(250,204,21,.55),0 6px 0 #1d4ed8;animation:zoom 1s ease-in-out infinite alternate}
+.festa .sub{font-size:clamp(16px,2.4vw,28px);font-weight:800;color:#bbf7d0}
+.confete i{position:absolute;top:-24px;width:12px;height:18px;border-radius:3px;animation:cai linear infinite}
+@keyframes cai{to{top:110%;transform:rotate(720deg)}}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+@keyframes pula{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+@media (prefers-reduced-motion:reduce){.grito,.festa-texto img,.confete i{animation:none}.confete{display:none}}
 /* ===== Modo escuro ===== */
 html.escuro{
   --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
@@ -279,6 +290,39 @@ function conferirCompletas() {
     if (estadoLoja.has(nome) && estadoLoja.get(nome) === false && completa) avisoCompleta(nome);
     estadoLoja.set(nome, completa);
   });
+  // tudo fechado: todas as lojas do dia completas (só quando ACABOU de fechar com a tela aberta)
+  const tudo = lojas.length > 0 && lojas.every(n => estadoLoja.get(n));
+  if (tudoFechado === false && tudo) comemorar();
+  tudoFechado = tudo;
+}
+let tudoFechado = null;
+function fanfarra() {
+  if (!somLigado || !audio) return;
+  const t = audio.currentTime;
+  const notas = [[523.3, 0, .16], [659.3, .16, .16], [784, .32, .16], [1046.5, .48, .5], [784, .98, .14], [1046.5, 1.12, .9]];
+  notas.forEach(([f, d, dur]) => {
+    [1, 2].forEach((mult, i) => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = i ? "sine" : "triangle"; o.frequency.value = f * mult;
+      const vol = i ? 0.06 : 0.28;
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(vol, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + dur);
+      o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + dur + 0.05);
+    });
+  });
+}
+function comemorar() {
+  const cores = ["#fb923c", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
+  const confete = Array.from({ length: 90 }, (_, i) =>
+    `<i style="left:${(i * 37) % 100}%;background:${cores[i % cores.length]};animation-delay:${(i % 15) * 0.12}s;animation-duration:${2.6 + (i % 7) * 0.35}s;transform:rotate(${i * 23}deg)"></i>`).join("");
+  const el = document.createElement("div");
+  el.className = "festa"; el.setAttribute("role", "alert");
+  el.innerHTML = `<div class="confete" aria-hidden="true">${confete}</div>
+    <div class="festa-texto"><img src="lume.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
+  el.addEventListener("click", () => el.remove());
+  document.querySelectorAll("#toasts .toast").forEach(t => t.remove()); // a festa ocupa a tela toda
+  document.body.appendChild(el);
+  fanfarra();
+  setTimeout(() => el.remove(), 9000);
 }
 function aviso(texto) {
   const el = document.createElement("div");
