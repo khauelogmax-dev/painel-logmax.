@@ -246,7 +246,9 @@ const CSV_URL = "https://script.google.com/macros/s/AKfycbxHMANMPiLYGj1DhRM7aCUo
 /* =============================================================== */
 
 const ATUALIZAR_MS = 30 * 1000;   // busca de novo a cada 30 segundos
-const ALERTA_MIN = 10;            // apita quando o turno começou há 10 min e o motoboy ainda falta chegar
+const PISCAR_MIN = 1;             // passou do horário do turno sem OK → loja pisca e a pessoa ganha "atrasado X min"
+const ALERTA_MIN = 10;            // apita (com o som ligado) quando o turno começou há 10 min e o motoboy ainda falta chegar
+const ANOTAR_MIN = 15;            // depois do Chegou, só marca "X min atrasado" a partir de 15 min
 const NOITE_A_PARTIR = 16 * 60;   // turno que começa às 16:00 ou depois = noite; antes = almoço
 const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
@@ -503,10 +505,10 @@ function modoTv(ligar) {
 const ROT = { chegou: ["Chegou", "v"], falta: ["Falta chegar", "a"], vaga: ["Sem motoca", "r"] };
 const ORDEM = { falta: 0, vaga: 1, chegou: 2 };
 const porHorario = (a, b) => ORDEM[a.s] - ORDEM[b.s] || (inicioMin(a.horario) ?? 0) - (inicioMin(b.horario) ?? 0);
-function estaAtrasado(l) { // turno começou há ALERTA_MIN minutos (ou mais) e ainda sem OK
+function estaAtrasado(l) { // passou do horário do turno (PISCAR_MIN) e ainda sem OK
   if (l.s !== "falta" || l.data !== hojeSP()) return false;
   const m = minutosAtraso(l);
-  return m !== null && m >= ALERTA_MIN && m < 12 * 60;
+  return m !== null && m >= PISCAR_MIN && m < 12 * 60;
 }
 // "19:23|1163" → { h: "19:23", m: 1163 }  (m = minutos desde 00:00 do dia da escala)
 function lerChegada(t) { const m = String(t || "").match(/^(\d{1,2}:\d{2})\|(-?\d+)$/); return m ? { h: m[1], m: +m[2] } : null; }
@@ -516,13 +518,13 @@ function atrasoChegada(l) { const c = chegadaDe(l), ini = inicioMin(l.horario); 
 function textoChegada(l) {   // só para quem chegou pelo botão Chegou (OK dado direto na planilha não tem hora)
   const c = chegadaDe(l); if (!c) return "";
   const a = atrasoChegada(l);
-  return a !== null && a >= ALERTA_MIN ? `<span class="etq r">chegou ${c.h} · ${fmtMin(a)} atrasado</span>` : `<span class="etq c">chegou ${c.h}</span>`;
+  return a !== null && a >= ANOTAR_MIN ? `<span class="etq r">chegou ${c.h} · ${fmtMin(a)} atrasado</span>` : `<span class="etq c">chegou ${c.h}</span>`;
 }
 // "11:00 AS 15:00" → "11:00–15:00"
 function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-|–|ATÉ)\s*(\d{1,2}:\d{2})/i); return m ? `${m[1]}–${m[2]}` : String(h); }
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
-  const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
+  const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
   return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}</small></div><div class="dir"><span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></div></li>`;
 }
 
@@ -662,7 +664,7 @@ function abrirAjuda() {
   el.className = "ajuda-fundo";
   el.innerHTML = `<div class="ajuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
       <div class="ajuda-cab"><h2 id="tituloAjuda">Como ler esta tela</h2><button type="button" class="ajuda-fechar" aria-label="Fechar">✕</button></div>
-      <ul><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: o turno começou há ${ALERTA_MIN} min ou mais e ainda não tem OK.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 15:59. Noite = começa às 16:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
+      <ul><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 15:59. Noite = começa às 16:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
   const fechar = () => { el.remove(); document.removeEventListener("keydown", tecla); };
   const tecla = e => { if (e.key === "Escape") fechar(); };
   el.addEventListener("click", e => { if (e.target === el || e.target.closest(".ajuda-fechar")) fechar(); });
