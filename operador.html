@@ -152,18 +152,6 @@ html.escuro .btn-chegou{color:#0b1322}
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
 html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
-.btn-trocar{font:inherit;font-weight:700;font-size:.85rem;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:10px;padding:0 12px;min-height:42px;cursor:pointer}
-.btn-codigo{font:inherit;font-weight:800;font-size:.9rem;border:2px dashed var(--vermelho);background:var(--cartao);color:var(--vermelho);border-radius:10px;padding:0 12px;min-height:42px;cursor:pointer;white-space:nowrap}
-.janela-fundo{position:fixed;inset:0;z-index:80;background:rgba(6,13,28,.6);display:grid;place-items:center;padding:16px;animation:entra .2s ease-out}
-.janela{width:100%;max-width:400px;background:var(--cartao);color:var(--tx);border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
-.janela h2{margin:0 0 6px;font-size:1.15rem}
-.janela-info{margin:0 0 14px;color:var(--tx2);font-size:.92rem;line-height:1.5}
-.janela label{display:block;font-weight:700;font-size:.85rem;margin-bottom:6px}
-.janela input{width:100%;font:inherit;font-size:1.4rem;font-weight:800;letter-spacing:.06em;text-align:center;padding:12px;border-radius:12px;border:2px solid var(--linha);background:var(--li);color:var(--tx)}
-.janela input:focus{outline:none;border-color:var(--laranja)}
-.janela-dica{font-size:.8rem;color:var(--tx2);margin:8px 0 0}
-.janela-botoes{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
-.btn-cancelar{font:inherit;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:10px;padding:0 16px;min-height:42px;cursor:pointer}
 body.trancado header,body.trancado main{display:none}
 @media (max-width:560px){.lista li{flex-wrap:wrap}.btn-chegou{min-width:96px}}
 </style>
@@ -445,11 +433,11 @@ function pessoa(l) {
 
 function botao(l) {
   const g = gravando.get(l.chave), k = esc(l.chave);
-  if (l.s === "vaga") return `<button type="button" class="btn-codigo" data-acao="codigo" data-chave="${k}">+ Colocar motoboy</button>`;
+  if (l.s === "vaga") return `<span class="etq r">Sem motoca</span>`;
   if (l.s === "chegou") return g ? `<button type="button" class="btn-chegou" disabled>Desfazendo…</button>`
     : `<span class="etq v">✓ Chegou</span><button type="button" class="btn-desfazer" data-acao="desfazer" data-chave="${k}">Desfazer</button>`;
   if (!podeMarcar(l)) return `<span class="etq c" title="Para mudar, edite direto na planilha">${esc(presencaDe(l))}</span>`;
-  return `${g ? "" : `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${k}">Trocar</button>`}<button type="button" class="btn-chegou" data-acao="chegou" data-chave="${k}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button>`;
+  return `<button type="button" class="btn-chegou" data-acao="chegou" data-chave="${k}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button>`;
 }
 
 function cartaoLoja(l) {
@@ -579,7 +567,6 @@ function toast(texto, ok) {
 async function marcar(chave, acao) {
   const l = linhas.find(x => x.chave === chave);
   if (!l || gravando.has(chave)) return;
-  if (acao === "codigo") { abrirCodigo(l); return; }
   if (acao === "desfazer" && !confirm(`Tirar o OK de ${l.nome} (${l.loja})?`)) return;
   gravando.set(chave, acao); desenhar();
   try {
@@ -605,59 +592,6 @@ document.addEventListener("click", e => {
   e.preventDefault(); e.stopPropagation();
   marcar(b.dataset.chave, b.dataset.acao);
 }, true);
-
-/* ===== Colocar ou trocar motoboy pelo código ===== */
-function abrirCodigo(l) {
-  const vaga = l.vaga;
-  const el = document.createElement("div");
-  el.className = "janela-fundo";
-  el.innerHTML = `
-    <form class="janela" role="dialog" aria-modal="true" aria-labelledby="tituloJanela">
-      <h2 id="tituloJanela">${vaga ? "Colocar motoboy na vaga" : "Trocar motoboy"}</h2>
-      <p class="janela-info"><b>${esc(l.loja)}</b> · ${esc(rotulo(l.data))} · ${esc(l.horario)}<br>
-        ${vaga ? "Hoje: <b>vaga sem motoca</b>" : `Hoje: <b>${esc(l.nome)}</b>${l.codigo ? " #" + esc(l.codigo) : ""}`}</p>
-      <label for="campoCodigo">Código do motoboy</label>
-      <input id="campoCodigo" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Ex.: 123" required>
-      <p class="janela-dica">O nome aparece sozinho pela planilha. A presença (OK) continua separada.</p>
-      <div class="erro" id="erroCodigo"></div>
-      <div class="janela-botoes">
-        <button type="button" class="btn-cancelar" id="btnCancelar">Cancelar</button>
-        <button class="btn-chegou" id="btnSalvarCodigo">Salvar</button>
-      </div>
-    </form>`;
-  document.body.appendChild(el);
-  const campo = el.querySelector("#campoCodigo"), btnS = el.querySelector("#btnSalvarCodigo");
-  const fechar = () => el.remove();
-  campo.focus();
-  el.querySelector("#btnCancelar").onclick = fechar;
-  el.addEventListener("click", e => { if (e.target === el) fechar(); });
-  el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
-  el.querySelector("form").onsubmit = async ev => {
-    ev.preventDefault();
-    const codigo = campo.value.trim();
-    if (!codigo) return;
-    btnS.disabled = true; btnS.textContent = "Gravando…";
-    el.querySelector("#erroCodigo").textContent = "";
-    try {
-      const r = await chamar({ acao: "codigo", loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome, codigo });
-      if (r.senha) { fechar(); sair(r.erro); return; }
-      if (r.ok) {
-        fechar();
-        toast(`✓ ${r.nome}${r.codigo ? " #" + r.codigo : ""} agora na ${l.loja} · ${l.horario}`, true);
-        l.nome = r.nome; l.codigo = r.codigo; l.vaga = /N[ÃA]O\s+LOCALIZAD/i.test(r.nome);
-        trocas.delete(l.chave);
-        desenhar(); carregar();
-      } else {
-        el.querySelector("#erroCodigo").textContent = r.erro || "Não gravou. Tente de novo.";
-        btnS.disabled = false; btnS.textContent = "Salvar";
-        if (r.mudou) setTimeout(() => { fechar(); carregar(); }, 2500);
-      }
-    } catch (e) {
-      el.querySelector("#erroCodigo").textContent = "Não gravou. Confira a internet e tente de novo.";
-      btnS.disabled = false; btnS.textContent = "Salvar";
-    }
-  };
-}
 
 /* ===== Entrada com senha ===== */
 let iniciado = false;
