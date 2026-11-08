@@ -48,7 +48,21 @@ html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:va
 .resumo b{font-size:1.6rem}
 .loja{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid #f59e0b;border-radius:14px;margin-bottom:12px;overflow:hidden}
 .loja.tem-vaga{border-left-color:var(--vermelho)}
-.loja-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px 6px}
+.loja-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px;cursor:pointer;list-style:none}
+details.loja>summary::-webkit-details-marker{display:none}
+details.loja[open]>.loja-cab{padding-bottom:8px}
+.loja-nome{display:flex;align-items:center;gap:8px;min-width:0}
+.loja-nome h2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seta{color:var(--laranja);font-weight:900;transition:transform .15s;display:inline-block}
+details.loja[open] .seta{transform:rotate(90deg)}
+.tags{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px}
+.tg{border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+.tg.a{background:var(--ambar);color:#fff}html.escuro .tg.a{color:#0b1322}
+.tg.f{background:var(--ambar-claro);color:var(--ambar)}
+.tg.v{background:var(--vermelho-claro);color:var(--vermelho)}
+details.loja.com-atraso{animation:brilho 1.6s ease-in-out infinite}
+@keyframes brilho{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,0)}50%{box-shadow:0 0 0 4px rgba(250,204,21,.55)}}
+@media (prefers-reduced-motion:reduce){details.loja.com-atraso{animation:none}}
 .loja-cab h2{margin:0;font-size:1.05rem}
 .conta{font-weight:800;color:var(--tx2);white-space:nowrap}
 ul{list-style:none;margin:0;padding:0 10px 10px;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
@@ -381,11 +395,11 @@ function desenhar() {
     const pend = ls.filter(l => situacao(l) === "falta");
     return { nome, ls, pend, vagas: ls.filter(l => l.vaga).length,
              atrasos: pend.filter(atraso).length,
-             primeira: Math.min(...pend.map(l => inicioMin(l.horario) ?? 9999)),
+             inicio: Math.min(...ls.map(l => inicioMin(l.horario) ?? 9999)),
              chegaram: ls.filter(l => situacao(l) === "chegou").length };
   });
   const abertasLojas = grupos.filter(g => g.pend.length || g.vagas || g.ls.some(l => situacao(l) === "outro"))
-    .sort((a, b) => b.atrasos - a.atrasos || a.primeira - b.primeira || a.nome.localeCompare(b.nome));
+    .sort((a, b) => a.inicio - b.inicio || a.nome.localeCompare(b.nome));   // ordem fixa: não pula enquanto você clica
   const completas = grupos.filter(g => !abertasLojas.includes(g)).sort((a, b) => a.nome.localeCompare(b.nome));
 
   let html = "";
@@ -393,12 +407,21 @@ function desenhar() {
   abertasLojas.forEach(g => {
     const feitos = g.ls.filter(l => situacao(l) === "chegou");
     const resto = g.ls.filter(l => situacao(l) !== "chegou");
-    html += `<section class="loja${g.vagas ? " tem-vaga" : ""}">
-      <div class="loja-cab"><h2>${esc(g.nome)}</h2><span class="conta">${g.chegaram} de ${g.ls.length}</span></div>
+    const id = "o:" + g.nome;
+    html += `<details class="loja${g.vagas ? " tem-vaga" : ""}${g.atrasos ? " com-atraso" : ""}" data-loja="${esc(id)}"${abertos.has(id) || termo ? " open" : ""}>
+      <summary class="loja-cab">
+        <span class="loja-nome"><span class="seta">▸</span><h2>${esc(g.nome)}</h2></span>
+        <span class="tags">
+          ${g.atrasos ? `<span class="tg a">${g.atrasos} atrasado${g.atrasos > 1 ? "s" : ""}</span>` : ""}
+          ${g.pend.length - g.atrasos > 0 ? `<span class="tg f">falta ${g.pend.length - g.atrasos}</span>` : ""}
+          ${g.vagas ? `<span class="tg v">${g.vagas} vaga${g.vagas > 1 ? "s" : ""}</span>` : ""}
+          <span class="conta">${g.chegaram} de ${g.ls.length}</span>
+        </span>
+      </summary>
       <ul>${resto.map(linhaPessoa).join("")}</ul>
-      ${feitos.length ? `<details class="ja" data-loja="${esc(g.nome)}"${abertos.has(g.nome) || termo ? " open" : ""}>
+      ${feitos.length ? `<details class="ja" data-loja="j:${esc(g.nome)}"${abertos.has("j:" + g.nome) || termo ? " open" : ""}>
         <summary>✓ Já chegaram (${feitos.length}) ▸</summary><ul>${feitos.map(linhaPessoa).join("")}</ul></details>` : ""}
-    </section>`;
+    </details>`;
   });
   if (completas.length) {
     html += `<h3 class="sec">Lojas completas (${completas.length})</h3>`;
