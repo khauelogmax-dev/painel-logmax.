@@ -290,9 +290,10 @@ function mudarDia(n) {
 
 async function carregar() {
   try {
-    const r = await fetch(API + (API.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    const tab = lerCSV(await r.text());
+    const r = await chamar({ acao: "ler" });
+    if (r.senha) { toast(r.erro || "Senha não aceita."); sair(); return; }
+    if (!r.ok) throw new Error(r.erro || "erro");
+    const tab = lerCSV(r.csv || "");
     atualizadoEm = (tab[1] && tab[1][7]) || "";
     linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
       const nome = c[4].trim();

@@ -8,4 +8,5 @@ Tela que mostra, a cada 30 segundos, quantos motoboys chegaram, quem está sem O
 ## Tela do operador (marcar chegada)
 - `operador.html`: tela com senha onde o operador clica em **Chegou** e o OK vai direto para a coluna PRESENÇA da planilha. Também dá para **Desfazer**.
 - Para testar com a cópia da planilha: `operador.html?api=ENDERECO_EXEC_DA_COPIA` (aparece a faixa amarela MODO TESTE).
+- O código da gravação fica num arquivo separado no Apps Script: `codigo-operador.gs` (nomes com OP_/op, não mexe no `codigo-da-planilha.gs` do painel).
 - A senha fica no Apps Script em Configurações do projeto → Propriedades do script → `SENHA_EDICAO`.
