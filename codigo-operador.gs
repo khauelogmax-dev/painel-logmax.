@@ -11,6 +11,8 @@
  *                      NÃO devolve telefone, CPF, PIX nem valores.
  *   - acao "chegou":   escreve OK na coluna PRESENÇA daquela linha.
  *   - acao "desfazer": volta para N/D.
+ *   - acao "codigo":   escreve o CÓDIGO do motoboy na coluna COD (para preencher uma vaga ou trocar quem está).
+ *                      O NOME a planilha puxa sozinha pela fórmula. Não mexe no OK.
  *
  * Senha: Configurações do projeto (engrenagem) → Propriedades do script → SENHA_EDICAO.
  * Só escreve na coluna PRESENÇA e só depois de conferir que a linha ainda é a mesma pessoa no mesmo dia.
@@ -50,13 +52,13 @@ function doPost(e) {
     return opResposta({ ok: true, csv: csv });
   }
 
-  if (pedido.acao !== 'chegou' && pedido.acao !== 'desfazer') return opResposta({ ok: false, erro: 'Ação desconhecida.' });
+  if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return opResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   // 3) uma gravação por vez
   const trava = LockService.getScriptLock();
   if (!trava.tryLock(15000)) return opResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
   try {
-    return opResposta(opMarcar(pedido));
+    return opResposta(pedido.acao === 'codigo' ? opTrocarCodigo(pedido) : opMarcar(pedido));
   } finally {
     trava.releaseLock();
   }
@@ -112,12 +114,13 @@ function opMontarCsv() {
   }).join('\n');
 }
 
-function opMarcar(p) {
+// acha a linha na aba e confere se ainda é a mesma pessoa no mesmo dia
+function opLocalizar(p) {
   const aba = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(String(p.loja || ''));
-  if (!aba || !opAbaDeLoja(aba)) return { ok: false, erro: 'Não achei a aba da loja ' + p.loja + '.' };
+  if (!aba || !opAbaDeLoja(aba)) return { erro: { ok: false, erro: 'Não achei a aba da loja ' + p.loja + '.' } };
 
   const linha = parseInt(p.linha, 10);
-  if (!(linha >= 2) || linha > aba.getLastRow()) return { ok: false, erro: 'Linha fora da planilha.', mudou: true };
+  if (!(linha >= 2) || linha > aba.getLastRow()) return { erro: { ok: false, erro: 'Linha fora da planilha.', mudou: true } };
 
   // acha o cabeçalho do bloco desta linha (subindo no máximo 300 linhas)
   const de = Math.max(1, linha - 300);
@@ -127,13 +130,25 @@ function opMarcar(p) {
   for (let i = trecho.length - 2; i >= 0; i--) {
     if (String(trecho[i][0]).trim().toUpperCase() === 'DATA') { col = opColunas(trecho[i]); break; }
   }
-  if (!col || col.pres < 0 || col.nome < 0) return { ok: false, erro: 'Não achei o cabeçalho deste dia na aba ' + p.loja + '.' };
+  if (!col || col.pres < 0 || col.nome < 0) return { erro: { ok: false, erro: 'Não achei o cabeçalho deste dia na aba ' + p.loja + '.' } };
 
-  // confere se a linha ainda é a mesma pessoa no mesmo dia
   const igual = function (a, b) { return String(a).trim().toUpperCase() === String(b).trim().toUpperCase(); };
   if (!igual(atual[0], p.data) || !igual(atual[col.nome], p.nome)) {
-    return { ok: false, mudou: true, erro: 'Essa linha mudou na planilha. Atualizei a lista, confira e tente de novo.' };
+    return { erro: { ok: false, mudou: true, erro: 'Essa linha mudou na planilha. Atualizei a lista, confira e tente de novo.' } };
   }
+  return { aba: aba, linha: linha, atual: atual, col: col };
+}
+
+function opLimparCache() {
+  const cache = CacheService.getScriptCache();
+  cache.remove('op_escala');   // a tela do operador já lê a mudança
+  cache.remove('presenca');    // o painel público também
+}
+
+function opMarcar(p) {
+  const achou = opLocalizar(p);
+  if (achou.erro) return achou.erro;
+  const aba = achou.aba, linha = achou.linha, atual = achou.atual, col = achou.col;
 
   const celula = aba.getRange(linha, col.pres + 1);
   const agora = String(atual[col.pres]).trim().toUpperCase();
@@ -149,14 +164,67 @@ function opMarcar(p) {
     celula.setValue('N/D');
   }
   SpreadsheetApp.flush();
-  const cache = CacheService.getScriptCache();
-  cache.remove('op_escala');   // a tela do operador já lê a mudança
-  cache.remove('presenca');    // o painel público também
+  opLimparCache();
   return { ok: true, presenca: p.acao === 'chegou' ? 'OK' : 'N/D' };
+}
+
+// escreve o código do motoboy na coluna COD; o NOME vem sozinho pela fórmula da planilha
+function opTrocarCodigo(p) {
+  const achou = opLocalizar(p);
+  if (achou.erro) return achou.erro;
+  const aba = achou.aba, linha = achou.linha, atual = achou.atual, col = achou.col;
+  if (col.cod < 0) return { ok: false, erro: 'Não achei a coluna COD nesta aba.' };
+
+  const novo = String(p.codigo || '').trim();
+  if (!/^[0-9A-Za-z-]{1,12}$/.test(novo)) return { ok: false, erro: 'Digite um código válido (só números ou letras).' };
+  if (String(atual[col.cod]).trim().toUpperCase() === novo.toUpperCase()) return { ok: true, nome: atual[col.nome], codigo: novo, jaEstava: true };
+
+  // não deixa trocar quem já está com OK (o OK passaria para outra pessoa)
+  if (String(atual[col.pres]).trim().toUpperCase() === 'OK') {
+    return { ok: false, erro: 'Essa pessoa já está com OK. Toque em Desfazer antes de trocar.' };
+  }
+
+  const celNome = aba.getRange(linha, col.nome + 1);
+  if (!celNome.getFormula()) {
+    return { ok: false, erro: 'Nesta linha o NOME não puxa pelo código (não tem fórmula). Troque direto na planilha.' };
+  }
+
+  const celCod = aba.getRange(linha, col.cod + 1);
+  const antes = celCod.getValue();
+  celCod.setValue(/^\d+$/.test(novo) ? Number(novo) : novo);
+  SpreadsheetApp.flush();
+
+  const nome = String(celNome.getDisplayValue()).trim();
+  if (!nome || /N[ÃA]O\s+LOCALIZAD|^#/i.test(nome)) {
+    celCod.setValue(antes);              // código não existe no cadastro: volta como estava
+    SpreadsheetApp.flush();
+    return { ok: false, erro: 'Código ' + novo + ' não encontrado no cadastro. Nada foi mudado.' };
+  }
+  opLimparCache();
+  return { ok: true, nome: nome, codigo: novo };
 }
 
 function opResposta(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Confere, em cada loja, se a coluna NOME puxa pelo código (fórmula). Não mostra nenhum dado pessoal. */
+function conferirNomePorCodigo() {
+  SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (aba) {
+    if (!opAbaDeLoja(aba)) return;
+    const ultima = aba.getLastRow();
+    if (ultima < 3) return;
+    const inicio = Math.max(1, ultima - 60 + 1);
+    const valores = aba.getRange(inicio, 1, ultima - inicio + 1, OP_COLUNAS).getDisplayValues();
+    const formulas = aba.getRange(inicio, 1, ultima - inicio + 1, OP_COLUNAS).getFormulas();
+    let col = null, com = 0, sem = 0;
+    valores.forEach(function (l, i) {
+      if (String(l[0]).trim().toUpperCase() === 'DATA') { col = opColunas(l); return; }
+      if (!col || col.nome < 0 || !/^\d{2}\/\d{2}\/\d{4}$/.test(String(l[0]).trim())) return;
+      formulas[i][col.nome] ? com++ : sem++;
+    });
+    Logger.log(aba.getName() + ': ' + com + ' linhas com fórmula no NOME, ' + sem + ' sem fórmula');
+  });
 }
 
 /** Rode esta no editor para testar: mostra quantas linhas leu, o tempo e se a senha existe (sem mostrar a senha). */
