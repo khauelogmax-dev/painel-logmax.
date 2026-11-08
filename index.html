@@ -135,17 +135,32 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
   .num .val{font-size:2rem}.dia strong{min-width:120px;font-size:.95rem}
   .status{text-align:left}
 }
+/* ===== Faixa de dias ===== */
+.dias{padding:0 16px 14px}
+.dias .trilho{max-width:1100px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.dias .trilho::-webkit-scrollbar{display:none}
+.dias button{flex:none;font:inherit;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:6px 10px 7px;min-width:62px;text-align:center;cursor:pointer;line-height:1.15;transition:background .15s,transform .1s}
+.dias button:not(.on):not(:disabled):hover{background:rgba(255,255,255,.14)}
+.dias button:active:not(:disabled){transform:scale(.96)}
+.dias button small{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#cbd5e1}
+.dias button b{display:block;font-size:1.15rem}
+.dias button i{display:block;margin:4px auto 0;width:7px;height:7px;border-radius:50%;background:transparent}
+.dias button.on{background:#fff;color:var(--marinho);border-color:#fff}
+.dias button.on small{color:var(--laranja)}
+html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .dias button.on small{color:#0b1322}
+.dias button:disabled{opacity:.35;cursor:default}
+.dias i.d-v{background:#ef4444}.dias i.d-a{background:#f59e0b}.dias i.d-g{background:#22c55e}
+html.tv .dias{padding-left:32px;padding-right:32px}
+html.tv .dias .trilho{max-width:none}
+html.tv .dias button{min-width:90px;padding:8px 14px}
+html.tv .dias button small{font-size:.6rem}
 </style>
 </head>
 <body>
 <header>
   <div class="topo">
     <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div>LogMax <span>·</span> Presença</div></div>
-    <div class="dia">
-      <button id="ant" aria-label="Dia anterior">←</button>
-      <strong id="rotuloDia">…</strong>
-      <button id="prox" aria-label="Próximo dia">→</button>
-    </div>
     <div class="acoes">
       <button type="button" id="btnSom" aria-pressed="false">🔕 Ligar som</button>
       <button type="button" id="btnEscuro" aria-pressed="false">🌙 Modo escuro</button>
@@ -153,6 +168,7 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
     </div>
     <div class="status" id="status">Carregando…</div>
   </div>
+  <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
 </header>
 <main id="conteudo"><p>Carregando…</p></main>
 <div id="toasts" aria-live="assertive"></div>
@@ -456,11 +472,27 @@ function cartaoCompleto(l) {
         </div>
       </details>`;
 }
+/* ===== Faixa de dias: de hoje até o último dia liberado ===== */
+function desenharDias() {
+  const hoje = hojeSP(), fim = ultimoDia(hoje), el = document.getElementById("trilhoDias");
+  const dias = [];
+  for (let d = hoje; d <= fim; ) {
+    dias.push(d);
+    const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + 1); d = x.toISOString().slice(0, 10);
+  }
+  el.innerHTML = dias.map(d => {
+    const ls = linhas.filter(l => l.data === d && noTurno(l)), s = ls.map(situacao);
+    const vagas = s.filter(x => x === "vaga").length, faltam = s.filter(x => x === "falta").length;
+    // vermelho: tem vaga sem motoca · amarelo: hoje com gente para chegar · verde: completa (ou escala fechada, nos próximos dias)
+    const cor = !ls.length ? "" : vagas ? "d-v" : d <= hoje && faltam ? "d-a" : "d-g";
+    const dica = !ls.length ? "sem escala" : vagas ? `${vagas} ${vagas > 1 ? "vagas" : "vaga"} sem motoca` : d <= hoje && faltam ? `${faltam} para chegar` : "completa";
+    const sem = d === hoje ? "Hoje" : DIAS[new Date(d + "T12:00:00").getDay()].slice(0, 3);
+    return `<button type="button" class="${d === diaAtual ? "on" : ""}" data-dia="${d}" aria-pressed="${d === diaAtual}" ${ls.length ? "" : "disabled"} title="${esc(rotulo(d))} · ${dica}"><small>${sem}</small><b>${d.slice(8)}</b><i class="${cor}" aria-hidden="true"></i></button>`;
+  }).join("");
+}
 function desenhar() {
   const hoje = hojeSP();
-  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
-  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual && d >= hoje);
-  document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
+  desenharDias();
 
   const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
   const pessoas = doDia; // total = todas as vagas da escala do dia (inclusive as sem motoca)
@@ -533,8 +565,11 @@ function painelVagasSemana(ls, seg, dom) {
 }
 
 /* ===== Cliques ===== */
-document.getElementById("ant").onclick = () => { const d = diasDisponiveis.filter(x => x < diaAtual).pop(); if (d) { diaAtual = d; desenhar(); } };
-document.getElementById("prox").onclick = () => { const d = diasDisponiveis.find(x => x > diaAtual); if (d) { diaAtual = d; desenhar(); } };
+document.getElementById("trilhoDias").addEventListener("click", e => {
+  const b = e.target.closest("[data-dia]");
+  if (!b || b.disabled || b.dataset.dia === diaAtual) return;
+  diaAtual = b.dataset.dia; filtro = null; desenhar();
+});
 document.getElementById("btnSom").onclick = () => { ligarSom(!somLigado); if (somLigado) bipe(); };
 document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.documentElement.classList.contains("escuro"));
 document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));
