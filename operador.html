@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>LogMax · Marcar chegada</title>
+<title>LogMax · Operador</title>
 <link rel="icon" type="image/png" href="lume-96.png">
 <link rel="apple-touch-icon" href="lume.png">
 <style>
@@ -12,155 +12,218 @@
   --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
-  --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--sombra:rgba(15,23,42,.08);
+  --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--mini:#f0fdf4;--luz-bg:#fef9c3;--luz-tx:#854d0e;--sombra:rgba(15,23,42,.08);
 }
+*{box-sizing:border-box}
+html{font-size:16px}
+body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--marinho);color:#fff}
+.topo{max-width:1100px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.marca{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}.marca span{color:#fb923c}
+.marca img{width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
+.dia{display:flex;align-items:center;gap:8px}
+.dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
+.dia button:disabled{opacity:.35;cursor:default}
+.dia strong{min-width:150px;text-align:center;font-size:1.06rem}
+.hoje-tag{background:var(--laranja);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:6px;vertical-align:2px}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.acoes button{font:inherit;font-size:14px;font-weight:700;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:8px 12px;cursor:pointer}
+.acoes button[aria-pressed="true"]{background:#fff;color:var(--marinho)}
+.status{font-size:13px;color:#cbd5e1;width:100%;text-align:right}
+main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
+.filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.filtros span{font-size:14px;font-weight:700;color:var(--tx2);margin-right:2px}
+.chip{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
+.faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.num{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
+.num:hover{border-color:var(--laranja)}
+.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
+.num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
+.num .val{font-size:2.5rem;font-weight:800;line-height:1.1;margin-top:4px}
+.num .de{font-size:1.1rem;font-weight:600;color:var(--tx2)}
+.num.principal{background:var(--marinho2);color:#fff;border:0}.num.principal .rot,.num.principal .de{color:#cbd5e1}
+.num.principal.ativo{border:2px solid #fb923c}
+.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fdba74}
+.semana{margin-top:2px;font-size:14px;font-weight:700;color:var(--vermelho)}
+.barra{height:10px;border-radius:999px;background:rgba(148,163,184,.3);overflow:hidden;margin-top:10px}
+.barra i{display:block;height:100%;background:#4ade80;border-radius:999px}
+.verde{color:var(--verde)}.vermelho{color:var(--vermelho)}.ambar{color:var(--ambar)}
+h2{font-size:1.12rem;margin:24px 0 10px}
+.vazio{background:var(--verde-claro);color:var(--verde);border-radius:12px;padding:14px;font-weight:700}
+.etq{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.etq.v{background:var(--verde-claro);color:var(--verde)}.etq.r{background:var(--vermelho-claro);color:var(--vermelho)}
+.etq.a{background:var(--ambar-claro);color:var(--ambar)}.etq.c{background:var(--cinza);color:var(--cinza-tx)}
+.painel{background:var(--cartao);border:2px solid var(--laranja);border-radius:14px;padding:14px;margin:-6px 0 20px;scroll-margin-top:12px}
+.painel-cab{display:flex;justify-content:space-between;align-items:center;gap:8px}.painel-cab h2{margin:0}
+.fechar{font:inherit;font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:10px;padding:8px 12px;cursor:pointer}
+.painel-lojas{display:grid;gap:12px;margin-top:12px}
+.painel-loja .pl-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lojas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.loja{background:var(--cartao);border:1px solid var(--linha);border-radius:14px}
+.loja .nome{font-weight:800;display:flex;justify-content:space-between;gap:8px}
+.loja .conta{font-size:1.75rem;font-weight:800;margin-top:4px}.loja .conta small{font-size:.95rem;color:var(--tx2);font-weight:600}
+.loja .barra{background:var(--cinza)}.loja .barra i{background:var(--verde)}
+.loja .etqs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+details.loja{padding:0;overflow:hidden;border-left-width:6px}
+@keyframes piscar{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(250,204,21,.9),0 0 10px 2px rgba(250,204,21,.9)}50%{opacity:.25;box-shadow:0 0 0 6px rgba(250,204,21,0),0 0 0 0 rgba(250,204,21,0)}}
+@keyframes brilho{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,0)}50%{box-shadow:0 0 0 4px rgba(250,204,21,.55)}}
+.luz-atraso{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:var(--luz-tx);background:var(--luz-bg);border-radius:999px;padding:2px 10px 2px 6px;white-space:nowrap}
+.luz-atraso i{width:.8rem;height:.8rem;border-radius:50%;background:#facc15;display:inline-block;animation:piscar 1s ease-in-out infinite}
+details.loja.com-atraso{animation:brilho 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.luz-atraso i,details.loja.com-atraso{animation:none}}
+details.loja.mini>summary{display:flex;align-items:center;gap:10px;padding:12px 14px}
+details.loja.mini>summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ponto-verde{width:.75rem;height:.75rem;border-radius:50%;background:var(--verde);flex:none}
+.mini-conta{font-size:.85rem;font-weight:800;color:var(--verde);background:var(--verde-claro);border-radius:999px;padding:2px 10px;white-space:nowrap}
+details.loja.mini{background:var(--mini)}
+details.loja.mini[open]{border-color:#86efac;border-left-color:var(--verde)}
+.lojas.completas{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+html.tv .lojas.completas{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+details.loja.p1{border-left-color:var(--vermelho)}details.loja.p2{border-left-color:#f59e0b}details.loja.p3{border-left-color:var(--verde)}
+details.loja>summary{list-style:none;cursor:pointer;padding:14px;display:block}
+details.loja>summary::-webkit-details-marker{display:none}
+details.loja[open]{grid-column:1/-1;border-color:var(--laranja);box-shadow:0 4px 14px var(--sombra)}
+.abrir{margin-top:10px;font-size:.88rem;font-weight:700;color:var(--laranja)}
+details.loja[open] .abrir .seta{display:inline-block;transform:rotate(90deg)}
+.lista{display:grid;gap:14px}
+details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
+.lista h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
+.lista ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.95rem}
+.lista li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--li)}
+.lista li.r{background:var(--vermelho-claro)}.lista li.a{background:var(--ambar-claro)}
+.lista li span:first-child{min-width:0}
+.lista li .dir{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
+.ok-todos{color:var(--verde);font-weight:700}
+.rodape{margin-top:28px;font-size:13px;color:var(--tx2)}
+.aviso{background:var(--laranja-claro);border:1px solid var(--linha);border-radius:12px;padding:14px;margin-bottom:16px}
+#toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{pointer-events:auto;max-width:560px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.toast.ok{background:var(--verde);font-size:1.15rem;text-align:center;animation:entra .3s ease-out}
+@keyframes entra{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+/* ===== Comemoração: tudo fechado ===== */
+.festa{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(6,13,28,.88);cursor:pointer;animation:entra .3s ease-out;overflow:hidden}
+.festa-texto{position:relative;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.festa-texto img{width:clamp(90px,14vw,170px);height:clamp(90px,14vw,170px);border-radius:50%;border:5px solid #facc15;object-fit:cover;animation:pula .6s ease-in-out infinite alternate}
+.grito{font-size:clamp(40px,8.5vw,128px);font-weight:900;line-height:1.02;letter-spacing:-.01em;color:#facc15;text-shadow:0 0 24px rgba(250,204,21,.55),0 6px 0 #1d4ed8;animation:zoom 1s ease-in-out infinite alternate}
+.festa .sub{font-size:clamp(16px,2.4vw,28px);font-weight:800;color:#bbf7d0}
+.confete i{position:absolute;top:-24px;width:12px;height:18px;border-radius:3px;animation:cai linear infinite}
+@keyframes cai{to{top:110%;transform:rotate(720deg)}}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.06)}}
+@keyframes pula{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+@media (prefers-reduced-motion:reduce){.grito,.festa-texto img,.confete i{animation:none}.confete{display:none}}
+/* ===== Modo escuro ===== */
 html.escuro{
   --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
   --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
   --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
-  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--sombra:rgba(0,0,0,.45);color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-button,input{font:inherit}
-header{background:var(--marinho);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.2)}
-.topo{max-width:900px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.marca{font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:8px}.marca span{color:#fb923c}
-.marca img{width:2.3rem;height:2.3rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
-.dia{display:flex;align-items:center;gap:6px}
-.dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
-.dia button:disabled{opacity:.3;cursor:default}
-.dia strong{min-width:128px;text-align:center}
-.hoje-tag{background:var(--laranja);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px;vertical-align:2px}
-.mini-acoes{display:flex;gap:6px}
-.mini-acoes button{border-radius:10px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:7px 10px;font-size:14px;font-weight:700;cursor:pointer}
-.status{font-size:12px;color:#cbd5e1;width:100%}
-.teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
-main{max-width:900px;margin:0 auto;padding:14px 16px 80px}
-.controles{display:grid;gap:10px;margin-bottom:14px}
-.busca{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);font-size:16px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.chip{font-size:14px;font-weight:700;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);border-radius:999px;padding:7px 14px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
+  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
+  color-scheme:dark}
+html.escuro .toast{background:#b91c1c}html.escuro .toast.ok{background:#15803d}
+html.escuro .lista li.r{background:var(--vermelho-claro)}html.escuro .lista li.a{background:var(--ambar-claro)}
 html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
-.resumo{display:flex;gap:10px;flex-wrap:wrap}
-.resumo div{flex:1;min-width:130px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:10px 14px}
-.resumo small{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tx2)}
-.resumo b{font-size:1.6rem}
-.loja{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid #f59e0b;border-radius:14px;margin-bottom:12px;overflow:hidden}
-.loja.tem-vaga{border-left-color:var(--vermelho)}
-.loja-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px;cursor:pointer;list-style:none}
-details.loja>summary::-webkit-details-marker{display:none}
-details.loja[open]>.loja-cab{padding-bottom:8px}
-.loja-nome{display:flex;align-items:center;gap:8px;min-width:0}
-.loja-nome h2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.seta{color:var(--laranja);font-weight:900;transition:transform .15s;display:inline-block}
-details.loja[open] .seta{transform:rotate(90deg)}
-.tags{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px}
-.tg{border-radius:999px;padding:2px 9px;font-size:12px;font-weight:800;white-space:nowrap}
-.tg.a{background:var(--ambar);color:#fff}html.escuro .tg.a{color:#0b1322}
-.tg.f{background:var(--ambar-claro);color:var(--ambar)}
-.tg.v{background:var(--vermelho-claro);color:var(--vermelho)}
-details.loja.com-atraso{animation:brilho 1.6s ease-in-out infinite}
-@keyframes brilho{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,0)}50%{box-shadow:0 0 0 4px rgba(250,204,21,.55)}}
-@media (prefers-reduced-motion:reduce){details.loja.com-atraso{animation:none}}
-.loja-cab h2{margin:0;font-size:1.05rem}
-.conta{font-weight:800;color:var(--tx2);white-space:nowrap}
-ul{list-style:none;margin:0;padding:0 10px 10px;display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
-li.p{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 12px;border-radius:12px;background:var(--li)}
-li.p.atraso{background:var(--ambar-claro)}
-li.p.vaga{background:var(--vermelho-claro)}
-li.p.feito{background:var(--verde-claro)}
-.quem{flex:1;min-width:0}
-.quem b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.quem small{color:var(--tx2);font-size:13px}
-.etq{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:800;margin-right:6px}
-.etq.a{background:var(--ambar);color:#fff}html.escuro .etq.a{color:#0b1322}
-.etq.c{background:var(--cinza);color:var(--cinza-tx)}
-.btn{border:0;border-radius:12px;padding:0 16px;min-height:46px;min-width:118px;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap}
-.btn.chegou{background:var(--laranja);color:#fff}
-html.escuro .btn.chegou{color:#0b1322}
-.btn.chegou:active{transform:scale(.97)}
-.btn:disabled{opacity:.6;cursor:wait}
-.feito-tag{font-weight:800;color:var(--verde);white-space:nowrap}
-.desfazer{background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:13px;cursor:pointer;padding:6px 4px}
-details.ja{border-top:1px dashed var(--linha);margin:0 10px 10px;padding-top:6px}
-details.ja>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--verde);padding:6px 4px;list-style:none}
-details.ja>summary::-webkit-details-marker{display:none}
-details.ja ul{padding:4px 0 0}
-h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin:22px 0 8px}
-details.completa{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid var(--verde);border-radius:14px;margin-bottom:8px}
-details.completa>summary{cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;font-weight:800;list-style:none}
-details.completa>summary::-webkit-details-marker{display:none}
-.vazio{background:var(--verde-claro);color:var(--verde);border-radius:12px;padding:14px;font-weight:700}
-.aviso{background:var(--laranja-claro);border:1px solid var(--linha);border-radius:12px;padding:14px}
-/* entrada */
+html.escuro .loja .barra i{background:#22c55e}
+/* ===== Modo TV ===== */
+html.tv{font-size:22px}
+html.tv .topo,html.tv main{max-width:none;padding-left:32px;padding-right:32px}
+html.tv .lojas{grid-template-columns:repeat(auto-fill,minmax(380px,1fr))}
+html.tv .num .rot,html.tv .toque,html.tv .etq,html.tv .lista h3,html.tv .status,html.tv .semana,html.tv .acoes button,html.tv .chip{font-size:.75rem}
+html.tv .dia button{width:56px;height:56px;font-size:24px}
+html.tv body{cursor:none}html.tv body:hover{cursor:auto}
+@media (max-width:720px){
+  .faixa{grid-template-columns:1fr 1fr}.num.principal{grid-column:1/-1}
+  .num .val{font-size:2rem}.dia strong{min-width:120px;font-size:.95rem}
+  .status{text-align:left}
+}
+/* ===== Operador ===== */
+.faixa-teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
+.btn-chegou{font:inherit;font-weight:800;font-size:.95rem;border:0;border-radius:10px;background:var(--laranja);color:#fff;padding:0 16px;min-height:42px;min-width:104px;cursor:pointer;white-space:nowrap}
+html.escuro .btn-chegou{color:#0b1322}
+.btn-chegou:active{transform:scale(.97)}
+.btn-chegou:disabled{opacity:.6;cursor:wait}
+.btn-desfazer{font:inherit;background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:.82rem;cursor:pointer;padding:6px 2px}
+.lista li{min-height:52px}
 .entrada{max-width:380px;margin:12vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:18px;padding:24px;box-shadow:0 10px 30px var(--sombra);text-align:center}
 .entrada img{width:84px;height:84px;border-radius:50%;border:3px solid #fb923c;object-fit:cover}
 .entrada h1{font-size:1.3rem;margin:10px 0 4px}
 .entrada p{color:var(--tx2);margin:0 0 16px}
-.entrada input[type=password]{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
+.entrada input[type=password]{width:100%;font:inherit;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
 .entrada label{display:flex;gap:8px;justify-content:center;align-items:center;margin:12px 0;font-size:14px;color:var(--tx2)}
-.entrada .btn{width:100%;background:var(--marinho);color:#fff}
-html.escuro .entrada .btn{background:var(--laranja);color:#0b1322}
+.entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
+html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
-#toasts{position:fixed;left:0;right:0;bottom:16px;z-index:50;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
-.toast{max-width:520px;width:100%;background:var(--vermelho);color:#fff;font-weight:700;border-radius:12px;padding:12px 16px;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:entra .25s ease-out}
-.toast.ok{background:#15803d}
-@keyframes entra{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
-@media (max-width:560px){
-  .topo{gap:8px}.marca{font-size:1rem}.dia strong{min-width:110px;font-size:.95rem}
-  .btn{min-width:100px;padding:0 12px}
-}
+body.trancado header,body.trancado main{display:none}
+@media (max-width:560px){.lista li{flex-wrap:wrap}.btn-chegou{min-width:96px}}
 </style>
 </head>
-<body>
-<div id="app"></div>
-<div id="toasts" aria-live="polite"></div>
+<body class="trancado">
+<div id="entrada"></div>
+<div class="faixa-teste" id="faixaTeste" hidden></div>
+<header>
+  <div class="topo">
+    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div>LogMax <span>·</span> Operador</div></div>
+    <div class="dia">
+      <button id="ant" aria-label="Dia anterior">←</button>
+      <strong id="rotuloDia">…</strong>
+      <button id="prox" aria-label="Próximo dia">→</button>
+    </div>
+    <div class="acoes">
+      <button type="button" id="btnSom" aria-pressed="false">🔕 Ligar som</button>
+      <button type="button" id="btnEscuro" aria-pressed="false">🌙 Modo escuro</button>
+      <button type="button" id="btnTv" aria-pressed="false">📺 Modo TV</button>
+      <button type="button" id="btnSair">Sair</button>
+    </div>
+    <div class="status" id="status">Carregando…</div>
+  </div>
+</header>
+<main id="conteudo"><p>Carregando…</p></main>
+<div id="toasts" aria-live="assertive"></div>
 
 <script>
-/* ===== CONFIGURAÇÃO: endereço do App da Web (Apps Script) ===== */
+/* ===== CONFIGURAÇÃO: endereço do App da Web (Apps Script) da planilha ===== */
 const API_PADRAO = "https://script.google.com/macros/s/AKfycbxHMANMPiLYGj1DhRM7aCUolfp8H1AGopQCA4AGThrymMlEC5oJNZqGp6LnBEp0WeaO/exec";
-/* Para testar com a cópia da planilha: abrir operador.html?api=ENDERECO_DA_COPIA */
+/* Para testar com a cópia da planilha: operador.html?api=ENDERECO_DA_COPIA */
 /* =============================================================== */
 
-const params = new URLSearchParams(location.search);
-const API = params.get("api") || API_PADRAO;
-const MODO_TESTE = !!params.get("api");
-const ATUALIZAR_MS = 30 * 1000;
-const ALERTA_MIN = 10;
-const NOITE_A_PARTIR = 16 * 60;
+const ATUALIZAR_MS = 30 * 1000;   // busca de novo a cada 30 segundos
+const ALERTA_MIN = 10;            // apita quando o turno começou há 10 min e o motoboy ainda falta chegar
+const NOITE_A_PARTIR = 16 * 60;   // turno que começa às 16:00 ou depois = noite; antes = almoço
 const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+
+const API = new URLSearchParams(location.search).get("api") || API_PADRAO;
+const MODO_TESTE = !!new URLSearchParams(location.search).get("api");
 const CHAVE_SENHA = "logmax-op-senha:" + API;
-
-const guardar = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
-const lerGuardado = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-
-let senha = lerGuardado(CHAVE_SENHA) || "";
-let nomePlanilha = "";
-let linhas = [], atualizadoEm = "", diaAtual = hojeSP();
-let turno = lerGuardado("logmax-op-turno") || "todos";
-let busca = "";
+let senha = "";
 const gravando = new Map();   // chave -> "chegou" | "desfazer"
 const trocas = new Map();     // chave -> { presenca, quando }  (mudança feita aqui, até a planilha confirmar)
-const abertos = new Set();    // seções "já chegaram" abertas
-let timer = null;
+const abertas = new Set();
+const jaAvisados = new Set();
+let primeiraConferencia = true;
+let filtro = null;          // quadro do topo aberto
+let turno = "todos";        // todos | almoco | noite
+let somLigado = false, audio = null;
+let linhas = [], atualizadoEm = "", diaAtual = hojeSP(), diasDisponiveis = [];
 
-if (lerGuardado("logmax-escuro") === "1") document.documentElement.classList.add("escuro");
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const lerGuardado = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 
-/* ===== utilidades ===== */
 function hojeSP() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date()); }
-function agoraSPmin(dataISO) {
+function agoraSPmin(dataISO) { // minutos desde 00:00 de dataISO, no horário de SP
   const p = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hour12:false }).formatToParts(new Date());
   const g = t => p.find(x => x.type === t).value;
-  return (Date.parse(`${g("year")}-${g("month")}-${g("day")}`) - Date.parse(dataISO)) / 864e5 * 1440 + (+g("hour") % 24) * 60 + (+g("minute"));
+  const hoje = `${g("year")}-${g("month")}-${g("day")}`;
+  return (Date.parse(hoje) - Date.parse(dataISO)) / 864e5 * 1440 + (+g("hour") % 24) * 60 + (+g("minute"));
 }
-function somaDias(iso, n) { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
-function domingoDe(iso) { const d = new Date(iso + "T12:00:00"); return somaDias(iso, (7 - d.getDay()) % 7); }
 function brParaISO(d) { const m = d.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : null; }
 function rotulo(iso) { const d = new Date(iso + "T12:00:00"); return `${DIAS[d.getDay()]} ${iso.slice(8)}/${iso.slice(5,7)}`; }
 function inicioMin(h) { const m = String(h).match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; }
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
-function semAcento(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase(); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+function semanaDe(iso) {
+  const d = new Date(iso + "T12:00:00"), dow = (d.getDay() + 6) % 7;
+  const seg = new Date(d.getTime() - dow * 864e5), dom = new Date(seg.getTime() + 6 * 864e5);
+  return [seg.toISOString().slice(0, 10), dom.toISOString().slice(0, 10)];
+}
+const ddmm = iso => `${iso.slice(8)}/${iso.slice(5,7)}`;
 
 function lerCSV(texto) {
   const out = []; let linha = [], campo = "", aspas = false;
@@ -176,281 +239,343 @@ function lerCSV(texto) {
   return out;
 }
 
-function toast(texto, ok) {
-  const t = document.createElement("div");
-  t.className = "toast" + (ok ? " ok" : "");
-  t.textContent = texto;
-  document.getElementById("toasts").appendChild(t);
-  setTimeout(() => t.remove(), ok ? 2500 : 6000);
-}
-
-async function chamar(dados) {
-  const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)) });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
-}
-
-/* ===== entrada com senha ===== */
-function telaEntrada(erro) {
-  clearInterval(timer);
-  document.getElementById("app").innerHTML = `
-    <form class="entrada" id="formEntrada">
-      <img src="lume.png" alt="Lume, assistente da LogMax">
-      <h1>Marcar chegada</h1>
-      <p>Área dos operadores da LogMax</p>
-      <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
-      <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
-      <button class="btn" id="btnEntrar">Entrar</button>
-      <div class="erro" id="erroEntrada">${esc(erro || "")}</div>
-      ${MODO_TESTE ? '<p style="margin-top:12px;font-weight:700;color:var(--ambar)">Modo teste: usando outro endereço de planilha</p>' : ""}
-    </form>`;
-  const campo = document.getElementById("campoSenha");
-  campo.focus();
-  document.getElementById("formEntrada").onsubmit = async ev => {
-    ev.preventDefault();
-    const btn = document.getElementById("btnEntrar");
-    btn.disabled = true; btn.textContent = "Conferindo…";
-    senha = campo.value;
-    try {
-      const r = await chamar({ acao: "entrar" });
-      if (!r.ok) { document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btn.disabled = false; btn.textContent = "Entrar"; return; }
-      nomePlanilha = r.planilha || "";
-      guardar(CHAVE_SENHA, document.getElementById("lembrar").checked ? senha : null);
-      iniciar();
-    } catch (e) {
-      document.getElementById("erroEntrada").textContent = "Não consegui falar com a planilha. Confira a internet.";
-      btn.disabled = false; btn.textContent = "Entrar";
-    }
-  };
-}
-
-function sair() { senha = ""; guardar(CHAVE_SENHA, null); telaEntrada(); }
-
-/* ===== tela principal ===== */
-function iniciar() {
-  document.getElementById("app").innerHTML = `
-    <header>
-      ${MODO_TESTE || /c[óo]pia|teste/i.test(nomePlanilha) ? `<div class="teste">MODO TESTE · ${esc(nomePlanilha || "planilha de teste")}</div>` : ""}
-      <div class="topo">
-        <div class="marca"><img src="lume-96.png" alt=""><div>LogMax <span>·</span> Chegadas</div></div>
-        <div class="dia">
-          <button id="ant" aria-label="Dia anterior">←</button>
-          <strong id="rotuloDia">…</strong>
-          <button id="prox" aria-label="Próximo dia">→</button>
-        </div>
-        <div class="mini-acoes">
-          <button id="btnEscuro" aria-label="Modo escuro">🌙</button>
-          <button id="btnSair">Sair</button>
-        </div>
-        <div class="status" id="status">Carregando a escala…</div>
-      </div>
-    </header>
-    <main>
-      <div class="controles">
-        <input class="busca" id="busca" type="search" placeholder="Procurar motoboy ou loja…" autocomplete="off">
-        <div class="chips" id="chipsTurno">
-          <button class="chip" data-turno="todos">Todos</button>
-          <button class="chip" data-turno="almoco">Almoço</button>
-          <button class="chip" data-turno="noite">Noite</button>
-        </div>
-        <div class="resumo" id="resumo"></div>
-      </div>
-      <div id="lista"><p>Carregando…</p></div>
-    </main>`;
-  document.getElementById("btnSair").onclick = sair;
-  document.getElementById("btnEscuro").onclick = () => {
-    const ligado = document.documentElement.classList.toggle("escuro");
-    guardar("logmax-escuro", ligado ? "1" : "0");
-  };
-  document.getElementById("ant").onclick = () => mudarDia(-1);
-  document.getElementById("prox").onclick = () => mudarDia(1);
-  document.getElementById("busca").oninput = e => { busca = e.target.value; desenhar(); };
-  document.querySelectorAll("#chipsTurno .chip").forEach(b => b.onclick = () => {
-    turno = b.dataset.turno; guardar("logmax-op-turno", turno); desenhar();
-  });
-  document.getElementById("lista").addEventListener("click", aoClicar);
-  document.getElementById("lista").addEventListener("toggle", e => {
-    const d = e.target; if (d.dataset && d.dataset.loja) d.open ? abertos.add(d.dataset.loja) : abertos.delete(d.dataset.loja);
-  }, true);
-  carregar();
-  clearInterval(timer);
-  timer = setInterval(carregar, ATUALIZAR_MS);
-}
-
-function diasPermitidos() {
-  const hoje = hojeSP();
-  return { min: somaDias(hoje, -1), max: domingoDe(hoje) };   // de ontem até domingo
-}
-function mudarDia(n) {
-  const { min, max } = diasPermitidos();
-  const novo = somaDias(diaAtual, n);
-  if (novo < min || novo > max) return;
-  diaAtual = novo; desenhar();
-}
-
-async function carregar() {
-  try {
-    const r = await chamar({ acao: "ler" });
-    if (r.senha) { toast(r.erro || "Senha não aceita."); sair(); return; }
-    if (!r.ok) throw new Error(r.erro || "erro");
-    const tab = lerCSV(r.csv || "");
-    atualizadoEm = (tab[1] && tab[1][7]) || "";
-    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
-      const nome = c[4].trim();
-      return { loja: c[0].trim(), dataBR: c[1].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(),
-               codigo: (c[3] || "").trim(), nome, presenca: (c[5] || "").trim(), linha: +c[6],
-               chave: c[0].trim() + "|" + c[6], vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };
-    });
-    // a planilha já confirmou a mudança? então esquece a troca guardada aqui
-    const agora = Date.now();
-    trocas.forEach((t, k) => {
-      const l = linhas.find(x => x.chave === k);
-      if (!l || ehOK(l.presenca) === ehOK(t.presenca) || agora - t.quando > 90000) trocas.delete(k);
-    });
-    const { min } = diasPermitidos();
-    if (diaAtual < min) diaAtual = hojeSP();
-    document.getElementById("status").textContent =
-      `Planilha lida ${atualizadoEm ? "em " + atualizadoEm : ""} · atualiza sozinho a cada 30 s`;
-    desenhar();
-  } catch (e) {
-    const st = document.getElementById("status");
-    if (st) st.textContent = "Não consegui ler a planilha agora. Tento de novo em 30 s.";
-    if (!linhas.length && document.getElementById("lista"))
-      document.getElementById("lista").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira a internet ou fale com o Thiago.</div>`;
-  }
-}
-
+// chegou (OK) · falta (falta chegar) · vaga (sem motoca)
 const ehOK = p => String(p).trim().toUpperCase() === "OK";
 function presencaDe(l) { return trocas.has(l.chave) ? trocas.get(l.chave).presenca : l.presenca; }
 function situacao(l) {
   if (l.vaga) return "vaga";
-  const p = presencaDe(l).trim().toUpperCase();
-  if (p === "OK") return "chegou";
-  if (p === "" || p === "N/D") return "falta";
-  return "outro";   // ex.: FALTOU — só muda direto na planilha
+  return ehOK(presencaDe(l)) ? "chegou" : "falta";
 }
+function podeMarcar(l) { const p = presencaDe(l).trim().toUpperCase(); return p === "" || p === "N/D"; }   // ex.: "FALTOU" só muda na planilha
 function noTurno(l) {
   if (turno === "todos") return true;
   const ini = inicioMin(l.horario) ?? 0;
   return turno === "noite" ? ini >= NOITE_A_PARTIR : ini < NOITE_A_PARTIR;
 }
-function atraso(l) {
-  if (l.data > hojeSP()) return null;
+function minutosAtraso(l) { // minutos desde o início do turno (só faz sentido para hoje/passado)
   const ini = inicioMin(l.horario);
-  if (ini === null) return null;
-  const min = agoraSPmin(l.data) - ini;
-  return min >= ALERTA_MIN ? min : null;
-}
-const porHora = (a, b) => (inicioMin(a.horario) ?? 9999) - (inicioMin(b.horario) ?? 9999) || a.nome.localeCompare(b.nome);
-
-function linhaPessoa(l) {
-  const s = situacao(l), g = gravando.get(l.chave);
-  const det = `${esc(l.horario || "sem horário")}${l.codigo ? " · cód. " + esc(l.codigo) : ""}`;
-  if (s === "vaga") {
-    return `<li class="p vaga"><div class="quem"><b>Vaga sem motoca</b><small>${det}</small></div></li>`;
-  }
-  if (s === "chegou") {
-    return `<li class="p feito"><div class="quem"><b>${esc(l.nome)}</b><small>${det}</small></div>
-      ${g ? `<button class="btn" disabled>Desfazendo…</button>`
-          : `<span class="feito-tag">✓ Chegou</span><button class="desfazer" data-acao="desfazer" data-chave="${esc(l.chave)}">Desfazer</button>`}</li>`;
-  }
-  if (s === "outro") {
-    return `<li class="p"><div class="quem"><b>${esc(l.nome)}</b><small>${det}</small></div>
-      <span class="etq c" title="Para mudar, edite direto na planilha">${esc(presencaDe(l))}</span></li>`;
-  }
-  const at = atraso(l);
-  const atTxt = at ? (at >= 60 ? `${Math.floor(at / 60)}h${String(at % 60).padStart(2, "0")}` : `${at} min`) : "";
-  return `<li class="p${at ? " atraso" : ""}"><div class="quem"><b>${esc(l.nome)}</b><small>${at ? `<span class="etq a">atrasado ${atTxt}</span>` : ""}${det}</small></div>
-    <button class="btn chegou" data-acao="chegou" data-chave="${esc(l.chave)}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button></li>`;
+  return ini === null ? null : agoraSPmin(l.data) - ini;
 }
 
-function desenhar() {
-  const lista = document.getElementById("lista");
-  if (!lista) return;
-  const hoje = hojeSP(), { min, max } = diasPermitidos();
-  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
-  document.getElementById("ant").disabled = diaAtual <= min;
-  document.getElementById("prox").disabled = diaAtual >= max;
-  document.querySelectorAll("#chipsTurno .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.turno === turno));
+async function carregar() {
+  if (!senha) return;
+  try {
+    const r = await chamar({ acao: "ler" });
+    if (r.senha) { sair(r.erro); return; }
+    if (!r.ok) throw new Error(r.erro || "erro");
+    const tab = lerCSV(r.csv || "");
+    atualizadoEm = (tab[1] && tab[1][7]) || "";
+    const hoje = hojeSP(), [, domingo] = semanaDe(hoje);
+    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
+      const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
+      return { loja: c[0].trim(), data: brParaISO(c[1].trim()), dataBR: c[1].trim(), horario: (c[2] || "").trim(), codigo: cod, nome,
+               presenca: (c[5] || "").trim(), linha: +c[6], chave: c[0].trim() + "|" + c[6],
+               vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };          // vaga = "NÃO LOCALIZADO" na coluna NOME
+    }).filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
+    diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
+    const agoraMs = Date.now();   // a planilha já confirmou? então esquece a troca guardada aqui
+    trocas.forEach((t, k) => { const l = linhas.find(x => x.chave === k); if (!l || ehOK(l.presenca) === ehOK(t.presenca) || agoraMs - t.quando > 90000) trocas.delete(k); });
+    if (diaAtual < hoje) diaAtual = hoje;
+    document.getElementById("status").textContent =
+      `Planilha atualizada ${atualizadoEm ? "em " + atualizadoEm : ""} · tela às ${new Date().toLocaleTimeString("pt-BR")}`;
+    desenhar();
+    conferirAtrasos();
+    conferirCompletas();
+  } catch (e) {
+    document.getElementById("status").textContent = "Não consegui buscar a planilha agora. Tento de novo em 30 s.";
+    if (!linhas.length) document.getElementById("conteudo").innerHTML = `<div class="aviso">Não consegui ler a planilha. Confira a internet e se o código novo da planilha foi implantado (Nova versão).</div>`;
+  }
+}
 
-  const termo = semAcento(busca.trim());
-  const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l))
-    .filter(l => !termo || semAcento(l.nome).includes(termo) || semAcento(l.loja).includes(termo) || l.codigo === busca.trim());
-
-  const total = doDia.length, chegaram = doDia.filter(l => situacao(l) === "chegou").length;
-  const faltam = doDia.filter(l => situacao(l) === "falta").length, vagas = doDia.filter(l => l.vaga).length;
-  document.getElementById("resumo").innerHTML = `
-    <div><small>Falta chegar</small><b style="color:var(--ambar)">${faltam}</b></div>
-    <div><small>Chegaram</small><b style="color:var(--verde)">${chegaram}</b> <span style="color:var(--tx2);font-weight:700">de ${total}</span></div>
-    <div><small>Vagas sem motoca</small><b style="color:var(--vermelho)">${vagas}</b></div>`;
-
-  if (!doDia.length) {
-    lista.innerHTML = `<div class="aviso">${termo ? "Ninguém encontrado com essa busca." : "Não há escala para este dia na planilha."}</div>`;
+/* ===== Som e alertas ===== */
+function bipe() {
+  if (!somLigado || !audio) return;
+  const t = audio.currentTime;
+  [0, 0.28, 0.56].forEach(d => {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "square"; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.25, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.2);
+    o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + 0.22);
+  });
+}
+function pililim() { // três notas subindo, tipo campainha
+  if (!somLigado || !audio) return;
+  const t = audio.currentTime;
+  [[1046.5, 0], [1318.5, 0.12], [1568, 0.24], [2093, 0.36]].forEach(([f, d]) => {
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(0.3, t + d + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.5);
+    o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + 0.55);
+  });
+}
+function avisoCompleta(loja) {
+  const el = document.createElement("div");
+  el.className = "toast ok"; el.textContent = `✅ ${loja} completa! Todos chegaram.`;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+  pililim();
+}
+const estadoLoja = new Map(); // loja -> completa? (hoje, todos os turnos)
+function conferirCompletas() {
+  const hoje = hojeSP();
+  const lojas = [...new Set(linhas.filter(l => l.data === hoje).map(l => l.loja))];
+  lojas.forEach(nome => {
+    const ls = linhas.filter(l => l.data === hoje && l.loja === nome).map(l => situacao(l));
+    const completa = ls.length > 0 && ls.every(s => s === "chegou");
+    if (estadoLoja.has(nome) && estadoLoja.get(nome) === false && completa) avisoCompleta(nome);
+    estadoLoja.set(nome, completa);
+  });
+  // tudo fechado: todas as lojas do dia completas (só quando ACABOU de fechar com a tela aberta)
+  const tudo = lojas.length > 0 && lojas.every(n => estadoLoja.get(n));
+  if (tudoFechado === false && tudo) comemorar();
+  tudoFechado = tudo;
+}
+let tudoFechado = null;
+function fanfarra() {
+  if (!somLigado || !audio) return;
+  const t = audio.currentTime;
+  const notas = [[523.3, 0, .16], [659.3, .16, .16], [784, .32, .16], [1046.5, .48, .5], [784, .98, .14], [1046.5, 1.12, .9]];
+  notas.forEach(([f, d, dur]) => {
+    [1, 2].forEach((mult, i) => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = i ? "sine" : "triangle"; o.frequency.value = f * mult;
+      const vol = i ? 0.06 : 0.28;
+      g.gain.setValueAtTime(0.0001, t + d); g.gain.exponentialRampToValueAtTime(vol, t + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + d + dur);
+      o.connect(g).connect(audio.destination); o.start(t + d); o.stop(t + d + dur + 0.05);
+    });
+  });
+}
+function comemorar() {
+  const cores = ["#fb923c", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
+  const confete = Array.from({ length: 90 }, (_, i) =>
+    `<i style="left:${(i * 37) % 100}%;background:${cores[i % cores.length]};animation-delay:${(i % 15) * 0.12}s;animation-duration:${2.6 + (i % 7) * 0.35}s;transform:rotate(${i * 23}deg)"></i>`).join("");
+  const el = document.createElement("div");
+  el.className = "festa"; el.setAttribute("role", "alert");
+  el.innerHTML = `<div class="confete" aria-hidden="true">${confete}</div>
+    <div class="festa-texto"><img src="lume.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
+  el.addEventListener("click", () => el.remove());
+  document.querySelectorAll("#toasts .toast").forEach(t => t.remove()); // a festa ocupa a tela toda
+  document.body.appendChild(el);
+  fanfarra();
+  setTimeout(() => el.remove(), 9000);
+}
+function aviso(texto) {
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = texto;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 12000);
+  bipe();
+}
+function conferirAtrasos() {
+  const hoje = hojeSP();
+  const novos = linhas.filter(l => l.data === hoje && situacao(l) === "falta").filter(l => {
+    const m = minutosAtraso(l);
+    return m !== null && m >= ALERTA_MIN && m < 12 * 60;
+  }).filter(l => {
+    const k = `${l.loja}|${l.data}|${l.horario}|${l.codigo}|${l.nome}`;
+    if (jaAvisados.has(k)) return false;
+    jaAvisados.add(k); return true;
+  });
+  if (primeiraConferencia) { // ao abrir a tela: um aviso só, com o total
+    primeiraConferencia = false;
+    if (novos.length) aviso(`${novos.length} ${novos.length > 1 ? "motoboys ainda não chegaram" : "motoboy ainda não chegou"} e o turno já começou.`);
     return;
   }
-
-  const lojas = {};
-  doDia.forEach(l => (lojas[l.loja] = lojas[l.loja] || []).push(l));
-  const grupos = Object.entries(lojas).map(([nome, ls]) => {
-    ls.sort(porHora);
-    const pend = ls.filter(l => situacao(l) === "falta");
-    return { nome, ls, pend, vagas: ls.filter(l => l.vaga).length,
-             atrasos: pend.filter(atraso).length,
-             inicio: Math.min(...ls.map(l => inicioMin(l.horario) ?? 9999)),
-             chegaram: ls.filter(l => situacao(l) === "chegou").length };
-  });
-  const abertasLojas = grupos.filter(g => g.pend.length || g.vagas || g.ls.some(l => situacao(l) === "outro"))
-    .sort((a, b) => a.inicio - b.inicio || a.nome.localeCompare(b.nome));   // ordem fixa: não pula enquanto você clica
-  const completas = grupos.filter(g => !abertasLojas.includes(g)).sort((a, b) => a.nome.localeCompare(b.nome));
-
-  let html = "";
-  if (!abertasLojas.length) html += `<div class="vazio">Todo mundo deste dia já chegou. 🎉</div>`;
-  abertasLojas.forEach(g => {
-    const feitos = g.ls.filter(l => situacao(l) === "chegou");
-    const resto = g.ls.filter(l => situacao(l) !== "chegou");
-    const id = "o:" + g.nome;
-    html += `<details class="loja${g.vagas ? " tem-vaga" : ""}${g.atrasos ? " com-atraso" : ""}" data-loja="${esc(id)}"${abertos.has(id) || termo ? " open" : ""}>
-      <summary class="loja-cab">
-        <span class="loja-nome"><span class="seta">▸</span><h2>${esc(g.nome)}</h2></span>
-        <span class="tags">
-          ${g.atrasos ? `<span class="tg a">${g.atrasos} atrasado${g.atrasos > 1 ? "s" : ""}</span>` : ""}
-          ${g.pend.length - g.atrasos > 0 ? `<span class="tg f">falta ${g.pend.length - g.atrasos}</span>` : ""}
-          ${g.vagas ? `<span class="tg v">${g.vagas} vaga${g.vagas > 1 ? "s" : ""}</span>` : ""}
-          <span class="conta">${g.chegaram} de ${g.ls.length}</span>
-        </span>
-      </summary>
-      <ul>${resto.map(linhaPessoa).join("")}</ul>
-      ${feitos.length ? `<details class="ja" data-loja="j:${esc(g.nome)}"${abertos.has("j:" + g.nome) || termo ? " open" : ""}>
-        <summary>✓ Já chegaram (${feitos.length}) ▸</summary><ul>${feitos.map(linhaPessoa).join("")}</ul></details>` : ""}
-    </details>`;
-  });
-  if (completas.length) {
-    html += `<h3 class="sec">Lojas completas (${completas.length})</h3>`;
-    completas.forEach(g => {
-      html += `<details class="completa" data-loja="c:${esc(g.nome)}"${abertos.has("c:" + g.nome) || termo ? " open" : ""}>
-        <summary><span>${esc(g.nome)}</span><span style="color:var(--verde)">${g.chegaram} de ${g.ls.length} ✓</span></summary>
-        <ul>${g.ls.map(linhaPessoa).join("")}</ul></details>`;
-    });
-  }
-  lista.innerHTML = html;
+  if (novos.length === 1) aviso(`${novos[0].nome} ainda não chegou na ${novos[0].loja} (turno ${novos[0].horario}).`);
+  else if (novos.length > 1) aviso(`${novos.length} motoboys ainda não chegaram: ${[...new Set(novos.map(l => l.loja))].join(", ")}.`);
+}
+function ligarSom(ligar) {
+  somLigado = ligar;
+  if (ligar && !audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { somLigado = false; } }
+  if (audio && audio.state === "suspended") audio.resume();
+  const b = document.getElementById("btnSom");
+  b.setAttribute("aria-pressed", String(somLigado));
+  b.textContent = somLigado ? "🔔 Som ligado" : "🔕 Ligar som";
+  guardar("logmax-som", somLigado ? "1" : "0");
 }
 
-async function aoClicar(ev) {
-  const b = ev.target.closest("button[data-acao]");
-  if (!b) return;
-  const l = linhas.find(x => x.chave === b.dataset.chave);
-  if (!l || gravando.has(l.chave)) return;
-  const acao = b.dataset.acao;
-  if (acao === "desfazer" && !confirm(`Tirar o OK de ${l.nome} (${l.loja})?`)) return;
+/* ===== Modo escuro ===== */
+function modoEscuro(ligar) {
+  document.documentElement.classList.toggle("escuro", ligar);
+  const b = document.getElementById("btnEscuro");
+  b.setAttribute("aria-pressed", String(ligar));
+  b.textContent = ligar ? "☀️ Modo claro" : "🌙 Modo escuro";
+  guardar("logmax-escuro", ligar ? "1" : "0");
+}
 
-  gravando.set(l.chave, acao);
-  desenhar();
+/* ===== Modo TV ===== */
+function modoTv(ligar) {
+  document.documentElement.classList.toggle("tv", ligar);
+  const b = document.getElementById("btnTv");
+  b.setAttribute("aria-pressed", String(ligar));
+  b.textContent = ligar ? "✕ Sair do modo TV" : "📺 Modo TV";
+  try {
+    if (ligar && document.fullscreenEnabled && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    if (!ligar && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch (e) {}
+  guardar("logmax-tv", ligar ? "1" : "0");
+}
+
+/* ===== Tela ===== */
+const ROT = { chegou: ["Chegou", "v"], falta: ["Falta chegar", "a"], vaga: ["Sem motoca", "r"] };
+const ORDEM = { falta: 0, vaga: 1, chegou: 2 };
+const porHorario = (a, b) => ORDEM[a.s] - ORDEM[b.s] || (inicioMin(a.horario) ?? 0) - (inicioMin(b.horario) ?? 0);
+function estaAtrasado(l) { // turno começou há ALERTA_MIN minutos (ou mais) e ainda sem OK
+  if (l.s !== "falta" || l.data !== hojeSP()) return false;
+  const m = minutosAtraso(l);
+  return m !== null && m >= ALERTA_MIN && m < 12 * 60;
+}
+function pessoa(l) {
+  const m = l.s === "falta" ? minutosAtraso(l) : null;
+  const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${m >= 60 ? Math.floor(m / 60) + "h" + String(m % 60).padStart(2, "0") : m + " min"}</span>` : "";
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} ${botao(l)}</span></li>`;
+}
+
+function botao(l) {
+  const g = gravando.get(l.chave), k = esc(l.chave);
+  if (l.s === "vaga") return `<span class="etq r">Sem motoca</span>`;
+  if (l.s === "chegou") return g ? `<button type="button" class="btn-chegou" disabled>Desfazendo…</button>`
+    : `<span class="etq v">✓ Chegou</span><button type="button" class="btn-desfazer" data-acao="desfazer" data-chave="${k}">Desfazer</button>`;
+  if (!podeMarcar(l)) return `<span class="etq c" title="Para mudar, edite direto na planilha">${esc(presencaDe(l))}</span>`;
+  return `<button type="button" class="btn-chegou" data-acao="chegou" data-chave="${k}" ${g ? "disabled" : ""}>${g ? "Gravando…" : "Chegou"}</button>`;
+}
+
+function cartaoLoja(l) {
+      const faltando = l.ls.filter(x => x.s === "falta").sort(porHorario);
+      const atrasados = l.atrasados;
+      const vagasL = l.ls.filter(x => x.s === "vaga").sort(porHorario);
+      const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
+      return `
+      <details class="loja ${l.vagas ? "p1" : l.falta ? "p2" : "p3"} ${atrasados ? "com-atraso" : ""}" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
+        <summary>
+          <div class="nome"><span>${esc(l.nome)}</span>${atrasados ? `<span class="luz-atraso" title="${atrasados} ${atrasados > 1 ? "motoboys atrasados" : "motoboy atrasado"}"><i aria-hidden="true"></i>${atrasados} ${atrasados > 1 ? "atrasados" : "atrasado"}</span>` : ""}</div>
+          <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
+          <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
+          <div class="etqs">
+            ${l.falta ? `<span class="etq a">${l.falta} ${l.falta > 1 ? "faltam chegar" : "falta chegar"}</span>` : ""}
+            ${l.vagas ? `<span class="etq r">${l.vagas} sem motoca</span>` : ""}
+            ${!l.falta && !l.vagas && l.total ? `<span class="etq v">completa</span>` : ""}
+          </div>
+          <div class="abrir"><span class="seta">›</span> ${faltando.length ? `Ver quem falta chegar (${faltando.length})` : "Ver motoboys"}</div>
+        </summary>
+        <div class="lista">
+          <div><h3>Falta chegar (${faltando.length})</h3>
+            ${faltando.length ? `<ul>${faltando.map(pessoa).join("")}</ul>` : `<div class="ok-todos">Todos já chegaram.</div>`}</div>
+          ${vagasL.length ? `<div><h3>Vagas sem motoca (${vagasL.length})</h3><ul>${vagasL.map(pessoa).join("")}</ul></div>` : ""}
+          ${chegaram.length ? `<div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>` : ""}
+        </div>
+      </details>`;
+}
+function cartaoCompleto(l) {
+  const chegaram = l.ls.filter(x => x.s === "chegou").sort(porHorario);
+  return `
+      <details class="loja p3 mini" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
+        <summary><span class="ponto-verde" aria-hidden="true"></span><b>${esc(l.nome)}</b><span class="mini-conta">✓ ${l.chegou}/${l.total}</span></summary>
+        <div class="lista">
+          <div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>
+        </div>
+      </details>`;
+}
+function desenhar() {
+  const hoje = hojeSP();
+  document.getElementById("rotuloDia").innerHTML = esc(rotulo(diaAtual)) + (diaAtual === hoje ? '<span class="hoje-tag">HOJE</span>' : "");
+  document.getElementById("ant").disabled = !diasDisponiveis.some(d => d < diaAtual && d >= hoje);
+  document.getElementById("prox").disabled = !diasDisponiveis.some(d => d > diaAtual);
+
+  const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
+  const pessoas = doDia; // total = todas as vagas da escala do dia (inclusive as sem motoca)
+  const n = s => doDia.filter(l => l.s === s).length;
+  const chegou = n("chegou"), falta = n("falta"), vagas = n("vaga");
+  const pct = pessoas.length ? Math.round(chegou / pessoas.length * 100) : 0;
+  const seg = hoje, dom = semanaDe(hoje)[1];                       // de hoje até domingo
+  const vagasSemana = linhas.filter(l => l.vaga && l.data >= seg && l.data <= dom && noTurno(l));
+
+  const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
+  const porLoja = lojas.map(nome => {
+    const ls = doDia.filter(l => l.loja === nome);
+    const c = s => ls.filter(l => l.s === s).length;
+    return { nome, ls, total: ls.length, chegou: c("chegou"), falta: c("falta"), vagas: c("vaga"),
+             atrasados: ls.filter(estaAtrasado).length };
+  })
+  // ordem de importância: 1º mais vagas sem motoca, 2º gente para chegar (com atraso primeiro), por último as completas
+  .sort((a, b) => b.vagas - a.vagas || (b.falta > 0) - (a.falta > 0) || b.atrasados - a.atrasados || b.falta - a.falta || a.nome.localeCompare(b.nome));
+  const completas = porLoja.filter(l => !l.vagas && !l.falta && l.total);
+  const pendentes = porLoja.filter(l => !completas.includes(l));
+
+  const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
+  const chipTurno = (v, t) => `<button type="button" class="chip" data-turno="${v}" aria-pressed="${turno === v}">${t}</button>`;
+
+  document.getElementById("conteudo").innerHTML = `
+    <div class="filtros" role="group" aria-label="Filtrar por turno"><span>Turno:</span>
+      ${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço (até 15:59)")}${chipTurno("noite", "Noite (16:00 em diante)")}
+    </div>
+    ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
+    <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
+      ${btn("chegou", "principal", `<div class="rot">Chegaram</div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
+      ${btn("falta", "", `<div class="rot">Falta chegar</div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
+      ${btn("lojas", "", `<div class="rot">Lojas no dia</div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
+      ${btn("vaga", "", `<div class="rot">Vagas sem motoca</div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} até domingo</div><div class="toque">ver onde ›</div>`)}
+    </section>
+    ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
+
+    <h2 id="todas-lojas">Lojas do dia (${lojas.length}) <span style="font-size:13px;font-weight:600;color:var(--tx2)">· primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente)</span></h2>
+    ${pendentes.length ? `<div class="lojas">${pendentes.map(cartaoLoja).join("")}</div>` : `<div class="vazio">Todas as lojas do dia estão completas.</div>`}
+    ${completas.length ? `<h2>Completas (${completas.length})</h2><div class="lojas completas">${completas.map(cartaoCompleto).join("")}</div>` : ""}`}
+
+    <p class="rodape">Tela do operador: abra a loja e toque em <b>Chegou</b> para gravar OK na planilha (ou <b>Desfazer</b> para voltar a N/D). OK na coluna PRESENÇA = chegou. Sem OK = falta chegar. "NÃO LOCALIZADO" no nome = vaga sem motoca. Mostra de hoje até domingo. Com o som ligado, a tela apita quando o turno começou há ${ALERTA_MIN} min e o motoboy ainda não chegou, e toca um pililim quando uma loja fica completa. Atualiza sozinha a cada 30 segundos.</p>`;
+}
+
+const TITULO = { falta: "Quem falta chegar", chegou: "Quem já chegou", vaga: "Onde estão as vagas sem motoca" };
+function painelFiltro(doDia, f) {
+  const ls = doDia.filter(l => l.s === f);
+  const grupos = [...new Set(ls.map(l => l.loja))].map(n => ({ n, ls: ls.filter(l => l.loja === n).sort(porHorario) }))
+    .sort((a, b) => b.ls.length - a.ls.length || a.n.localeCompare(b.n));
+  const vazio = { falta: "Todos já chegaram.", chegou: "Ninguém chegou ainda.", vaga: "Nenhuma vaga sem motoca neste dia." }[f];
+  return `<section class="painel" id="painel" aria-live="polite">
+    <div class="painel-cab"><h2>${TITULO[f]} (${ls.length})</h2><button type="button" class="fechar" data-f="${f}">Fechar ✕</button></div>
+    ${ls.length === 0 ? `<div class="vazio" style="margin-top:12px">${vazio}</div>` :
+      `<div class="painel-lojas">${grupos.map(g => `<div class="painel-loja"><div class="pl-cab"><b>${esc(g.n)}</b><span class="etq ${f === "vaga" ? "r" : f === "falta" ? "a" : "v"}">${g.ls.length}</span></div><div class="lista"><ul>${g.ls.map(pessoa).join("")}</ul></div></div>`).join("")}</div>`}
+  </section>`;
+}
+function painelVagasSemana(ls, seg, dom) {
+  const dias = [...new Set(ls.map(l => l.data))].sort();
+  return `<section class="painel">
+    <div class="painel-cab"><h2>Vagas sem motoca de hoje até domingo (${ls.length})</h2><span class="etq r">${ddmm(seg)} a ${ddmm(dom)}</span></div>
+    ${ls.length === 0 ? `<div class="vazio" style="margin-top:12px">Nenhuma vaga até domingo. Escala completa.</div>` :
+      `<div class="painel-lojas">${dias.map(d => {
+        const doDia = ls.filter(l => l.data === d);
+        const lojas = [...new Set(doDia.map(l => l.loja))].sort((a, b) => a.localeCompare(b));
+        return `<div class="painel-loja"><div class="pl-cab"><b>${esc(rotulo(d))}</b><span class="etq r">${doDia.length} ${doDia.length > 1 ? "vagas" : "vaga"}</span></div>
+          <div class="lista"><ul>${lojas.map(n => { const v = doDia.filter(l => l.loja === n);
+            return `<li class="r"><span><b>${esc(n)}</b> · ${v.map(x => esc(x.horario)).join(", ")}</span><span class="etq r">${v.length}</span></li>`; }).join("")}</ul></div></div>`;
+      }).join("")}</div>`}
+  </section>`;
+}
+
+/* ===== Gravar na planilha ===== */
+async function chamar(dados) {
+  const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+function toast(texto, ok) {
+  const t = document.createElement("div");
+  t.className = "toast" + (ok ? " ok" : ""); t.textContent = texto;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(() => t.remove(), ok ? 2500 : 6000);
+}
+async function marcar(chave, acao) {
+  const l = linhas.find(x => x.chave === chave);
+  if (!l || gravando.has(chave)) return;
+  if (acao === "desfazer" && !confirm(`Tirar o OK de ${l.nome} (${l.loja})?`)) return;
+  gravando.set(chave, acao); desenhar();
   try {
     const r = await chamar({ acao, loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome });
-    if (r.senha) { gravando.delete(l.chave); toast(r.erro || "Senha não aceita."); sair(); return; }
+    if (r.senha) { gravando.delete(chave); sair(r.erro); return; }
     if (r.ok) {
-      trocas.set(l.chave, { presenca: r.presenca || (acao === "chegou" ? "OK" : "N/D"), quando: Date.now() });
-      toast(acao === "chegou" ? `✓ ${l.nome} chegou · ${l.loja}` : `OK tirado de ${l.nome}`, true);
+      trocas.set(chave, { presenca: r.presenca || (acao === "chegou" ? "OK" : "N/D"), quando: Date.now() });
+      if (acao === "chegou") toast(`✓ ${l.nome} chegou · ${l.loja}`, true);
+      else toast(`OK tirado de ${l.nome}`, true);
     } else {
       toast(r.erro || "Não gravou. Tente de novo.");
       if (r.mudou) setTimeout(carregar, 300);
@@ -458,17 +583,108 @@ async function aoClicar(ev) {
   } catch (e) {
     toast("Não gravou. Confira a internet e tente de novo.");
   } finally {
-    gravando.delete(l.chave);
-    desenhar();
+    gravando.delete(chave); desenhar(); conferirCompletas();
   }
 }
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-acao]");
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  marcar(b.dataset.chave, b.dataset.acao);
+}, true);
 
-/* ===== começo ===== */
+/* ===== Entrada com senha ===== */
+let iniciado = false;
+function telaEntrada(erro) {
+  document.body.classList.add("trancado");
+  document.getElementById("entrada").innerHTML = `
+    <form class="entrada" id="formEntrada">
+      <img src="lume.png" alt="Lume, assistente da LogMax">
+      <h1>LogMax · Operador</h1>
+      <p>Área dos operadores: marcar chegada</p>
+      <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
+      <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
+      <button class="btn-entrar" id="btnEntrar">Entrar</button>
+      <div class="erro" id="erroEntrada">${esc(erro || "")}</div>
+      ${MODO_TESTE ? '<p style="margin-top:12px;font-weight:700;color:var(--ambar)">Modo teste: usando outro endereço de planilha</p>' : ""}
+    </form>`;
+  const campo = document.getElementById("campoSenha");
+  campo.focus();
+  document.getElementById("formEntrada").onsubmit = async ev => {
+    ev.preventDefault();
+    const btnE = document.getElementById("btnEntrar");
+    btnE.disabled = true; btnE.textContent = "Conferindo…";
+    senha = campo.value;
+    try {
+      const r = await chamar({ acao: "entrar" });
+      if (!r.ok) { document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btnE.disabled = false; btnE.textContent = "Entrar"; return; }
+      guardar(CHAVE_SENHA, document.getElementById("lembrar").checked ? senha : "");
+      liberar(r.planilha);
+    } catch (e) {
+      document.getElementById("erroEntrada").textContent = "Não consegui falar com a planilha. Confira a internet.";
+      btnE.disabled = false; btnE.textContent = "Entrar";
+    }
+  };
+}
+function liberar(nomePlanilha) {
+  document.getElementById("entrada").innerHTML = "";
+  document.body.classList.remove("trancado");
+  const ft = document.getElementById("faixaTeste");
+  if (MODO_TESTE || /c[óo]pia|teste/i.test(nomePlanilha || "")) { ft.hidden = false; ft.textContent = "MODO TESTE · " + (nomePlanilha || "planilha de teste"); }
+  carregar();
+  if (!iniciado) {
+    iniciado = true;
+    setInterval(carregar, ATUALIZAR_MS);
+    setInterval(() => { if (linhas.length && senha) { desenhar(); conferirAtrasos(); } }, 60 * 1000);
+  }
+}
+function sair(erro) {
+  senha = ""; guardar(CHAVE_SENHA, "");
+  telaEntrada(erro);
+}
+
+/* ===== Cliques ===== */
+document.getElementById("btnSair").onclick = () => sair();
+document.getElementById("ant").onclick = () => { const d = diasDisponiveis.filter(x => x < diaAtual).pop(); if (d) { diaAtual = d; desenhar(); } };
+document.getElementById("prox").onclick = () => { const d = diasDisponiveis.find(x => x > diaAtual); if (d) { diaAtual = d; desenhar(); } };
+document.getElementById("btnSom").onclick = () => { ligarSom(!somLigado); if (somLigado) bipe(); };
+document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.documentElement.classList.contains("escuro"));
+document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));
+document.addEventListener("click", e => {
+  if (somLigado && audio && audio.state === "suspended") audio.resume();
+  const t = e.target.closest("[data-turno]");
+  if (t) { turno = t.dataset.turno; guardar("logmax-turno", turno); desenhar(); return; }
+  const b = e.target.closest("[data-f]");
+  if (!b) return;
+  if (b.dataset.f === "lojas") { filtro = null; desenhar(); document.getElementById("todas-lojas")?.scrollIntoView({ behavior: "smooth" }); return; }
+  filtro = filtro === b.dataset.f ? null : b.dataset.f;
+  desenhar();
+  if (filtro) document.getElementById("painel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+document.addEventListener("toggle", e => {
+  const d = e.target;
+  if (d.matches && d.matches("details.loja")) d.open ? abertas.add(d.dataset.loja) : abertas.delete(d.dataset.loja);
+}, true);
+
+/* ===== Início ===== */
+{ const e = new URLSearchParams(location.search).get("escuro"); if (e === "1" || (e !== "0" && lerGuardado("logmax-escuro") === "1")) modoEscuro(true); }
+turno = ["todos", "almoco", "noite"].includes(lerGuardado("logmax-turno")) ? lerGuardado("logmax-turno") : "todos";
+if (new URLSearchParams(location.search).get("tv") === "1" || lerGuardado("logmax-tv") === "1") {
+  document.documentElement.classList.add("tv");
+  document.getElementById("btnTv").setAttribute("aria-pressed", "true");
+  document.getElementById("btnTv").textContent = "✕ Sair do modo TV";
+}
+if (lerGuardado("logmax-som") === "1") { // o navegador só deixa tocar depois do primeiro toque na tela
+  document.getElementById("btnSom").textContent = "🔔 Toque para ativar o som";
+  document.addEventListener("click", function primeiro(e) {
+    document.removeEventListener("click", primeiro, true);
+    if (!e.target.closest("#btnSom")) ligarSom(true);
+  }, true);
+}
+senha = lerGuardado(CHAVE_SENHA) || "";
 if (senha) {
-  chamar({ acao: "entrar" }).then(r => {
-    if (r.ok) { nomePlanilha = r.planilha || ""; iniciar(); }
-    else { guardar(CHAVE_SENHA, null); telaEntrada(r.erro); }
-  }).catch(() => telaEntrada("Não consegui falar com a planilha. Confira a internet."));
+  chamar({ acao: "entrar" }).then(r => r.ok ? liberar(r.planilha) : sair(r.erro))
+    .catch(() => telaEntrada("Não consegui falar com a planilha. Confira a internet."));
 } else {
   telaEntrada();
 }
