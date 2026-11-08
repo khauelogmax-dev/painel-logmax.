@@ -249,7 +249,7 @@ const ATUALIZAR_MS = 30 * 1000;   // busca de novo a cada 30 segundos
 const PISCAR_MIN = 1;             // passou do horário do turno sem OK → loja pisca e a pessoa ganha "atrasado X min"
 const ALERTA_MIN = 10;            // apita (com o som ligado) quando o turno começou há 10 min e o motoboy ainda falta chegar
 const ANOTAR_MIN = 15;            // depois do Chegou, só marca "X min atrasado" a partir de 15 min
-const NOITE_A_PARTIR = 16 * 60;   // turno que começa às 16:00 ou depois = noite; antes = almoço
+const NOITE_A_PARTIR = 15 * 60;   // turno que começa às 15:00 ou depois = noite; até 14:59 = almoço
 const DIAS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
 const url = new URLSearchParams(location.search).get("csv") || CSV_URL;
@@ -611,13 +611,13 @@ function desenhar() {
   const pendentes = porLoja.filter(l => !completas.includes(l));
 
   const btn = (f, extra, conteudo) => `<button type="button" class="num ${extra} ${filtro === f ? "ativo" : ""}" data-f="${f}" aria-pressed="${filtro === f}">${conteudo}</button>`;
-  const DICA_TURNO = { todos: "Todos os turnos do dia", almoco: "Turnos que começam até 15:59", noite: "Turnos que começam às 16:00 ou depois" };
+  const DICA_TURNO = { todos: "Todos os turnos do dia", almoco: "Turnos que começam até 14:59", noite: "Turnos que começam às 15:00 ou depois" };
   const chipTurno = (v, t) => `<button type="button" data-turno="${v}" aria-pressed="${turno === v}" title="${DICA_TURNO[v]}">${t}</button>`;
 
   document.getElementById("conteudo").innerHTML = `
     <div class="filtros">
       <div class="segmento" role="group" aria-label="Filtrar por turno">${chipTurno("todos", "Todos")}${chipTurno("almoco", "Almoço")}${chipTurno("noite", "Noite")}</div>
-      ${turno !== "todos" ? `<span class="dica-turno">${turno === "almoco" ? "começa até 15:59" : "começa às 16:00 ou depois"}</span>` : ""}
+      ${turno !== "todos" ? `<span class="dica-turno">${turno === "almoco" ? "começa até 14:59" : "começa às 15:00 ou depois"}</span>` : ""}
     </div>
     ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
@@ -668,7 +668,7 @@ function abrirAjuda() {
   el.className = "ajuda-fundo";
   el.innerHTML = `<div class="ajuda" role="dialog" aria-modal="true" aria-labelledby="tituloAjuda">
       <div class="ajuda-cab"><h2 id="tituloAjuda">Como ler esta tela</h2><button type="button" class="ajuda-fechar" aria-label="Fechar">✕</button></div>
-      <ul><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 15:59. Noite = começa às 16:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
+      <ul><li><b>OK</b> na coluna PRESENÇA = chegou. Sem OK = falta chegar.</li><li><b>"NÃO LOCALIZADO"</b> no nome = vaga sem motoca.</li><li><b>Ordem das lojas</b>: primeiro as com vaga sem motoca, depois as com gente para chegar (atrasadas na frente). As completas ficam no fim.</li><li><b>Atrasado</b>: passou do horário do turno e ainda não tem OK. A loja pisca na hora; com o som ligado, apita a partir de ${ALERTA_MIN} min.</li><li><b>Chegou atrasado</b>: depois do Chegou, o atraso só fica anotado ("chegou 19:23 · 20 min atrasado") quando passa de ${ANOTAR_MIN} min.</li><li><b>Dias</b>: de hoje até domingo. No domingo, já mostra a semana seguinte. Bolinha vermelha = tem vaga sem motoca; amarela = falta gente; verde = completa.</li><li><b>Turno</b>: Almoço = começa até 14:59. Noite = começa às 15:00 ou depois.</li><li><b>Som</b> (sino): apita quando alguém atrasa e toca um pililim quando uma loja fica completa.</li><li><b>Atualiza sozinha</b> a cada 30 segundos. O selo "Ao vivo" mostra há quanto tempo leu a planilha.</li></ul></div>`;
   const fechar = () => { el.remove(); document.removeEventListener("keydown", tecla); };
   const tecla = e => { if (e.key === "Escape") fechar(); };
   el.addEventListener("click", e => { if (e.target === el || e.target.closest(".ajuda-fechar")) fechar(); });
