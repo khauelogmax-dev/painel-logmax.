@@ -9,7 +9,7 @@
 <link rel="icon" type="image/png" href="lume-96.png">
 <link rel="apple-touch-icon" href="lume.png">
 <style>
-:root{
+:root{--larg:1100px;
   --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
@@ -19,8 +19,8 @@
 html{font-size:16px}
 @font-face{font-family:"Inter";src:url("inter.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"cv11","ss01";-webkit-font-smoothing:antialiased}
-header{background:var(--marinho);color:#fff}
-.topo{max-width:1100px;margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
+header{background:var(--marinho);color:#fff;position:sticky;top:calc(-1 * var(--topo-h, 0px));z-index:40;box-shadow:0 2px 12px rgba(15,23,42,.18)}
+.topo{max-width:var(--larg);margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
 .marca img{width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
 .nome-marca{display:flex;flex-direction:column;line-height:1.1}
@@ -47,7 +47,7 @@ header{background:var(--marinho);color:#fff}
 @keyframes pulsaVivo{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}100%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
 @media (prefers-reduced-motion:reduce){.status.vivo i{animation:none}}
 @media (min-width:900px){.status{order:1;margin-left:auto}.acoes .rot-btn{display:inline}.acoes button{padding:0 12px}}
-main{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
+main{max-width:var(--larg);margin:0 auto;padding:16px 16px 48px}
 .filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
 .segmento{display:inline-flex;gap:2px;padding:3px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px}
 .segmento button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:var(--tx2);border-radius:9px;padding:7px 18px;cursor:pointer;transition:background .15s,color .15s}
@@ -176,9 +176,10 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
   .status{text-align:left}
 }
 /* ===== Operador ===== */
-.online{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:10px 14px;margin:-4px 0 14px;font-size:.95rem}
+.online{display:flex;align-items:center;gap:6px;margin:-4px 0 12px;font-size:.82rem;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.online b{color:var(--tx);font-weight:700}
 .online .sep{color:var(--tx2)}
-.ponto-on{width:.7rem;height:.7rem;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulsa 2s ease-out infinite}
+.ponto-on{flex:none;width:.55rem;height:.55rem;border-radius:50%;background:#22c55e;box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulsa 2s ease-out infinite}
 @keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
 @media (prefers-reduced-motion:reduce){.ponto-on{animation:none}}
 .faixa-teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
@@ -204,8 +205,8 @@ html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar,body.trancado #pgfTela,body.trancado #cadTela,body.trancado #probTela{display:none}
 @media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
 /* ===== Faixa de dias ===== */
-.dias{padding:0 16px 14px}
-.dias .trilho{max-width:1100px;margin:0 auto;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.dias{padding:0 0 14px}
+.dias .trilho{max-width:var(--larg);margin:0 auto;padding:0 16px;box-sizing:border-box;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .dias .trilho::-webkit-scrollbar{display:none}
 .dias button{flex:none;font:inherit;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:6px 10px 7px;min-width:62px;text-align:center;cursor:pointer;line-height:1.15;transition:background .15s,transform .1s}
 .dias button:not(.on):not(:disabled):hover{background:rgba(255,255,255,.14)}
@@ -243,8 +244,11 @@ html.tv .dias button small{font-size:.6rem}
 .ajuda li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--laranja)}
 .ajuda li b{color:var(--tx)}
 /* ===== Colocar / trocar motoboy ===== */
-.btn-trocar{font:inherit;font-size:.8rem;font-weight:700;background:none;border:0;color:var(--tx2);text-decoration:underline;cursor:pointer;padding:2px 0}
-.btn-trocar:hover{color:var(--laranja)}
+.acoes-l{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.acoes-l .btn-trocar,.acoes-l .btn-pgf,.acoes-l .lnk-whats{font:inherit;font-size:.75rem;font-weight:700;line-height:1.2;border-radius:999px;padding:4px 11px;cursor:pointer;text-decoration:none;background:var(--cartao);border:1px solid var(--linha);color:var(--tx)}
+.acoes-l .btn-trocar:hover{border-color:var(--laranja);color:var(--laranja)}
+.acoes-l .lnk-whats{border-color:#86efac;color:#15803d}
+html.escuro .acoes-l .lnk-whats{color:#4ade80;border-color:rgba(74,222,128,.4)}
 .btn-codigo{font:inherit;font-weight:800;font-size:.88rem;border:2px dashed var(--vermelho);background:var(--cartao);color:var(--vermelho);border-radius:10px;padding:0 12px;min-height:42px;cursor:pointer;white-space:nowrap}
 .janela-fundo{position:fixed;inset:0;z-index:80;background:rgba(6,13,28,.6);display:grid;place-items:center;padding:16px;animation:entra .2s ease-out}
 .janela{width:100%;max-width:400px;background:var(--cartao);color:var(--tx);border-radius:18px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
@@ -263,8 +267,8 @@ html.tv .dias button small{font-size:.6rem}
 .lnk-whats{font-size:.8rem;font-weight:700;color:#15803d;text-decoration:underline}
 html.escuro .lnk-whats{color:#4ade80}
 /* ===== Abas do operador + Localizar ===== */
-.abas-op{max-width:1100px;margin:0 auto;padding:14px 16px 0;display:flex;gap:4px;border-bottom:1px solid var(--linha)}
-.abas-op button{font:inherit;font-size:.95rem;font-weight:700;border:0;background:none;color:var(--tx2);padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.abas-op{margin:0;padding:0 max(16px, calc((100% - var(--larg)) / 2 + 16px));display:flex;gap:4px;background:var(--cartao);border-bottom:1px solid var(--linha)}
+.abas-op button{font:inherit;font-size:.95rem;font-weight:700;border:0;background:none;color:var(--tx2);padding:12px 14px 11px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
 .abas-op button[aria-pressed="true"]{color:var(--tx);border-bottom-color:var(--laranja)}
 .abas-op{overflow-x:auto;scrollbar-width:none}.abas-op::-webkit-scrollbar{display:none}.abas-op button{white-space:nowrap;flex:none}
 .abas-op .t-curto{display:none}
@@ -295,12 +299,12 @@ body.aba-localizar .dias{display:none}
 .loc-escala b{color:var(--tx)}
 .loc-escala ul{margin:4px 0 0;padding-left:18px}
 /* ===== Pagamento no Final ===== */
-.btn-pgf{font:inherit;font-size:.75rem;font-weight:800;letter-spacing:.03em;border:1px solid #6366f1;color:#4f46e5;background:transparent;border-radius:999px;padding:1px 9px;cursor:pointer}
+.btn-pgf{font:inherit;font-size:.75rem;font-weight:800;letter-spacing:.03em;border:1px solid #a5b4fc!important;color:#4f46e5!important;background:transparent;border-radius:999px;padding:1px 9px;cursor:pointer}
 .btn-pgf.tem{background:#eef2ff;border-color:#c7d2fe}
 .btn-pgf.pago{background:var(--verde-claro);color:var(--verde);border-color:transparent}
 html.escuro .btn-pgf{border-color:#818cf8;color:#a5b4fc}html.escuro .btn-pgf.tem{background:rgba(129,140,248,.16)}
 .btn-cancelar.perigo{color:var(--vermelho);border-color:var(--vermelho-claro);margin-right:auto}
-.pgf-tela{max-width:1100px;margin:0 auto;padding:16px 16px 48px}
+.pgf-tela{max-width:var(--larg);margin:0 auto;padding:16px 16px 48px}
 .pgf-titulo{font-size:1.2rem;margin:0 0 12px}.pgf-titulo span{color:var(--tx2);font-weight:600}
 .pgf-faixa{grid-template-columns:2fr 1fr 1fr}
 .pgf-faixa .num{cursor:default}
@@ -361,6 +365,24 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .prob-rodape{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.8rem;color:var(--tx2)}
 .loc-prob{margin-top:10px;padding-top:10px;border-top:1px dashed var(--linha);font-size:.85rem;display:grid;gap:4px}
 .loc-prob .encerrado{opacity:.6}
+/* ===== Refinamentos ===== */
+@media (min-width:1400px){:root{--larg:1320px}}
+.painel,#todas-lojas,.pgf-titulo{scroll-margin-top:calc(var(--fixo-h, 0px) + 12px)}
+.conta-mini{display:none}
+@media (max-width:720px){
+  details.loja:not(.mini):not([open])>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;row-gap:7px;align-items:center;padding:12px 14px}
+  details.loja:not(.mini):not([open]) .nome{grid-column:1;grid-row:1;justify-content:flex-start;flex-wrap:wrap;align-items:center}
+  details.loja:not(.mini):not([open]) .conta-mini{display:block;grid-column:2;grid-row:1;font-weight:800;font-size:1.05rem;white-space:nowrap}
+  details.loja:not(.mini):not([open]) .conta,details.loja:not(.mini):not([open]) .abrir{display:none}
+  details.loja:not(.mini):not([open]) .barra{grid-column:1/-1;grid-row:2;margin:0;height:6px}
+  details.loja:not(.mini):not([open]) .etqs{grid-column:1/-1;grid-row:3;margin:0}
+  details.loja:not(.mini):not([open]) .etq{font-size:.75rem;padding:1px 8px}
+  .lojas{gap:8px}
+}
+.vazio-bonito{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:36px 20px;background:var(--cartao);border:1px dashed var(--linha);border-radius:16px;color:var(--tx2)}
+.vazio-bonito svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin-bottom:4px}
+.vazio-bonito b{color:var(--tx);font-size:1.02rem}
+.vazio-bonito span{font-size:.9rem;max-width:420px}
 </style>
 </head>
 <body class="trancado">
@@ -381,7 +403,6 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
     <div class="status carregando" id="status"><i aria-hidden="true"></i><span>Conectando…</span></div>
   </div>
   <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
-</header>
 <nav class="abas-op" id="abasOp" aria-label="Telas do operador">
   <button type="button" data-aba="presenca" aria-pressed="true">Presença</button>
   <button type="button" data-aba="localizar" aria-pressed="false"><span class="t-longo">Localizar Motoca</span><span class="t-curto">Localizar</span></button>
@@ -389,6 +410,7 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
   <button type="button" data-aba="cadastro" aria-pressed="false"><span class="t-longo">Novo Cadastro</span><span class="t-curto">Cadastro</span></button>
   <button type="button" data-aba="problema" aria-pressed="false"><span class="t-longo">Relatar Problema</span><span class="t-curto">Problemas</span></button>
 </nav>
+</header>
 <section id="probTela" class="cad-tela" hidden>
   <h2>Relatar Problema</h2>
   <p class="loc-dica">Registre qualquer problema com um motoca. Os <b>graves</b> fazem a tela piscar em vermelho e apitar quando ele for escalado.</p>
@@ -747,7 +769,7 @@ function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${botaoPgf(l)}${l.vaga ? "" : etqProblema(l.codigo)}</small></div><div class="dir">${botao(l)}</div></li>`;
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.vaga ? "" : etqProblema(l.codigo)}</small>${l.vaga ? "" : `<span class="acoes-l">${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${botaoPgf(l)}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</span>`}</div><div class="dir">${botao(l)}</div></li>`;
 }
 
 /* ===== WhatsApp do motoboy (só nesta tela, que tem senha) ===== */
@@ -786,6 +808,7 @@ function cartaoLoja(l) {
       <details class="loja ${l.vagas ? "p1" : l.falta ? "p2" : "p3"} ${atrasados ? "com-atraso" : ""}" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
         <summary>
           <div class="nome"><span>${esc(l.nome)}</span>${l.graves ? `<span class="luz-grave" title="Motoca com problema grave escalado"><i aria-hidden="true"></i>${l.graves} grave${l.graves > 1 ? "s" : ""}</span>` : ""}${atrasados ? `<span class="luz-atraso" title="${atrasados} ${atrasados > 1 ? "motoboys atrasados" : "motoboy atrasado"}"><i aria-hidden="true"></i>${atrasados} ${atrasados > 1 ? "atrasados" : "atrasado"}</span>` : ""}</div>
+          <div class="conta-mini">${l.chegou}/${l.total}</div>
           <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
           <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
           <div class="etqs">
@@ -928,7 +951,7 @@ function desenharPgf() {
       <div class="num"><div class="rot">Total do dia</div><div class="val">${esc(reais(soma(doDia)))}</div><div class="toque">${doDia.length} PGF</div></div>
     </section>
     ${atrasados.length ? `<div class="pgf-atrasados"><b>⚠ ${atrasados.length} PGF de dias anteriores ainda sem pagar (${esc(reais(soma(atrasados)))})</b>${atrasados.map(cartaoPgf).join("")}</div>` : ""}
-    ${doDia.length ? doDia.map(cartaoPgf).join("") : `<div class="aviso">Nenhum PGF neste dia. Para anotar, use o botão <b>PGF</b> na aba Presença.</div>`}`;
+    ${doDia.length ? doDia.map(cartaoPgf).join("") : vazio("dinheiro", "Nenhum pagamento anotado neste dia", "Para anotar, toque em PGF embaixo do motoboy, na aba Presença.")}`;
 }
 document.getElementById("pgfTela").addEventListener("click", async e => {
   const c = e.target.closest("[data-copiar]"); if (c) { copiar(c.dataset.copiar, c); return; }
@@ -947,9 +970,30 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
   desenharPgf(); desenhar();
 });
 
+// tela vazia: ícone, título e uma frase
+const ICO_VAZIO = {
+  calendario: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  busca: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  dinheiro: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+  ok: '<circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>',
+};
+function vazio(ico, titulo, texto) {
+  return `<div class="vazio-bonito"><svg viewBox="0 0 24 24" aria-hidden="true">${ICO_VAZIO[ico] || ICO_VAZIO.ok}</svg><b>${esc(titulo)}</b>${texto ? `<span>${esc(texto)}</span>` : ""}</div>`;
+}
+// mede o topo para ele "subir" ao rolar e deixar só os dias (e as abas) presos
+function medirTopo() {
+  const t = document.querySelector("header .topo"), h = document.querySelector("header");
+  if (!t || !h || !t.offsetHeight) return;
+  document.documentElement.style.setProperty("--topo-h", t.offsetHeight + "px");
+  document.documentElement.style.setProperty("--fixo-h", (h.offsetHeight - t.offsetHeight) + "px");
+}
+addEventListener("resize", medirTopo);
+try { document.fonts.ready.then(medirTopo); } catch (e) {}
+setInterval(medirTopo, 2000);
 function desenhar() {
   const hoje = hojeSP();
   desenharDias();
+  medirTopo();
   desenharPgf();
 
   const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
@@ -984,7 +1028,7 @@ function desenhar() {
     ${online ? `<div class="online" title="Telas abertas agora (atualiza a cada 30 s)"><span class="ponto-on" aria-hidden="true"></span><b>Online agora:</b>
       <span>${online.o} ${online.o === 1 ? "operador" : "operadores"}</span><span class="sep">·</span>
       <span>${online.p} ${online.p === 1 ? "tela do painel" : "telas do painel"}</span></div>` : ""}
-    ${doDia.length === 0 ? `<div class="aviso">Nenhuma escala encontrada para ${esc(rotulo(diaAtual))}${turno !== "todos" ? " neste turno" : ""}.</div>` : `
+    ${doDia.length === 0 ? vazio("calendario", `Nenhuma escala para ${rotulo(diaAtual)}${turno !== "todos" ? " neste turno" : ""}`, "Quando a escala desse dia for lançada na planilha, ela aparece aqui sozinha.") : `
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot"><span class="longo">Chegaram</span><span class="curto">Chegaram</span></div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
       ${btn("falta", "", `<div class="rot"><span class="longo">Falta chegar</span><span class="curto">Faltam</span></div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
@@ -1229,7 +1273,7 @@ async function buscarMotoboy() {
     if (minha !== buscaAtual) return;
     if (r.senha) { sair(r.erro); return; }
     if (!r.ok) { out.innerHTML = `<div class="aviso">${esc(r.erro || "Não consegui procurar agora.")}</div>`; return; }
-    out.innerHTML = !r.itens.length ? `<div class="aviso">Ninguém encontrado com "${esc(q)}".</div>`
+    out.innerHTML = !r.itens.length ? vazio("busca", `Ninguém encontrado com "${q}"`, "Confira o que foi digitado ou tente buscar por outro campo.")
       : `<p class="loc-info">${r.total} encontrado${r.total > 1 ? "s" : ""}${r.total > r.itens.length ? ` (mostrando os ${r.itens.length} primeiros)` : ""}</p>${r.itens.map(cartaoMotoboy).join("")}`;
   } catch (e) {
     if (minha === buscaAtual) out.innerHTML = `<div class="aviso">Não consegui procurar: ${esc((e && e.message) || "confira a internet")}.</div>`;
@@ -1458,7 +1502,7 @@ function desenharProblemas() {
       <div class="prob-topo">${etqGrav(p.gravidade)} <b>${esc(p.nome || "?")}</b> <span class="cod">#${esc(p.cod)}</span><span class="prob-quando">${esc(p.quando)}</span></div>
       <p>${esc(p.texto)}</p>
       <div class="prob-rodape">${p.por ? `Registrado por ${esc(p.por)}` : ""}${p.ativo ? `<button type="button" class="btn-desfazer" data-encerrar="${esc(p.id)}">Encerrar</button>` : `<span>Encerrado em ${esc(p.encerradoEm)}${p.motivo ? " · " + esc(p.motivo) : ""}</span>`}</div>
-    </article>`).join("") : `<p class="loc-info">${f ? "Nada encontrado com esse filtro." : "Nenhum problema registrado ainda."}</p>`;
+    </article>`).join("") : (f ? vazio("busca", "Nada encontrado com esse filtro", "") : vazio("ok", "Nenhum problema registrado", "Quando houver, eles aparecem aqui."));
 }
 document.getElementById("probFiltro").addEventListener("input", desenharProblemas);
 document.getElementById("probLista").addEventListener("click", async e => {
@@ -1525,6 +1569,7 @@ function telaEntrada(erro) {
   };
 }
 function liberar(nomePlanilha) {
+  setTimeout(medirTopo, 0);
   if (["#localizar", "#pgf", "#cadastro", "#problema"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
   document.getElementById("entrada").innerHTML = "";
   document.body.classList.remove("trancado");
