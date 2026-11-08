@@ -27,6 +27,10 @@
  *   NOVA da planilha chamada "PGF SITE" (criada sozinha; não mexe na PAG FNAL nem em nenhuma outra aba).
  *   A aba Pagamento no Final do site lê essa lista e tem o botão Pago.
  *
+ * NA VERSÃO 4.6: "Novo Cadastro" na tela do operador. Escreve UMA linha nova na aba de cadastro, colunas A até H,
+ *   na mesma ordem da planilha (A = carimbo de data/hora, preenchido sozinho). O COD FUN é sugerido (maior número + 1).
+ *   CPF que já existe é bloqueado e a resposta traz o código já cadastrado.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * Telefone: só para a tela do operador (com senha). NUNCA entrega CPF, PIX nem valores.
  *
@@ -78,6 +82,12 @@ function doPost(e) {
     return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), online: lmOnline('o', pedido.sessao) });
   }
   if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q, pedido.campo));
+  if (pedido.acao === 'cadastroInfo') return lmResposta(lmCadastroInfo());
+  if (pedido.acao === 'cadastrar') {
+    const travaCad = LockService.getScriptLock();
+    if (!travaCad.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
+    try { return lmResposta(lmCadastrar(pedido)); } finally { travaCad.releaseLock(); }
+  }
   if (['pgf', 'pgfPago', 'pgfRemover'].indexOf(pedido.acao) >= 0) {
     const travaPgf = LockService.getScriptLock();
     if (!travaPgf.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
@@ -494,6 +504,119 @@ function lmBuscar(q, campo) {
   return { ok: true, campo: campo, total: achados.length, itens: achados.slice(0, 20).map(function (a) { delete a.nota; return a; }) };
 }
 
+/* ============================== NOVO CADASTRO (aba de cadastro, colunas A até H) ============================== */
+
+const LM_CAD_COLS = 8;   // A até H
+
+function lmSemAcento(x) { return String(x).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+
+// Lê os títulos A–H e diz que tipo de campo é cada um
+function lmCadastroEstrutura() {
+  const aba = lmAbaCadastro();
+  if (!aba) return { erro: 'Não achei a aba de cadastro dos motoboys.' };
+  const ultima = aba.getLastRow();
+  const titulos = aba.getRange(1, 1, 1, LM_CAD_COLS).getDisplayValues()[0].map(function (t) { return String(t).trim(); });
+  const tipos = titulos.map(function (t, i) {
+    const u = lmSemAcento(t);
+    if (i === 0) return 'carimbo';
+    if (/^(COD|CODIGO|ID|MATRICULA)\b/.test(u)) return 'codigo';
+    if (/TIPO/.test(u) && /PIX|CHAVE/.test(u)) return 'tipoPix';
+    if (/PIX/.test(u)) return 'pix';
+    if (/\bCPF\b/.test(u)) return 'cpf';
+    if (/TELEF|CELULAR|WHATS|FONE/.test(u)) return 'telefone';
+    if (/NOME/.test(u)) return 'nome';
+    if (/MAIL/.test(u)) return 'email';
+    if (/NASC|DATA/.test(u)) return 'data';
+    return 'texto';
+  });
+  return { aba: aba, ultima: ultima, titulos: titulos, tipos: tipos };
+}
+
+function lmCpfValido(c) {
+  const d = String(c).replace(/\D/g, '');
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  for (let t = 9; t < 11; t++) {
+    let soma = 0;
+    for (let i = 0; i < t; i++) soma += +d[i] * (t + 1 - i);
+    if (((soma * 10) % 11) % 10 !== +d[t]) return false;
+  }
+  return true;
+}
+
+// Para montar o formulário: títulos, tipos, opções das colunas com poucas respostas e o próximo código
+function lmCadastroInfo() {
+  const e = lmCadastroEstrutura();
+  if (e.erro) return { ok: false, erro: e.erro };
+  const linhas = e.ultima >= 2 ? e.aba.getRange(2, 1, e.ultima - 1, LM_CAD_COLS).getDisplayValues() : [];
+  const iCod = e.tipos.indexOf('codigo');
+  let maior = 0;
+  if (iCod >= 0) linhas.forEach(function (l) { const n = parseInt(String(l[iCod]).replace(/\D/g, ''), 10); if (n > maior && n < 1e7) maior = n; });
+  const opcoes = {};
+  e.tipos.forEach(function (t, i) {
+    if (t !== 'tipoPix' && t !== 'texto') return;
+    const conta = {};
+    linhas.slice(-400).forEach(function (l) { const v = String(l[i]).trim(); if (v) conta[v] = (conta[v] || 0) + 1; });
+    const lista = Object.keys(conta).sort(function (a, b) { return conta[b] - conta[a]; });
+    if (t === 'tipoPix' || (lista.length > 0 && lista.length <= 8)) opcoes[i] = lista.slice(0, 10);
+  });
+  return { ok: true, titulos: e.titulos, tipos: e.tipos, opcoes: opcoes, proximoCodigo: maior + 1, total: linhas.length };
+}
+
+function lmCadastrar(p) {
+  if (!p.confirmouDocumento) return { ok: false, erro: 'É preciso confirmar que você tem o documento do motoca.' };
+  const e = lmCadastroEstrutura();
+  if (e.erro) return { ok: false, erro: e.erro };
+  const v = p.valores || {};
+  const iCod = e.tipos.indexOf('codigo'), iCpf = e.tipos.indexOf('cpf'), iNome = e.tipos.indexOf('nome'), iTel = e.tipos.indexOf('telefone');
+  const linhaNova = [];
+  for (let i = 0; i < LM_CAD_COLS; i++) linhaNova.push(String(v[i] == null ? '' : v[i]).replace(/\s+/g, ' ').trim());
+
+  // conferências
+  if (iNome >= 0) { linhaNova[iNome] = linhaNova[iNome].toUpperCase(); if (linhaNova[iNome].length < 5) return { ok: false, erro: 'Escreva o nome completo.' }; }
+  if (iCpf >= 0) {
+    if (!lmCpfValido(linhaNova[iCpf])) return { ok: false, erro: 'Esse CPF não é válido. Confira os números.', campo: iCpf };
+    const d = linhaNova[iCpf].replace(/\D/g, '');
+    linhaNova[iCpf] = d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
+  }
+  if (iTel >= 0) {
+    const d = linhaNova[iTel].replace(/\D/g, '');
+    if (d.length < 10 || d.length > 11) return { ok: false, erro: 'Telefone com DDD, por favor (10 ou 11 números).', campo: iTel };
+    linhaNova[iTel] = d.length === 11 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7) : '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+  }
+  for (let i = 1; i < LM_CAD_COLS; i++) {
+    if (i === iCod) continue;
+    if (!linhaNova[i] && ['nome', 'cpf', 'telefone', 'pix', 'tipoPix'].indexOf(e.tipos[i]) >= 0) return { ok: false, erro: 'Preencha: ' + e.titulos[i] + '.', campo: i };
+  }
+
+  // CPF ou código repetido? (lê a planilha agora, não a memória)
+  const linhas = e.ultima >= 2 ? e.aba.getRange(2, 1, e.ultima - 1, LM_CAD_COLS).getDisplayValues() : [];
+  let maior = 0;
+  if (iCpf >= 0) {
+    const d = linhaNova[iCpf].replace(/\D/g, '');
+    for (let k = 0; k < linhas.length; k++) {
+      if (String(linhas[k][iCpf]).replace(/\D/g, '') === d) {
+        return { ok: false, duplicado: true, erro: 'Esse CPF já está cadastrado.',
+                 codigo: iCod >= 0 ? String(linhas[k][iCod]).trim() : '', nome: iNome >= 0 ? String(linhas[k][iNome]).trim() : '' };
+      }
+    }
+  }
+  if (iCod >= 0) {
+    linhas.forEach(function (l) { const n = parseInt(String(l[iCod]).replace(/\D/g, ''), 10); if (n > maior && n < 1e7) maior = n; });
+    const cod = String(linhaNova[iCod]).replace(/\D/g, '') || String(maior + 1);
+    const usado = linhas.some(function (l) { return String(l[iCod]).replace(/\D/g, '') === cod; });
+    if (usado) return { ok: false, erro: 'O COD FUN ' + cod + ' já é de outro motoca. Sugestão: ' + (maior + 1) + '.', proximoCodigo: maior + 1, campo: iCod };
+    linhaNova[iCod] = Number(cod);
+  }
+  linhaNova[0] = new Date();   // A: carimbo de data/hora
+
+  const nova = e.ultima + 1;
+  e.aba.getRange(nova, 1, 1, LM_CAD_COLS).setValues([linhaNova]);
+  SpreadsheetApp.flush();
+  CacheService.getScriptCache().remove(LM_CHAVE_CAD + '_0');   // a busca já encontra o motoca novo
+  CacheService.getScriptCache().remove(LM_CHAVE_CAD);
+  return { ok: true, codigo: iCod >= 0 ? String(linhaNova[iCod]) : '', nome: iNome >= 0 ? linhaNova[iNome] : '', linha: nova, proximoCodigo: Number(linhaNova[iCod] || maior) + 1 };
+}
+
 /* ============================== PAGAMENTO NO FINAL (aba "PGF SITE") ============================== */
 
 const LM_ABA_PGF = 'PGF SITE';
@@ -678,6 +801,8 @@ function conferirCadastro() {
     ' | Telefone: ' + (cad.titulos.tel || 'NÃO ACHEI') + ' | CPF: ' + (cad.titulos.cpf || 'NÃO ACHEI') +
     ' | PIX: ' + (cad.titulos.pix || 'NÃO ACHEI'));
   console.log('Motoboys no cadastro: ' + cad.lista.length);
+  const e = lmCadastroEstrutura();
+  if (!e.erro) console.log('Colunas A–H (Novo Cadastro): ' + e.titulos.map(function (t, i) { return 'ABCDEFGH'[i] + ' = ' + (t || '(vazia)') + ' [' + e.tipos[i] + ']'; }).join(' | '));
 }
 
 /** Mede o tempo de cada aba, uma por uma (mostra só nome e tamanho das abas, nenhum dado de motoboy). */
