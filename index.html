@@ -243,7 +243,7 @@ async function carregar() {
     linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim()).map(c => {
       const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
       return { loja: c[0].trim(), data: brParaISO(c[1].trim()), horario: (c[2] || "").trim(), codigo: cod, nome,
-               presenca: (c[5] || "").trim(),
+               presenca: (c[5] || "").trim(), chegada: lerChegada(c[8]),
                vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };          // vaga = "NÃO LOCALIZADO" na coluna NOME
     }).filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
     diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
@@ -397,9 +397,19 @@ function estaAtrasado(l) { // turno começou há ALERTA_MIN minutos (ou mais) e 
   const m = minutosAtraso(l);
   return m !== null && m >= ALERTA_MIN && m < 12 * 60;
 }
+// "19:23|1163" → { h: "19:23", m: 1163 }  (m = minutos desde 00:00 do dia da escala)
+function lerChegada(t) { const m = String(t || "").match(/^(\d{1,2}:\d{2})\|(-?\d+)$/); return m ? { h: m[1], m: +m[2] } : null; }
+const fmtMin = m => m >= 60 ? Math.floor(m / 60) + "h" + String(m % 60).padStart(2, "0") : m + " min";
+function chegadaDe(l) { return l.chegada || null; }
+function atrasoChegada(l) { const c = chegadaDe(l), ini = inicioMin(l.horario); return c && ini !== null ? c.m - ini : null; }
+function textoChegada(l) {   // só para quem chegou pelo botão Chegou (OK dado direto na planilha não tem hora)
+  const c = chegadaDe(l); if (!c) return "";
+  const a = atrasoChegada(l);
+  return a !== null && a >= ALERTA_MIN ? `<span class="etq r">chegou ${c.h} · ${fmtMin(a)} atrasado</span>` : `<span class="etq c">chegou ${c.h}</span>`;
+}
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
-  const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${m >= 60 ? Math.floor(m / 60) + "h" + String(m % 60).padStart(2, "0") : m + " min"}</span>` : "";
+  const atraso = m !== null && m >= ALERTA_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
   return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><span><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? " #" + esc(l.codigo) : ""} · ${esc(l.horario)}</span><span class="dir">${atraso} <span class="etq ${ROT[l.s][1]}">${ROT[l.s][0]}</span></span></li>`;
 }
 
