@@ -12,12 +12,16 @@
  *   - Se a montagem passar de 4 min e meio, entrega o que já leu (não estoura o limite de 6 min).
  *   - Ao marcar Chegou/Desfazer, só a linha daquela pessoa é atualizada na escala guardada (rápido).
  *
+ * NA VERSÃO 4.1: tela do operador pode COLOCAR motoboy na vaga ou TROCAR quem está, digitando só o código.
+ *   O código vai na coluna COD; o NOME vem sozinho pela fórmula da planilha. O OK continua separado.
+ *
  * O QUE ENTREGA: loja, data, horário, código, nome, presença, nº da linha e hora da chegada.
  * NUNCA entrega telefone, CPF, PIX nem valores.
  *
  * FUNÇÕES PARA RODAR NO EDITOR (botão Executar):
  *   testarTudo           → monta a escala e mostra quantas linhas, quantos segundos e quais abas são lentas.
  *   diagnosticarLentidao → mede o tempo de cada aba, uma por uma (sem dados pessoais).
+ *   conferirNomePorCodigo → diz, em cada loja, se a coluna NOME puxa o nome pelo código (fórmula).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL'];
@@ -56,12 +60,12 @@ function doPost(e) {
 
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
   if (pedido.acao === 'ler') return lmResposta({ ok: true, csv: lmEscala(), online: lmOnline('o', pedido.sessao) });
-  if (pedido.acao !== 'chegou' && pedido.acao !== 'desfazer') return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
+  if (['chegou', 'desfazer', 'codigo'].indexOf(pedido.acao) < 0) return lmResposta({ ok: false, erro: 'Ação desconhecida.' });
 
   const trava = LockService.getScriptLock();   // uma gravação por vez (separada da montagem da escala)
   if (!trava.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
   try {
-    return lmResposta(lmMarcar(pedido));
+    return lmResposta(pedido.acao === 'codigo' ? lmTrocarCodigo(pedido) : lmMarcar(pedido));
   } finally {
     trava.releaseLock();
   }
@@ -118,21 +122,23 @@ function lmLerGuardada() {
   return { csv: csv, t: meta.t };
 }
 
-// Depois do Chegou/Desfazer: muda só a linha daquela pessoa na escala guardada.
-function lmAtualizarGuardada(loja, linha, presenca, chegada) {
+// Depois do Chegou/Desfazer/troca: muda só a linha daquela pessoa na escala guardada.
+// mudancas = { coluna: valor }  (3 = CODIGO, 4 = NOME, 5 = PRESENCA, 8 = CHEGADA)
+function lmMudarGuardada(loja, linha, mudancas) {
   const g = lmLerGuardada();
   if (!g) return;
   const linhas = g.csv.split('\n');
   for (let i = 1; i < linhas.length; i++) {
     const c = lmLerLinhaCsv(linhas[i]);
     if (c[0] === loja && c[6] === String(linha)) {
-      c[5] = presenca; c[8] = chegada || '';
+      Object.keys(mudancas).forEach(function (k) { c[+k] = mudancas[k] == null ? '' : String(mudancas[k]); });
       linhas[i] = lmLinhaCsv(c);
       lmGuardar(linhas.join('\n'), g.t);
       return;
     }
   }
 }
+function lmAtualizarGuardada(loja, linha, presenca, chegada) { lmMudarGuardada(loja, linha, { 5: presenca, 8: chegada || '' }); }
 
 /* ============================== MONTAR A ESCALA ============================== */
 
@@ -267,6 +273,45 @@ function lmMarcar(p) {
   return { ok: true, presenca: presenca, chegada: chegada };
 }
 
+/* ============================== COLOCAR / TROCAR MOTOBOY PELO CÓDIGO ============================== */
+
+// Escreve o código na coluna COD; o NOME vem sozinho pela fórmula da planilha. Não mexe no OK.
+function lmTrocarCodigo(p) {
+  const achou = lmLocalizar(p);
+  if (achou.erro) return achou.erro;
+  const aba = achou.aba, linha = achou.linha, atual = achou.atual, col = achou.col;
+  if (col.cod < 0) return { ok: false, erro: 'Não achei a coluna COD nesta aba.' };
+
+  const novo = String(p.codigo || '').trim();
+  if (!/^[0-9A-Za-z-]{1,12}$/.test(novo)) return { ok: false, erro: 'Digite um código válido (só números ou letras).' };
+  if (String(atual[col.cod]).trim().toUpperCase() === novo.toUpperCase()) {
+    return { ok: true, nome: String(atual[col.nome]).trim(), codigo: novo, jaEstava: true };
+  }
+  // quem já está com OK não pode ser trocado (o OK passaria para outra pessoa no pagamento)
+  if (String(atual[col.pres]).trim().toUpperCase() === 'OK') {
+    return { ok: false, erro: 'Essa pessoa já está com OK. Toque em Desfazer antes de trocar.' };
+  }
+  const celNome = aba.getRange(linha, col.nome + 1);
+  if (!celNome.getFormula()) {
+    return { ok: false, erro: 'Nesta linha o NOME não puxa pelo código (não tem fórmula). Troque direto na planilha.' };
+  }
+
+  const celCod = aba.getRange(linha, col.cod + 1);
+  const antes = celCod.getValue();
+  celCod.setValue(/^\d+$/.test(novo) ? Number(novo) : novo);
+  SpreadsheetApp.flush();
+
+  const nome = String(celNome.getDisplayValue()).replace(/\s*[\r\n]+\s*/g, ' ').trim();
+  if (!nome || /N[ÃA]O\s+LOCALIZAD|^#/i.test(nome)) {
+    celCod.setValue(antes);   // código não existe no cadastro: volta como estava
+    SpreadsheetApp.flush();
+    return { ok: false, erro: 'Código ' + novo + ' não encontrado no cadastro. Nada foi mudado.' };
+  }
+  lmApagarChegada(p.loja, String(atual[0]).trim(), linha);   // hora de chegada era da pessoa anterior
+  lmMudarGuardada(p.loja, linha, { 3: novo, 4: nome, 8: '' });
+  return { ok: true, nome: nome, codigo: novo };
+}
+
 /* ============================== HORA DA CHEGADA (guardada no Apps Script, não na planilha) ============================== */
 
 function lmChaveChegada(loja, data, linha) { return LM_PREFIXO_CHEGADA + loja + '|' + data + '|' + linha; }
@@ -338,6 +383,25 @@ function testarTudo() {
   if (r.puladas.length) console.log('Ficaram de fora por tempo: ' + r.puladas.join(', '));
   console.log('Guardada ok? ' + (lmLerGuardada() ? 'SIM' : 'NÃO'));
   console.log('Agora faça: Implantar → Gerenciar implantações → lápis → Nova versão → Implantar.');
+}
+
+/** Diz, em cada loja, se a coluna NOME puxa o nome pelo código (fórmula). Não mostra dados pessoais. */
+function conferirNomePorCodigo() {
+  SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (aba) {
+    if (!lmAbaDeLoja(aba)) return;
+    const ultima = aba.getLastRow();
+    if (ultima < 3) return;
+    const inicio = Math.max(1, ultima - 60 + 1);
+    const faixa = aba.getRange(inicio, 1, ultima - inicio + 1, Math.min(LM_COLUNAS, aba.getMaxColumns()));
+    const valores = faixa.getDisplayValues(), formulas = faixa.getFormulas();
+    let col = null, com = 0, sem = 0;
+    valores.forEach(function (l, i) {
+      if (String(l[0]).trim().toUpperCase() === 'DATA') { col = lmColunas(l); return; }
+      if (!col || col.nome < 0 || !/^\d{2}\/\d{2}\/\d{4}$/.test(String(l[0]).trim())) return;
+      formulas[i][col.nome] ? com++ : sem++;
+    });
+    console.log(aba.getName() + ': ' + com + ' linhas com fórmula no NOME, ' + sem + ' sem fórmula');
+  });
 }
 
 /** Mede o tempo de cada aba, uma por uma (mostra só nome e tamanho das abas, nenhum dado de motoboy). */
