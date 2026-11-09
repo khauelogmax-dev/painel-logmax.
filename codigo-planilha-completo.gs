@@ -41,6 +41,7 @@
  *   testarTudo           → monta a escala e mostra quantas linhas, quantos segundos e quais abas são lentas.
  *   diagnosticarLentidao → mede o tempo de cada aba, uma por uma (sem dados pessoais).
  *   conferirNomePorCodigo → diz, em cada loja, se a coluna NOME puxa o nome pelo código (fórmula).
+ *   liberarSenha         → libera na hora a trava de "Muitas senhas erradas".
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
@@ -51,7 +52,7 @@ const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORA
 const LM_FRESCO_SEG = 25;                     // até 25 s a escala guardada vale sem montar de novo
 const LM_GUARDA_SEG = 21600;                  // guarda a última escala pronta por até 6 horas
 const LM_LIMITE_MONTAR_MS = 270000;           // 4,5 minutos
-const LM_MAX_ERROS_SENHA = 15;                // 15 senhas erradas em 10 min → bloqueia 10 min
+const LM_MAX_ERROS_SENHA = 8;                 // 8 senhas erradas em 10 min → bloqueia só aquele aparelho por 10 min
 const LM_ONLINE_SEG = 90;                     // tela que não avisa há 90 s sai do "Online agora"
 const LM_CHAVE = 'escala_v4';
 const LM_CHAVE_TEL = 'tel_v4';                 // telefones guardados à parte (só vão para o operador)
@@ -71,12 +72,17 @@ function doPost(e) {
   let pedido;
   try { pedido = JSON.parse(e.postData.contents); } catch (err) { return lmResposta({ ok: false, erro: 'Pedido inválido.' }); }
 
+  // trava de senha: por APARELHO (8 erros em 10 min bloqueiam só aquele aparelho) e uma trava geral bem alta (60)
   const cache = CacheService.getScriptCache();
-  const erros = +(cache.get('lm_erros_senha') || 0);
-  if (erros >= LM_MAX_ERROS_SENHA) return lmResposta({ ok: false, erro: 'Muitas senhas erradas. Espere 10 minutos.', senha: true });
+  const aparelho = /^[A-Za-z0-9]{6,40}$/.test(String(pedido.sessao || '')) ? String(pedido.sessao) : 'sem-id';
+  const chaveAp = 'lm_erros_' + aparelho;
+  const errosAp = +(cache.get(chaveAp) || 0), errosGeral = +(cache.get('lm_erros_geral') || 0);
+  if (errosAp >= LM_MAX_ERROS_SENHA || errosGeral >= 60) return lmResposta({ ok: false, erro: 'Muitas senhas erradas neste aparelho. Espere 10 minutos.', senha: true });
   if (String(pedido.senha || '') !== LM_SENHA) {
-    cache.put('lm_erros_senha', String(erros + 1), 600);
-    return lmResposta({ ok: false, erro: 'Senha errada.', senha: true });
+    cache.put(chaveAp, String(errosAp + 1), 600);
+    cache.put('lm_erros_geral', String(errosGeral + 1), 600);
+    const resta = LM_MAX_ERROS_SENHA - errosAp - 1;
+    return lmResposta({ ok: false, erro: 'Senha errada.' + (resta <= 3 && resta > 0 ? ' Restam ' + resta + ' tentativas.' : ''), senha: true });
   }
 
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
@@ -873,6 +879,13 @@ function conferirNomePorCodigo() {
     });
     console.log(aba.getName() + ': ' + com + ' linhas com fórmula no NOME, ' + sem + ' sem fórmula');
   });
+}
+
+/** Libera na hora a trava de "Muitas senhas erradas" (de todos os aparelhos). */
+function liberarSenha() {
+  const cache = CacheService.getScriptCache();
+  cache.remove('lm_erros_senha'); cache.remove('lm_erros_geral');
+  console.log('Pronto: trava geral liberada. (A trava de um aparelho só some sozinha em 10 min.)');
 }
 
 /** Mostra quais colunas do cadastro a busca usa (só os títulos e quantos motoboys; nenhum dado pessoal). */

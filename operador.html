@@ -1074,7 +1074,7 @@ function painelVagasSemana(ls, seg, dom) {
 async function chamar(dados, limiteSeg = 60) {
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), limiteSeg * 1000);
   try {
-    const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha }, dados)), signal: ctl.signal });
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha, sessao: SESSAO }, dados)), signal: ctl.signal });
     if (!r.ok) throw new Error("a planilha respondeu com erro " + r.status);
     const txt = await r.text();
     try { return JSON.parse(txt); }
