@@ -22,7 +22,7 @@ const FIN_DIAS_ANTES = 0;          // igual à escala: de hoje...
 const FIN_DIAS_DEPOIS = 8;         // ...até daqui a 8 dias
 const FIN_LINHAS_FINAIS = 700;     // lê só o final de cada aba
 const FIN_COLUNAS = 40;            // lê até a coluna AN (algumas lojas têm muitas colunas antes do TOTAL A PAGAR)
-const FIN_FRESCO_SEG = 60;         // a folha guardada vale 60 s sem ler a planilha de novo
+const FIN_FRESCO_SEG = 180;        // a folha guardada vale 3 min (o que muda pelo site entra na hora; o que muda direto na planilha aparece em até 3 min)
 const FIN_GUARDA_SEG = 21600;      // guarda a última folha por até 6 h
 const FIN_CHAVE = 'folha_v1';
 const FIN_PEDACO = 40000;
@@ -176,7 +176,8 @@ function finInicioDoPeriodo(aba, ultima, min) {
 function finMontar() {
   const comeco = Date.now();
   const planilha = SpreadsheetApp.openById(FIN_PLANILHA_ID);
-  const hoje = new Date();
+  const hp = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd').split('-');   // "hoje" no horário de São Paulo
+  const hoje = new Date(+hp[0], +hp[1] - 1, +hp[2]);
   const min = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() - FIN_DIAS_ANTES);
   const max = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + FIN_DIAS_DEPOIS);
   const pixCad = finPixCadastro(planilha);
