@@ -383,6 +383,8 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .vazio-bonito svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.6;margin-bottom:4px}
 .vazio-bonito b{color:var(--tx);font-size:1.02rem}
 .vazio-bonito span{font-size:.9rem;max-width:420px}
+.entrada .btn-entrar.esperando{background:var(--cinza);color:var(--cinza-tx);cursor:wait}
+.entrada input:disabled{opacity:.6}
 </style>
 </head>
 <body class="trancado">
@@ -1537,7 +1539,24 @@ function perguntarTexto(titulo, dica) {
 
 /* ===== Entrada com senha ===== */
 let iniciado = false;
-function telaEntrada(erro) {
+let contagemTrava = null;
+function travarEntrada(segundos) {   // conta até liberar e mostra "Tentar novamente agora"
+  clearInterval(contagemTrava);
+  const campo = document.getElementById("campoSenha"), btn = document.getElementById("btnEntrar"), err = document.getElementById("erroEntrada");
+  if (!campo || !btn) return;
+  let falta = Math.max(1, Math.min(60, +segundos || 60));
+  campo.disabled = true; btn.disabled = true; btn.classList.add("esperando");
+  const pinta = () => { btn.textContent = `Tente de novo em ${falta} s`; err.textContent = "Muitas senhas erradas neste aparelho."; };
+  pinta();
+  contagemTrava = setInterval(() => {
+    falta--;
+    if (falta > 0) { pinta(); return; }
+    clearInterval(contagemTrava);
+    campo.disabled = false; campo.value = ""; btn.disabled = false; btn.classList.remove("esperando");
+    btn.textContent = "Tentar novamente agora"; err.textContent = ""; campo.focus();
+  }, 1000);
+}
+function telaEntrada(erro, espera) {
   document.body.classList.add("trancado");
   document.getElementById("entrada").innerHTML = `
     <form class="entrada" id="formEntrada">
@@ -1552,6 +1571,7 @@ function telaEntrada(erro) {
     </form>`;
   const campo = document.getElementById("campoSenha");
   campo.focus();
+  if (espera) travarEntrada(espera);
   document.getElementById("formEntrada").onsubmit = async ev => {
     ev.preventDefault();
     const btnE = document.getElementById("btnEntrar");
@@ -1559,7 +1579,10 @@ function telaEntrada(erro) {
     senha = campo.value;
     try {
       const r = await chamar({ acao: "entrar" });
-      if (!r.ok) { document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btnE.disabled = false; btnE.textContent = "Entrar"; return; }
+      if (!r.ok) {
+        if (r.espera) { travarEntrada(r.espera); return; }
+        document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btnE.disabled = false; btnE.textContent = "Entrar"; campo.select(); return;
+      }
       guardar(CHAVE_SENHA, document.getElementById("lembrar").checked ? senha : "");
       liberar(r.planilha);
     } catch (e) {
@@ -1582,9 +1605,9 @@ function liberar(nomePlanilha) {
     setInterval(() => { if (linhas.length && senha) { desenhar(); conferirAtrasos(); } }, 60 * 1000);
   }
 }
-function sair(erro) {
+function sair(erro, espera) {
   senha = ""; guardar(CHAVE_SENHA, "");
-  telaEntrada(erro);
+  telaEntrada(erro, espera);
 }
 
 /* ===== Ajuda ("?") ===== */
@@ -1648,7 +1671,7 @@ if (lerGuardado("logmax-som") === "1") { // o navegador só deixa tocar depois d
 }
 senha = lerGuardado(CHAVE_SENHA) || "";
 if (senha) {
-  chamar({ acao: "entrar" }).then(r => r.ok ? liberar(r.planilha) : sair(r.erro))
+  chamar({ acao: "entrar" }).then(r => r.ok ? liberar(r.planilha) : sair(r.erro, r.espera))
     .catch(() => telaEntrada("Não consegui falar com a planilha. Confira a internet."));
 } else {
   telaEntrada();

@@ -52,7 +52,8 @@ const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORA
 const LM_FRESCO_SEG = 25;                     // até 25 s a escala guardada vale sem montar de novo
 const LM_GUARDA_SEG = 21600;                  // guarda a última escala pronta por até 6 horas
 const LM_LIMITE_MONTAR_MS = 270000;           // 4,5 minutos
-const LM_MAX_ERROS_SENHA = 8;                 // 8 senhas erradas em 10 min → bloqueia só aquele aparelho por 10 min
+const LM_MAX_ERROS_SENHA = 5;                 // 5 senhas erradas → aquele aparelho espera
+const LM_TRAVA_SEG = 60;                      // ...no máximo 1 minuto
 const LM_ONLINE_SEG = 90;                     // tela que não avisa há 90 s sai do "Online agora"
 const LM_CHAVE = 'escala_v4';
 const LM_CHAVE_TEL = 'tel_v4';                 // telefones guardados à parte (só vão para o operador)
@@ -72,18 +73,30 @@ function doPost(e) {
   let pedido;
   try { pedido = JSON.parse(e.postData.contents); } catch (err) { return lmResposta({ ok: false, erro: 'Pedido inválido.' }); }
 
-  // trava de senha: por APARELHO (8 erros em 10 min bloqueiam só aquele aparelho) e uma trava geral bem alta (60)
+  // trava de senha: por APARELHO. 5 erros → aquele aparelho espera 1 minuto (os outros continuam entrando).
   const cache = CacheService.getScriptCache();
   const aparelho = /^[A-Za-z0-9]{6,40}$/.test(String(pedido.sessao || '')) ? String(pedido.sessao) : 'sem-id';
-  const chaveAp = 'lm_erros_' + aparelho;
-  const errosAp = +(cache.get(chaveAp) || 0), errosGeral = +(cache.get('lm_erros_geral') || 0);
-  if (errosAp >= LM_MAX_ERROS_SENHA || errosGeral >= 60) return lmResposta({ ok: false, erro: 'Muitas senhas erradas neste aparelho. Espere 10 minutos.', senha: true });
-  if (String(pedido.senha || '') !== LM_SENHA) {
-    cache.put(chaveAp, String(errosAp + 1), 600);
-    cache.put('lm_erros_geral', String(errosGeral + 1), 600);
-    const resta = LM_MAX_ERROS_SENHA - errosAp - 1;
-    return lmResposta({ ok: false, erro: 'Senha errada.' + (resta <= 3 && resta > 0 ? ' Restam ' + resta + ' tentativas.' : ''), senha: true });
+  const agoraMs = Date.now();
+  const ateAp = +(cache.get('lm_trava_' + aparelho) || 0), ateGeral = +(cache.get('lm_trava_geral') || 0);
+  const ate = Math.max(ateAp, ateGeral);
+  if (ate > agoraMs) {
+    const espera = Math.ceil((ate - agoraMs) / 1000);
+    return lmResposta({ ok: false, erro: 'Muitas senhas erradas. Tente de novo em ' + espera + ' s.', senha: true, espera: espera });
   }
+  if (String(pedido.senha || '') !== LM_SENHA) {
+    const errosAp = +(cache.get('lm_erros_' + aparelho) || 0) + 1, errosGeral = +(cache.get('lm_erros_geral') || 0) + 1;
+    if (errosGeral >= 100) { cache.put('lm_trava_geral', String(agoraMs + LM_TRAVA_SEG * 1000), LM_TRAVA_SEG); cache.remove('lm_erros_geral'); }
+    else cache.put('lm_erros_geral', String(errosGeral), 600);
+    if (errosAp >= LM_MAX_ERROS_SENHA) {
+      cache.put('lm_trava_' + aparelho, String(agoraMs + LM_TRAVA_SEG * 1000), LM_TRAVA_SEG);
+      cache.remove('lm_erros_' + aparelho);
+      return lmResposta({ ok: false, erro: 'Muitas senhas erradas. Tente de novo em ' + LM_TRAVA_SEG + ' s.', senha: true, espera: LM_TRAVA_SEG });
+    }
+    cache.put('lm_erros_' + aparelho, String(errosAp), 600);
+    const resta = LM_MAX_ERROS_SENHA - errosAp;
+    return lmResposta({ ok: false, erro: 'Senha errada.' + (resta <= 2 ? (resta > 1 ? ' Restam ' + resta + ' tentativas' : ' Resta 1 tentativa') + ' antes de esperar 1 minuto.' : ''), senha: true });
+  }
+  cache.remove('lm_erros_' + aparelho);
 
   if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
   if (pedido.acao === 'ler') {
@@ -884,8 +897,8 @@ function conferirNomePorCodigo() {
 /** Libera na hora a trava de "Muitas senhas erradas" (de todos os aparelhos). */
 function liberarSenha() {
   const cache = CacheService.getScriptCache();
-  cache.remove('lm_erros_senha'); cache.remove('lm_erros_geral');
-  console.log('Pronto: trava geral liberada. (A trava de um aparelho só some sozinha em 10 min.)');
+  cache.remove('lm_erros_senha'); cache.remove('lm_erros_geral'); cache.remove('lm_trava_geral');
+  console.log('Pronto: trava geral liberada. (A trava de um aparelho some sozinha em até 1 minuto.)');
 }
 
 /** Mostra quais colunas do cadastro a busca usa (só os títulos e quantos motoboys; nenhum dado pessoal). */
