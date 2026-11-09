@@ -1047,7 +1047,7 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
 
 
 /* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
-const FIN_PADRAO = "";   // endereço /exec do script FIN_SIS_SIMP (colocar depois de implantar)
+const FIN_PADRAO = "https://script.google.com/macros/s/AKfycbwML83KkuSYr_FCRhfU3EPrCQF514Vo3sBP-O8oPLz5liUnjH75LfdIqQMHERM10smX/exec";   // endereço /exec do script FIN_SIS_SIMP (colocar depois de implantar)
 const FIN_API = new URLSearchParams(location.search).get("fin") || FIN_PADRAO;
 let folha = null, folhaLendo = false, folhaErro = "", folhaFiltro = "", folhaTimer = null;
 const folhaAbertas = new Set();
