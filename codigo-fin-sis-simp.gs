@@ -21,7 +21,7 @@ const FIN_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA'
 const FIN_DIAS_ANTES = 0;          // igual à escala: de hoje...
 const FIN_DIAS_DEPOIS = 8;         // ...até daqui a 8 dias
 const FIN_LINHAS_FINAIS = 700;     // lê só o final de cada aba
-const FIN_COLUNAS = 20;            // lê até a coluna T
+const FIN_COLUNAS = 40;            // lê até a coluna AN (algumas lojas têm muitas colunas antes do TOTAL A PAGAR)
 const FIN_FRESCO_SEG = 60;         // a folha guardada vale 60 s sem ler a planilha de novo
 const FIN_GUARDA_SEG = 21600;      // guarda a última folha por até 6 h
 const FIN_CHAVE = 'folha_v1';
@@ -182,7 +182,7 @@ function finMontar() {
   const pixCad = finPixCadastro(planilha);
   const itens = [];
   let opcoes = null;
-  const puladas = [], semDias = [], semColunas = [];
+  const puladas = [], semDias = [], semColunas = [], diag = [];
 
   planilha.getSheets().forEach(function (aba) {
     if (!finAbaDeLoja(aba)) return;
@@ -196,15 +196,18 @@ function finMontar() {
     let col = null, titulos = '';
     const antes = itens.length;
     let viuDia = false;
+    const dg = { loja: loja, inicio: inicio, ultima: ultima, periodo: 0, semNome: 0, porDia: {} };
     linhas.forEach(function (l, i) {
       if (String(l[0]).trim().toUpperCase() === 'DATA') { col = finColunas(l); titulos = l.map(function (x) { return String(x).trim(); }).filter(String).join(' | '); return; }
       const d = finDataDe(l[0]);
       if (!d || d < min || d > max) return;
-      viuDia = true;
+      viuDia = true; dg.periodo++;
+      dg.porDia[String(l[0]).trim().slice(0, 5)] = (dg.porDia[String(l[0]).trim().slice(0, 5)] || 0) + 1;
+      dg.col = col ? 'cod=' + col.cod + ' nome=' + col.nome + ' total=' + col.total + ' status=' + col.status : 'sem títulos';
       if (!col || col.total < 0 || col.status < 0) return;
       const pega = function (k) { return k >= 0 ? String(l[k]).replace(/\s*[\r\n]+\s*/g, ' ').trim() : ''; };
       const nome = pega(col.nome), cod = pega(col.cod);
-      if (!nome || /N[ÃA]O LOCALIZADO/i.test(nome)) return;
+      if (!nome || /N[ÃA]O LOCALIZADO/i.test(nome)) { dg.semNome++; return; }
       if (!opcoes) opcoes = finOpcoesDaCelula(aba.getRange(inicio + i, col.status + 1));
       const pix = pega(col.pix) || pixCad[cod] || '';
       itens.push({ id: loja + '|' + (inicio + i), loja: loja, linha: inicio + i, data: String(l[0]).trim(), cod: cod, nome: nome,
@@ -212,10 +215,11 @@ function finMontar() {
     });
     if (viuDia && itens.length === antes && (!col || col.total < 0 || col.status < 0)) semColunas.push(loja + ' (títulos: ' + titulos + ')');
     else if (!viuDia) semDias.push(loja);
+    dg.itens = itens.length - antes; diag.push(dg);
   });
   if (puladas.length) console.warn('Passou de 4,5 min. Ficaram de fora: ' + puladas.join(', '));
   return { ok: true, opcoes: opcoes && opcoes.length ? opcoes : FIN_OPCOES_PADRAO, itens: itens, montadaEm: new Date().toISOString(),
-           semDias: semDias, semColunas: semColunas };
+           semDias: semDias, semColunas: semColunas, diag: diag };
 }
 
 /* ============================== GUARDAR (em pedaços) ============================== */
@@ -325,6 +329,10 @@ function testarFolha() {
   console.log('Por loja: ' + JSON.stringify(porLoja));
   if (d.semDias.length) console.log('Lojas sem nenhum dia de hoje em diante: ' + d.semDias.join(', '));
   if (d.semColunas.length) console.log('Lojas com dias, mas SEM coluna TOTAL A PAGAR ou STATUS: ' + d.semColunas.join(' || '));
+  d.diag.forEach(function (g) {
+    console.log(g.loja + ': lê da linha ' + g.inicio + ' até ' + g.ultima + ' | linhas de hoje em diante: ' + g.periodo + ' ' + JSON.stringify(g.porDia) +
+      ' | sem nome: ' + g.semNome + ' | entraram: ' + g.itens + ' | colunas: ' + (g.col || '-'));
+  });
   console.log('Tamanho: ' + JSON.stringify(d).length + ' caracteres | Tempo: ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');
   finGuardar(d);
 }
