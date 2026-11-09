@@ -6,7 +6,7 @@
  *
  * O que faz:
  *  - lê das abas das lojas: COD, NOME, TELEFONE, HORÁRIO, PIX, TOTAL A PAGAR e STATUS
- *    (de 7 dias atrás até hoje);
+ *    (igual à escala: de hoje até daqui a 8 dias; só lê o pedaço final da aba onde estão esses dias);
  *  - o site SÓ muda o STATUS (uma pessoa por vez), usando as opções do menu da própria planilha;
  *  - "Todos pagos" (por loja e dia) pede a senha da folha e muda para PAGO só quem está pendente.
  *
@@ -18,8 +18,8 @@ const FIN_PLANILHA_ID = '1SUSjukHorUEWx1d-U5KijU8BuzCPmglW0WisuygqcXo';   // ESC
 const FIN_SENHA_OPERADOR = 'COLOQUE_A_SENHA_AQUI';   // a MESMA senha do site do operador (se trocar lá, troque aqui também)
 const FIN_SENHA_TODOS = 'COLOQUE_A_SENHA_DA_FOLHA';  // senha do botão "Todos pagos"
 const FIN_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
-const FIN_DIAS_ANTES = 7;          // mostra de 7 dias atrás...
-const FIN_DIAS_DEPOIS = 0;         // ...até hoje
+const FIN_DIAS_ANTES = 0;          // igual à escala: de hoje...
+const FIN_DIAS_DEPOIS = 8;         // ...até daqui a 8 dias
 const FIN_LINHAS_FINAIS = 700;     // lê só o final de cada aba
 const FIN_COLUNAS = 20;            // lê até a coluna T
 const FIN_FRESCO_SEG = 60;         // a folha guardada vale 60 s sem ler a planilha de novo
@@ -156,6 +156,23 @@ function finPixCadastro(planilha) {   // código → chave PIX (para quem está 
   return mapa;
 }
 
+function finDataDe(t) {   // "09/11/2026" → Date (ou null)
+  const m = String(t).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+}
+
+// Lê só a coluna A do final da aba e devolve a linha de títulos "DATA" do primeiro dia >= min.
+// Assim a leitura larga (20 colunas) fica só com os dias que interessam.
+function finInicioDoPeriodo(aba, ultima, min) {
+  const ini = Math.max(1, ultima - FIN_LINHAS_FINAIS + 1);
+  const a = aba.getRange(ini, 1, ultima - ini + 1, 1).getDisplayValues();
+  let primeiro = -1;
+  for (let i = 0; i < a.length; i++) { const d = finDataDe(a[i][0]); if (d && d >= min) { primeiro = i; break; } }
+  if (primeiro < 0) return null;
+  for (let i = primeiro; i >= 0; i--) if (String(a[i][0]).trim().toUpperCase() === 'DATA') return ini + i;
+  return ini + primeiro;
+}
+
 function finMontar() {
   const comeco = Date.now();
   const planilha = SpreadsheetApp.openById(FIN_PLANILHA_ID);
@@ -165,7 +182,7 @@ function finMontar() {
   const pixCad = finPixCadastro(planilha);
   const itens = [];
   let opcoes = null;
-  const puladas = [];
+  const puladas = [], semDias = [], semColunas = [];
 
   planilha.getSheets().forEach(function (aba) {
     if (!finAbaDeLoja(aba)) return;
@@ -173,15 +190,18 @@ function finMontar() {
     if (Date.now() - comeco > 270000) { puladas.push(loja); return; }
     const ultima = aba.getLastRow();
     if (ultima < 2) return;
-    const inicio = Math.max(1, ultima - FIN_LINHAS_FINAIS + 1);
+    const inicio = finInicioDoPeriodo(aba, ultima, min);
+    if (!inicio) { semDias.push(loja); return; }
     const linhas = aba.getRange(inicio, 1, ultima - inicio + 1, Math.min(FIN_COLUNAS, aba.getMaxColumns())).getDisplayValues();
-    let col = null;
+    let col = null, titulos = '';
+    const antes = itens.length;
+    let viuDia = false;
     linhas.forEach(function (l, i) {
-      if (String(l[0]).trim().toUpperCase() === 'DATA') { col = finColunas(l); return; }
-      const m = String(l[0]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (!m || !col || col.total < 0 || col.status < 0) return;
-      const d = new Date(+m[3], +m[2] - 1, +m[1]);
-      if (d < min || d > max) return;
+      if (String(l[0]).trim().toUpperCase() === 'DATA') { col = finColunas(l); titulos = l.map(function (x) { return String(x).trim(); }).filter(String).join(' | '); return; }
+      const d = finDataDe(l[0]);
+      if (!d || d < min || d > max) return;
+      viuDia = true;
+      if (!col || col.total < 0 || col.status < 0) return;
       const pega = function (k) { return k >= 0 ? String(l[k]).replace(/\s*[\r\n]+\s*/g, ' ').trim() : ''; };
       const nome = pega(col.nome), cod = pega(col.cod);
       if (!nome || /N[ÃA]O LOCALIZADO/i.test(nome)) return;
@@ -190,9 +210,12 @@ function finMontar() {
       itens.push({ id: loja + '|' + (inicio + i), loja: loja, linha: inicio + i, data: String(l[0]).trim(), cod: cod, nome: nome,
                    tel: pega(col.tel), horario: pega(col.hora), pix: pix, total: finNumero(pega(col.total)), status: pega(col.status) });
     });
+    if (viuDia && itens.length === antes && (!col || col.total < 0 || col.status < 0)) semColunas.push(loja + ' (títulos: ' + titulos + ')');
+    else if (!viuDia) semDias.push(loja);
   });
   if (puladas.length) console.warn('Passou de 4,5 min. Ficaram de fora: ' + puladas.join(', '));
-  return { ok: true, opcoes: opcoes && opcoes.length ? opcoes : FIN_OPCOES_PADRAO, itens: itens, montadaEm: new Date().toISOString() };
+  return { ok: true, opcoes: opcoes && opcoes.length ? opcoes : FIN_OPCOES_PADRAO, itens: itens, montadaEm: new Date().toISOString(),
+           semDias: semDias, semColunas: semColunas };
 }
 
 /* ============================== GUARDAR (em pedaços) ============================== */
@@ -265,7 +288,8 @@ function finTodosPagos(p) {
   const data = String(p.data || '').trim();
   if (!aba || !finAbaDeLoja(aba) || !/^\d{2}\/\d{2}\/\d{4}$/.test(data)) return { ok: false, erro: 'Não achei essa loja/dia.' };
   const ultima = aba.getLastRow();
-  const inicio = Math.max(1, ultima - FIN_LINHAS_FINAIS + 1);
+  const inicio = finInicioDoPeriodo(aba, ultima, finDataDe(data));
+  if (!inicio) return { ok: true, mudou: 0, itens: [] };
   const linhas = aba.getRange(inicio, 1, ultima - inicio + 1, Math.min(FIN_COLUNAS, aba.getMaxColumns())).getDisplayValues();
   let col = null, pago = null;
   const mudados = [], m = {};
@@ -297,8 +321,10 @@ function testarFolha() {
   const porLoja = {};
   d.itens.forEach(function (x) { porLoja[x.loja] = (porLoja[x.loja] || 0) + 1; });
   console.log('Opções do STATUS: ' + JSON.stringify(d.opcoes));
-  console.log('Pessoas na folha (7 dias): ' + d.itens.length + ' | sem PIX: ' + d.itens.filter(function (x) { return !x.pix; }).length);
+  console.log('Pessoas na folha (hoje até +' + FIN_DIAS_DEPOIS + ' dias): ' + d.itens.length + ' | sem PIX: ' + d.itens.filter(function (x) { return !x.pix; }).length);
   console.log('Por loja: ' + JSON.stringify(porLoja));
+  if (d.semDias.length) console.log('Lojas sem nenhum dia de hoje em diante: ' + d.semDias.join(', '));
+  if (d.semColunas.length) console.log('Lojas com dias, mas SEM coluna TOTAL A PAGAR ou STATUS: ' + d.semColunas.join(' || '));
   console.log('Tamanho: ' + JSON.stringify(d).length + ' caracteres | Tempo: ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');
   finGuardar(d);
 }
