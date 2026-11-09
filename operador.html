@@ -478,6 +478,8 @@ const API = new URLSearchParams(location.search).get("api") || API_PADRAO;
 const MODO_TESTE = !!new URLSearchParams(location.search).get("api");
 const CHAVE_SENHA = "logmax-op-senha:" + API;
 let senha = "";
+const CHAVE_PASSE = "logmax-op-passe:" + API;
+let passe = (() => { try { return localStorage.getItem(CHAVE_PASSE) || ""; } catch (e) { return ""; } })();
 const gravando = new Map();   // chave -> "chegou" | "desfazer"
 const trocas = new Map();     // chave -> { presenca, quando }  (mudança feita aqui, até a planilha confirmar)
 const abertas = new Set();
@@ -1076,9 +1078,17 @@ function painelVagasSemana(ls, seg, dom) {
 async function chamar(dados, limiteSeg = 60) {
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), limiteSeg * 1000);
   try {
-    const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha, sessao: SESSAO }, dados)), signal: ctl.signal });
+    const r = await fetch(API, { method: "POST", body: JSON.stringify(Object.assign({ senha, sessao: SESSAO, token: passe }, dados)), signal: ctl.signal });
     if (!r.ok) throw new Error("a planilha respondeu com erro " + r.status);
     const txt = await r.text();
+    let j;
+    try { j = JSON.parse(txt); } catch (e2) { j = null; }
+    if (j) {
+      if (j.token) { passe = j.token; try { if (lerGuardado(CHAVE_SENHA)) guardar(CHAVE_PASSE, passe); } catch (e3) {} }
+      // trava de senha com a pessoa já dentro: não derruba, só avisa
+      if (j.senha && j.espera && !document.body.classList.contains("trancado")) throw new Error(`muitas senhas erradas em outro aparelho; tente de novo em ${j.espera} s`);
+      return j;
+    }
     try { return JSON.parse(txt); }
     catch (e) { throw new Error(/<html/i.test(txt) ? "a planilha devolveu uma página de erro do Google em vez dos dados" : "resposta estranha da planilha"); }
   } catch (e) {
@@ -1584,6 +1594,7 @@ function telaEntrada(erro, espera) {
         document.getElementById("erroEntrada").textContent = r.erro || "Não deu certo."; btnE.disabled = false; btnE.textContent = "Entrar"; campo.select(); return;
       }
       guardar(CHAVE_SENHA, document.getElementById("lembrar").checked ? senha : "");
+      guardar(CHAVE_PASSE, document.getElementById("lembrar").checked ? passe : "");
       liberar(r.planilha);
     } catch (e) {
       document.getElementById("erroEntrada").textContent = "Não consegui falar com a planilha. Confira a internet.";
@@ -1606,7 +1617,7 @@ function liberar(nomePlanilha) {
   }
 }
 function sair(erro, espera) {
-  senha = ""; guardar(CHAVE_SENHA, "");
+  senha = ""; guardar(CHAVE_SENHA, ""); passe = ""; guardar(CHAVE_PASSE, "");
   telaEntrada(erro, espera);
 }
 

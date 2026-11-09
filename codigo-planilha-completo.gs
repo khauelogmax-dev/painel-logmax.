@@ -77,12 +77,16 @@ function doPost(e) {
   const cache = CacheService.getScriptCache();
   const aparelho = /^[A-Za-z0-9]{6,40}$/.test(String(pedido.sessao || '')) ? String(pedido.sessao) : 'sem-id';
   const agoraMs = Date.now();
+  // quem já entrou com a senha certa recebe um "passe" (vale 12 h) e NUNCA é derrubado pela trava
+  const passe = String(pedido.token || '');
+  const passeOk = /^[a-f0-9]{20,40}$/.test(passe) && !!cache.get('lm_passe_' + passe);
   const ateAp = +(cache.get('lm_trava_' + aparelho) || 0), ateGeral = +(cache.get('lm_trava_geral') || 0);
-  const ate = Math.max(ateAp, ateGeral);
+  const ate = passeOk ? 0 : Math.max(ateAp, ateGeral);
   if (ate > agoraMs) {
     const espera = Math.ceil((ate - agoraMs) / 1000);
     return lmResposta({ ok: false, erro: 'Muitas senhas erradas. Tente de novo em ' + espera + ' s.', senha: true, espera: espera });
   }
+  if (String(pedido.senha || '') !== LM_SENHA && passeOk) return lmResposta({ ok: false, erro: 'A senha mudou. Entre de novo.', senha: true });
   if (String(pedido.senha || '') !== LM_SENHA) {
     const errosAp = +(cache.get('lm_erros_' + aparelho) || 0) + 1, errosGeral = +(cache.get('lm_erros_geral') || 0) + 1;
     if (errosGeral >= 100) { cache.put('lm_trava_geral', String(agoraMs + LM_TRAVA_SEG * 1000), LM_TRAVA_SEG); cache.remove('lm_erros_geral'); }
@@ -97,8 +101,13 @@ function doPost(e) {
     return lmResposta({ ok: false, erro: 'Senha errada.' + (resta <= 2 ? (resta > 1 ? ' Restam ' + resta + ' tentativas' : ' Resta 1 tentativa') + ' antes de esperar 1 minuto.' : ''), senha: true });
   }
   cache.remove('lm_erros_' + aparelho);
+  if (passeOk) cache.put('lm_passe_' + passe, '1', 43200);   // renova o passe
 
-  if (pedido.acao === 'entrar') return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName() });
+  if (pedido.acao === 'entrar') {
+    const novo = passeOk ? passe : Utilities.getUuid().replace(/-/g, '');
+    cache.put('lm_passe_' + novo, '1', 43200);
+    return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName(), token: novo });
+  }
   if (pedido.acao === 'ler') {
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
     return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), problemas: lmProblemas(), online: lmOnline('o', pedido.sessao) });
