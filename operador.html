@@ -1064,8 +1064,6 @@ function abrirPgfAntigo() {
   el.innerHTML = `
     <form class="janela" role="dialog" aria-modal="true" aria-labelledby="tituloPgfA" autocomplete="off">
       <h2 id="tituloPgfA">PGF de dia anterior</h2>
-      <label for="paSenha">Senha</label>
-      <input id="paSenha" type="password" inputmode="numeric" required>
       <label for="paDia">Dia</label>
       <select id="paDia" class="cad-sel">${dias.map(d => `<option value="${d}">${esc(rotulo(d))}</option>`).join("")}</select>
       <label for="paLoja">Loja</label>
@@ -1091,7 +1089,7 @@ function abrirPgfAntigo() {
   const encherLojas = () => { $("paLoja").innerHTML = [...new Set(doDia().map(l => l.loja))].sort().map(l => `<option>${esc(l)}</option>`).join(""); encherQuem(); };
   $("paDia").onchange = encherLojas; $("paLoja").onchange = encherQuem; $("paQuem").onchange = valorDe;
   encherLojas();
-  $("paSenha").focus();
+  $("paValor").focus();
   $("btnCancPgfA").onclick = fechar;
   el.addEventListener("click", e => { if (e.target === el) fechar(); });
   el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
@@ -1102,9 +1100,9 @@ function abrirPgfAntigo() {
     if (!$("paValor").value.trim()) { erro.textContent = "Digite o valor."; return; }
     bt.disabled = true; bt.textContent = "Gravando…"; erro.textContent = "";
     try {
-      const r = await chamar({ acao: "pgf", loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome, valor: $("paValor").value.trim(), senhaPgf: $("paSenha").value });
+      const r = await chamar({ acao: "pgf", loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome, valor: $("paValor").value.trim() });
       if (r.senha) { fechar(); sair(r.erro); return; }
-      if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Salvar"; if (r.senhaPgf) $("paSenha").select(); return; }
+      if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Salvar"; return; }
       pgfLista = pgfLista.filter(i => i.id !== r.item.id); pgfLista.push(r.item);
       fechar();
       toast(`PGF ${reais(r.item.valor)} · ${l.nome} (${rotulo(l.data)})${r.semPix ? " (sem chave PIX no cadastro)" : ""}`, true);

@@ -44,7 +44,6 @@
  *   liberarSenha         → libera na hora a trava de "Muitas senhas erradas".
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
-const LM_SENHA_PGF_ANTIGO = 'COLOQUE_A_SENHA_DA_FOLHA';   // senha para anotar PGF de dias anteriores
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
 const LM_DIAS_ANTES = 3, LM_DIAS_DEPOIS = 8;  // de 3 dias atrás (para PGF de dias anteriores) até daqui a 8 dias
@@ -803,12 +802,6 @@ function lmPgfMarcar(p) {
   const achou = lmLocalizar(p);
   if (achou.erro) return achou.erro;
   const atual = achou.atual, col = achou.col, linha = achou.linha;
-  // PGF de dia anterior só com a senha própria
-  const dl = String(atual[0]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  const hojeTxt = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
-  if (dl && (dl[3] + '-' + dl[2] + '-' + dl[1]) < hojeTxt && String(p.senhaPgf || '') !== LM_SENHA_PGF_ANTIGO) {
-    return { ok: false, erro: p.senhaPgf ? 'Senha errada para PGF de dia anterior.' : 'PGF de dia anterior precisa da senha.', senhaPgf: true };
-  }
   const limpa = function (x) { return String(x == null ? '' : x).replace(/\s*[\r\n]+\s*/g, ' ').trim(); };
   const nome = limpa(atual[col.nome]);
   if (!nome || /N[ÃA]O\s+LOCALIZAD/i.test(nome)) return { ok: false, erro: 'Vaga sem motoca não tem pagamento.' };
