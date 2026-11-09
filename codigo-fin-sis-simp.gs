@@ -1,8 +1,9 @@
 /**
  * FIN_SIS_SIMP — FOLHA GERAL (aba Financeiro da tela do operador)
  *
- * É um PROJETO SEPARADO do SIST_SIMP (script.google.com → Novo projeto → nome FIN_SIS_SIMP).
- * Não mexe em nada do SIST_SIMP. Tem o seu próprio endereço /exec.
+ * Fica num ARQUIVO SEPARADO (FIN_SIS_SIMP.gs) dentro do MESMO projeto do SIST_SIMP.
+ * NÃO tem doGet/doPost próprios: o doPost do SIST_SIMP manda para cá as ações que começam com "folha"
+ * (assim os dois arquivos não brigam pelo mesmo nome e o site usa um endereço /exec só).
  *
  * O que faz:
  *  - lê das abas das lojas: COD, NOME, TELEFONE, HORÁRIO, PIX, TOTAL A PAGAR e STATUS
@@ -10,8 +11,7 @@
  *  - o site SÓ muda o STATUS (uma pessoa por vez), usando as opções do menu da própria planilha;
  *  - "Todos pagos" (por loja e dia) pede a senha da folha e muda para PAGO só quem está pendente.
  *
- * Implantar: Implantar → Nova implantação → Tipo: App da Web → Executar como: Eu → Quem pode acessar: Qualquer pessoa.
- * Depois, para atualizar: Implantar → Gerenciar implantações → lápis → Nova versão (nunca "Nova implantação" de novo).
+ * Para atualizar: Implantar → Gerenciar implantações → lápis (a implantação de SEMPRE do SIST_SIMP) → Nova versão.
  */
 
 const FIN_PLANILHA_ID = '1SUSjukHorUEWx1d-U5KijU8BuzCPmglW0WisuygqcXo';   // ESCALAS LOGMAX - FOOD
@@ -30,11 +30,7 @@ const FIN_OPCOES_PADRAO = ['PENDENTE', 'PAGO', 'NÃO PAGAR'];
 
 /* ============================== ENTRADA ============================== */
 
-function doGet() {
-  return ContentService.createTextOutput('FIN_SIS_SIMP no ar.');
-}
-
-function doPost(e) {
+function finDoPost(e) {   // chamado pelo doPost do SIST_SIMP (ações que começam com "folha")
   let p;
   try { p = JSON.parse(e.postData.contents); } catch (err) { return finResposta({ ok: false, erro: 'Pedido inválido.' }); }
   const cache = CacheService.getScriptCache();

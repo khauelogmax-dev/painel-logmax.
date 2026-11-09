@@ -1047,8 +1047,8 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
 
 
 /* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
-const FIN_PADRAO = "https://script.google.com/macros/s/AKfycbwML83KkuSYr_FCRhfU3EPrCQF514Vo3sBP-O8oPLz5liUnjH75LfdIqQMHERM10smX/exec";   // endereço /exec do script FIN_SIS_SIMP (colocar depois de implantar)
-const FIN_API = new URLSearchParams(location.search).get("fin") || FIN_PADRAO;
+const FIN_PADRAO = "";   // vazio = usa o mesmo endereço da planilha (o FIN_SIS_SIMP.gs fica no mesmo projeto do SIST_SIMP)
+const FIN_API = new URLSearchParams(location.search).get("fin") || FIN_PADRAO || API;
 let folha = null, folhaLendo = false, folhaErro = "", folhaFiltro = "", folhaTimer = null;
 const folhaAbertas = new Set();
 async function chamarFin(dados, limiteSeg = 60) {

@@ -103,6 +103,11 @@ function doPost(e) {
   cache.remove('lm_erros_' + aparelho);
   if (passeOk) cache.put('lm_passe_' + passe, '1', 43200);   // renova o passe
 
+  // Folha Geral: fica no arquivo FIN_SIS_SIMP.gs do mesmo projeto
+  if (/^folha/.test(String(pedido.acao || ''))) {
+    if (typeof finDoPost !== 'function') return lmResposta({ ok: false, erro: 'O arquivo FIN_SIS_SIMP.gs não está neste projeto.' });
+    return finDoPost(e);
+  }
   if (pedido.acao === 'entrar') {
     const novo = passeOk ? passe : Utilities.getUuid().replace(/-/g, '');
     cache.put('lm_passe_' + novo, '1', 43200);
