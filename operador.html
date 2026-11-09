@@ -321,6 +321,52 @@ html.escuro .btn-pgf{border-color:#818cf8;color:#a5b4fc}html.escuro .btn-pgf.tem
 .pgf-atrasados{background:var(--ambar-claro);border-radius:14px;padding:12px;margin-bottom:16px}
 .pgf-atrasados>b{display:block;margin:0 4px 10px;color:var(--ambar)}
 body.aba-pgf .acoes-ajuda{order:4}
+/* ===== Folha Geral ===== */
+.fo-loja{background:var(--cartao);border:1px solid var(--linha);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.fo-loja>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap}
+.fo-loja>summary::-webkit-details-marker{display:none}
+.fo-loja>summary .nm{font-weight:800;font-size:1.02rem;flex:1;min-width:140px}
+.fo-loja>summary .nm small{display:block;font-weight:600;color:var(--tx2);font-size:.8rem;margin-top:2px}
+.fo-loja>summary .falta{font-weight:800;white-space:nowrap}
+.fo-loja>summary .falta.zero{color:var(--verde)}
+.fo-loja.tudo-pago{border-left:6px solid var(--verde)}
+.fo-loja.tem-falta{border-left:6px solid var(--ambar)}
+.btn-todos{font:inherit;font-size:.85rem;font-weight:800;border:1px solid #16a34a;color:#15803d;background:transparent;border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap}
+.btn-todos:disabled{opacity:.45;cursor:default}
+html.escuro .btn-todos{color:#4ade80;border-color:#4ade80}
+.fo-tab{width:100%;border-collapse:collapse;font-size:.92rem}
+.fo-tab th{text-align:left;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--tx2);font-weight:700;padding:8px 10px;border-top:1px solid var(--linha);background:var(--fundo)}
+.fo-tab td{padding:10px;border-top:1px solid var(--linha);vertical-align:middle}
+.fo-tab td.v,.fo-tab th.v{text-align:right;white-space:nowrap;font-weight:800}
+.fo-tab .cod{color:var(--tx2);font-weight:700}
+.fo-tab .pix{word-break:break-all}
+.fo-tab tfoot td{font-weight:800;background:var(--fundo)}
+.fo-st{font:inherit;font-weight:800;font-size:.85rem;border-radius:999px;padding:6px 28px 6px 12px;border:1px solid var(--linha);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.fo-st.st-pago{background-color:var(--verde-claro);color:var(--verde);border-color:transparent}
+.fo-st.st-pend{background-color:var(--ambar-claro);color:var(--ambar);border-color:transparent}
+.fo-st.st-nao{background-color:var(--vermelho-claro);color:var(--vermelho);border-color:transparent}
+.fo-st:disabled{opacity:.6;cursor:wait}
+.fo-dia-antigo{font-weight:800;margin:12px 4px 8px;color:var(--ambar)}
+.pgf-atrasados .fo-loja:last-child{margin-bottom:0}
+.fo-busca{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+.fo-busca input{flex:1;min-width:180px}
+.fo-filtro{margin:0}
+@media (max-width:720px){
+  .fo-tab thead{display:none}
+  .fo-tab,.fo-tab tbody,.fo-tab tr,.fo-tab td{display:block;width:100%}
+  .fo-tab tbody tr{border-top:1px solid var(--linha);padding:10px 14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+  .fo-tab td{border:0;padding:0}
+  .fo-tab td.c-nome{grid-column:1}.fo-tab td.v{grid-column:2;grid-row:1;font-size:1.05rem}
+  .fo-tab td.c-hor,.fo-tab td.c-tel,.fo-tab td.c-pix{grid-column:1/-1;font-size:.85rem;color:var(--tx2)}
+  .fo-tab td.c-pix .pix{color:var(--tx)}
+  .fo-tab td.c-st{grid-column:1/-1;margin-top:4px}
+  .fo-tab td.c-st .fo-st{width:100%;padding:9px 28px 9px 12px}
+  .fo-tab td[data-r]::before{content:attr(data-r) ": ";font-weight:700}
+  .fo-tab tfoot tr{display:flex;justify-content:space-between;gap:12px;padding:10px 14px}
+  .fo-tab tfoot td:empty{display:none}
+  .fo-tab tfoot td{display:inline;width:auto;background:none}
+  .fo-loja>summary .btn-todos{width:100%}
+}
 @media (max-width:720px){.pgf-faixa{grid-template-columns:repeat(3,minmax(0,1fr))}.pgf-faixa .num .val{font-size:1.05rem}.pgf-faixa .toque{display:block!important;font-size:11px}}
 /* ===== Novo Cadastro ===== */
 .cad-tela{max-width:640px;margin:0 auto;padding:18px 16px 48px}
@@ -430,7 +476,8 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
     <button type="button" data-aba="problema" aria-pressed="false"><span class="t-longo">Relatar Problema</span><span class="t-curto">Problemas</span></button>
   </div>
   <div class="sub-grupo" data-de="financeiro">
-    <button type="button" data-aba="pgf" aria-pressed="false">Pagamento no Final</button>
+    <button type="button" data-aba="pgf" aria-pressed="false"><span class="t-longo">Pagamento no Final</span><span class="t-curto">Pag. no Final</span></button>
+    <button type="button" data-aba="folha" aria-pressed="false">Folha Geral</button>
   </div>
 </nav>
 </header>
@@ -455,6 +502,9 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
   <h2>Novo Cadastro</h2>
   <p class="loc-dica">Os dados vão para a aba de cadastro dos motoboys da planilha, na mesma ordem das colunas.</p>
   <div id="cadConteudo"><p class="loc-info">Carregando o formulário…</p></div>
+</section>
+<section id="folhaTela" class="pgf-tela" hidden>
+  <div id="folhaConteudo"></div>
 </section>
 <section id="pgfTela" class="pgf-tela" hidden>
   <div id="pgfConteudo"></div>
@@ -995,6 +1045,162 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
   desenharPgf(); desenhar();
 });
 
+
+/* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
+const FIN_PADRAO = "";   // endereço /exec do script FIN_SIS_SIMP (colocar depois de implantar)
+const FIN_API = new URLSearchParams(location.search).get("fin") || FIN_PADRAO;
+let folha = null, folhaLendo = false, folhaErro = "", folhaFiltro = "", folhaTimer = null;
+const folhaAbertas = new Set();
+async function chamarFin(dados, limiteSeg = 60) {
+  if (!FIN_API) throw new Error("o script da Folha Geral ainda não foi ligado");
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), limiteSeg * 1000);
+  try {
+    const r = await fetch(FIN_API, { method: "POST", body: JSON.stringify(Object.assign({ senha, sessao: SESSAO }, dados)), signal: ctl.signal });
+    if (!r.ok) throw new Error("a planilha respondeu com erro " + r.status);
+    const txt = await r.text();
+    try { return JSON.parse(txt); } catch (e) { throw new Error(/<html/i.test(txt) ? "a planilha devolveu uma página de erro do Google" : "resposta estranha da planilha"); }
+  } catch (e) { if (e.name === "AbortError") throw new Error(`a planilha não respondeu em ${limiteSeg} segundos`); throw e; }
+  finally { clearTimeout(t); }
+}
+async function lerFolha() {
+  if (folhaLendo) return;
+  folhaLendo = true;
+  try {
+    const r = await chamarFin({ acao: "folha" }, 300);
+    if (!r.ok) { folhaErro = r.erro || "não consegui ler a folha"; }
+    else { folha = r; folhaErro = ""; }
+  } catch (e) { folhaErro = (e && e.message) || "confira a internet"; }
+  finally { folhaLendo = false; desenharFolha(); }
+}
+function abrirFolha() {
+  desenharFolha(); lerFolha();
+  clearInterval(folhaTimer);
+  folhaTimer = setInterval(() => { if (document.getElementById("folhaTela").hidden) { clearInterval(folhaTimer); return; } lerFolha(); }, 60000);
+}
+const stClasse = st => { const u = String(st).toUpperCase(); return /^PAGO/.test(u) ? "st-pago" : /N[ÃA]O/.test(u) ? "st-nao" : "st-pend"; };
+const ehPago = x => stClasse(x.status) === "st-pago";
+const contaPagar = x => stClasse(x.status) === "st-pend";   // "NÃO PAGAR" não entra no que falta
+function linhaFolha(x, opcoes) {
+  const ops = opcoes.includes(x.status) || !x.status ? opcoes : [x.status, ...opcoes];
+  const tel = String(x.tel || "").replace(/\D/g, "");
+  return `<tr>
+    <td class="c-nome"><b>${esc(x.nome)}</b>${x.cod ? ` <span class="cod">#${esc(x.cod)}</span>` : ""}</td>
+    <td class="c-hor" data-r="Horário">${esc(fmtHora(x.horario || "")) || "—"}</td>
+    <td class="c-tel" data-r="Telefone">${tel ? `${esc(fmtFone(x.tel))} <button type="button" class="btn-mini" data-copiar="${esc(tel)}">Copiar</button>` : "—"}</td>
+    <td class="c-pix" data-r="PIX">${x.pix ? `<span class="pix">${esc(x.pix)}</span> <button type="button" class="btn-mini" data-copiar="${esc(x.pix)}">Copiar</button>` : `<span class="sem-pix">sem PIX</span>`}</td>
+    <td class="v">${esc(reais(x.total))}</td>
+    <td class="c-st"><select class="fo-st ${stClasse(x.status)}" data-id="${esc(x.id)}" aria-label="Status de ${esc(x.nome)}">
+      ${x.status ? "" : `<option value="" selected>—</option>`}${ops.map(o => `<option${o === x.status ? " selected" : ""}>${esc(o)}</option>`).join("")}</select></td>
+  </tr>`;
+}
+function lojaFolha(loja, itens, opcoes, iso) {
+  const soma = ls => ls.reduce((t, x) => t + (+x.total || 0), 0);
+  const falta = itens.filter(contaPagar), pagos = itens.filter(ehPago);
+  const chave = iso + "|" + loja, aberta = folhaAbertas.has(chave) || !!folhaFiltro;
+  return `<details class="fo-loja ${falta.length ? "tem-falta" : "tudo-pago"}" data-chave="${esc(chave)}"${aberta ? " open" : ""}>
+    <summary><span class="nm">${esc(loja)}<small>${pagos.length} de ${itens.length} pagos</small></span>
+      <span class="falta${falta.length ? "" : " zero"}">${falta.length ? "Falta " + esc(reais(soma(falta))) : "✓ Tudo pago"}</span>
+      <button type="button" class="btn-todos" data-todos="${esc(loja)}" data-dia="${esc(iso)}"${falta.length ? "" : " disabled"}>Todos pagos</button></summary>
+    <table class="fo-tab"><thead><tr><th>Motoca</th><th>Horário</th><th>Telefone</th><th>PIX</th><th class="v">Total a pagar</th><th>Status</th></tr></thead>
+      <tbody>${itens.map(x => linhaFolha(x, opcoes)).join("")}</tbody>
+      <tfoot><tr><td colspan="4">Total da loja</td><td class="v">${esc(reais(soma(itens)))}</td><td></td></tr></tfoot></table>
+  </details>`;
+}
+function desenharFolha() {
+  const el = document.getElementById("folhaConteudo");
+  if (!el || document.getElementById("folhaTela").hidden) return;
+  const titulo = `<h2 class="pgf-titulo">Folha Geral <span>· ${esc(rotulo(diaAtual))}</span></h2>`;
+  if (!folha) {
+    el.innerHTML = titulo + (folhaErro ? vazio("dinheiro", "Não consegui ler a folha", folhaErro + ". Tento de novo em 1 minuto.") : `<div class="esqueleto"></div><div class="esqueleto"></div>`);
+    return;
+  }
+  const opcoes = folha.opcoes || ["PENDENTE", "PAGO", "NÃO PAGAR"];
+  const q = folhaFiltro.trim().toLowerCase();
+  const doDia = folha.itens.filter(x => brParaISO(x.data) === diaAtual && (!q || x.nome.toLowerCase().includes(q) || String(x.cod) === q || x.loja.toLowerCase().includes(q)));
+  const soma = ls => ls.reduce((t, x) => t + (+x.total || 0), 0);
+  const falta = doDia.filter(contaPagar), pagos = doDia.filter(ehPago);
+  const lojas = [...new Set(doDia.map(x => x.loja))].sort((a, b) => {
+    const fa = doDia.some(x => x.loja === a && contaPagar(x)), fb = doDia.some(x => x.loja === b && contaPagar(x));
+    return (fb - fa) || a.localeCompare(b);
+  });
+  const hoje = hojeSP();
+  const antigos = folha.itens.filter(x => contaPagar(x) && brParaISO(x.data) && brParaISO(x.data) < diaAtual && brParaISO(x.data) <= hoje);
+  const diasAntigos = [...new Set(antigos.map(x => x.data))];
+  el.innerHTML = `${titulo}
+    <section class="faixa pgf-faixa">
+      <div class="num principal"><div class="rot">Falta pagar</div><div class="val">${esc(reais(soma(falta)))}</div><div class="toque">${falta.length} ${falta.length === 1 ? "pessoa" : "pessoas"}</div></div>
+      <div class="num"><div class="rot">Já pago</div><div class="val verde">${esc(reais(soma(pagos)))}</div><div class="toque">${pagos.length} ${pagos.length === 1 ? "pessoa" : "pessoas"}</div></div>
+      <div class="num"><div class="rot">Total do dia</div><div class="val">${esc(reais(soma(doDia)))}</div><div class="toque">${lojas.length} ${lojas.length === 1 ? "loja" : "lojas"}</div></div>
+    </section>
+    ${antigos.length ? `<div class="pgf-atrasados"><b>⚠ ${antigos.length} pendentes de dias anteriores (${esc(reais(soma(antigos)))})</b>${diasAntigos.sort((a, b) => brParaISO(b).localeCompare(brParaISO(a))).map(d => { const iso = brParaISO(d), ds = antigos.filter(x => x.data === d);
+      return `<div class="fo-dia-antigo">${esc(rotulo(iso))}</div>` + [...new Set(ds.map(x => x.loja))].sort().map(l => lojaFolha(l, folha.itens.filter(x => x.loja === l && x.data === d), opcoes, iso)).join(""); }).join("")}</div>` : ""}
+    <div class="fo-busca"><input id="folhaBusca" class="prob-filtro fo-filtro" type="search" placeholder="Filtrar por loja, nome ou código" value="${esc(folhaFiltro)}"></div>
+    ${lojas.length ? lojas.map(l => lojaFolha(l, doDia.filter(x => x.loja === l), opcoes, diaAtual)).join("") : vazio("dinheiro", "Nada na folha deste dia", q ? "Nenhum resultado para o filtro." : "As lojas ainda não têm valores para este dia.")}
+    <p class="loc-dica">Só o <b>status</b> pode ser mudado aqui. Nome, código, telefone, horário, PIX e valores vêm das abas das lojas e não mudam pelo site.</p>`;
+  const b = document.getElementById("folhaBusca");
+  if (b && b.dataset.foco) b.focus();
+}
+function pedirSenhaFolha(loja, iso, qtd, total) {
+  return new Promise(res => {
+    const el = document.createElement("div");
+    el.className = "janela-fundo";
+    el.innerHTML = `<form class="janela" role="dialog" aria-modal="true" aria-labelledby="tituloTodos">
+      <h2 id="tituloTodos">Marcar todos como pagos</h2>
+      <p class="janela-info"><b>${esc(loja)}</b> · ${esc(rotulo(iso))}<br>${qtd} ${qtd === 1 ? "motoca" : "motocas"} · ${esc(reais(total))}</p>
+      <label for="campoSenhaFolha">Digite a senha da folha</label>
+      <input id="campoSenhaFolha" type="password" inputmode="numeric" autocomplete="off" required>
+      <p class="janela-dica">Só muda quem está pendente. "Não pagar" continua igual.</p>
+      <div class="erro" id="erroTodos"></div>
+      <div class="janela-botoes"><button type="button" class="btn-cancelar" id="btnCancTodos">Cancelar</button><button class="btn-chegou" id="btnOkTodos">Marcar pagos</button></div>
+    </form>`;
+    document.body.appendChild(el);
+    const campo = el.querySelector("#campoSenhaFolha"); campo.focus();
+    const fechar = v => { el.remove(); res(v); };
+    el.querySelector("#btnCancTodos").onclick = () => fechar(null);
+    el.addEventListener("click", e => { if (e.target === el) fechar(null); });
+    el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(null); });
+    el.querySelector("form").onsubmit = async ev => {
+      ev.preventDefault();
+      const bt = el.querySelector("#btnOkTodos"), erro = el.querySelector("#erroTodos");
+      bt.disabled = true; bt.textContent = "Gravando…"; erro.textContent = "";
+      try {
+        const r = await chamarFin({ acao: "folhaTodosPagos", loja, data: brParaBR(iso), senhaFolha: campo.value });
+        if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Marcar pagos"; campo.select(); return; }
+        fechar(r);
+      } catch (e) { erro.textContent = "Não gravou: " + ((e && e.message) || "confira a internet") + "."; bt.disabled = false; bt.textContent = "Marcar pagos"; }
+    };
+  });
+}
+const brParaBR = iso => `${iso.slice(8)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+const telaFolha = document.getElementById("folhaTela");
+telaFolha.addEventListener("toggle", e => { const d = e.target.closest && e.target.closest(".fo-loja"); if (d) { d.open ? folhaAbertas.add(d.dataset.chave) : folhaAbertas.delete(d.dataset.chave); } }, true);
+telaFolha.addEventListener("input", e => { if (e.target.id === "folhaBusca") { folhaFiltro = e.target.value; e.target.dataset.foco = "1"; desenharFolha(); const b = document.getElementById("folhaBusca"); if (b) { b.focus(); b.setSelectionRange(b.value.length, b.value.length); } } });
+telaFolha.addEventListener("click", async e => {
+  const c = e.target.closest("[data-copiar]"); if (c) { copiar(c.dataset.copiar, c); return; }
+  const t = e.target.closest("[data-todos]"); if (!t) return;
+  e.preventDefault(); e.stopPropagation();
+  const loja = t.dataset.todos, iso = t.dataset.dia;
+  const pend = folha.itens.filter(x => x.loja === loja && brParaISO(x.data) === iso && contaPagar(x));
+  if (!pend.length) return;
+  const r = await pedirSenhaFolha(loja, iso, pend.length, pend.reduce((s, x) => s + (+x.total || 0), 0));
+  if (!r) return;
+  (r.itens || []).forEach(n => { const x = folha.itens.find(i => i.id === n.id); if (x) Object.assign(x, n); });
+  toast(`✓ ${loja}: ${r.mudou || pend.length} marcados como pagos`, true);
+  desenharFolha();
+});
+telaFolha.addEventListener("change", async e => {
+  const s = e.target.closest(".fo-st"); if (!s) return;
+  const x = folha.itens.find(i => i.id === s.dataset.id); if (!x) return;
+  const novo = s.value, antes = x.status;
+  s.disabled = true;
+  try {
+    const r = await chamarFin({ acao: "folhaStatus", id: x.id, loja: x.loja, linha: x.linha, nome: x.nome, status: novo });
+    if (!r.ok) { toast(r.erro || "Não gravou."); x.status = antes; if (r.mudou) lerFolha(); }
+    else { Object.assign(x, r.item || { status: novo }); toast(`${x.nome}: ${x.status}`, true); }
+  } catch (err) { x.status = antes; toast("Não gravou: " + ((err && err.message) || "confira a internet") + "."); }
+  desenharFolha();
+});
+
 // tela vazia: ícone, título e uma frase
 const ICO_VAZIO = {
   calendario: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
@@ -1020,6 +1226,7 @@ function desenhar() {
   desenharDias();
   medirTopo();
   desenharPgf();
+  desenharFolha();
 
   const doDia = linhas.filter(l => l.data === diaAtual && noTurno(l)).map(l => ({ ...l, s: situacao(l) }));
   const pessoas = doDia; // total = todas as vagas da escala do dia (inclusive as sem motoca)
@@ -1229,14 +1436,15 @@ function abrirCodigo(l) {
 
 /* ===== Abas: Presença | Localizar motoboy ===== */
 function mostrarAba(aba) {
-  const loc = aba === "localizar", pg = aba === "pgf", cad = aba === "cadastro", pr = aba === "problema";
+  const loc = aba === "localizar", pg = aba === "pgf", cad = aba === "cadastro", pr = aba === "problema", fo = aba === "folha";
+  document.getElementById("folhaTela").hidden = !fo;
   document.getElementById("localizar").hidden = !loc;
   document.getElementById("pgfTela").hidden = !pg;
   document.getElementById("cadTela").hidden = !cad;
   document.getElementById("probTela").hidden = !pr;
-  document.getElementById("conteudo").hidden = loc || pg || cad || pr;
+  document.getElementById("conteudo").hidden = loc || pg || cad || pr || fo;
   document.body.classList.toggle("aba-localizar", loc || cad || pr);
-  document.body.classList.toggle("aba-pgf", pg);
+  document.body.classList.toggle("aba-pgf", pg || fo);
   const grupo = GRUPO_DA_ABA[aba] || "presenca";
   document.querySelectorAll("#abasOp [data-grupo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.grupo === grupo)));
   const sub = document.getElementById("subAbas");
@@ -1245,14 +1453,15 @@ function mostrarAba(aba) {
   sub.querySelectorAll("[data-aba]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
   if (grupo !== "presenca") { ultimaSub[grupo] = aba; try { localStorage.setItem("logmax-sub-" + grupo, aba); } catch (e) {} }
   setTimeout(medirTopo, 0);
-  try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : pr ? "#problema" : location.pathname + location.search); } catch (e) {}
+  try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : pr ? "#problema" : fo ? "#folha" : location.pathname + location.search); } catch (e) {}
   if (cad) abrirCadastro();
   if (pr) desenharProblemas();
   if (loc) setTimeout(() => document.getElementById("campoBusca").focus(), 50);
   if (pg) desenharPgf();
+  if (fo) abrirFolha();
 }
 // três abas principais; Motocas e Financeiro têm uma barrinha com as partes de cada uma
-const GRUPO_DA_ABA = { presenca: "presenca", localizar: "motocas", cadastro: "motocas", problema: "motocas", pgf: "financeiro" };
+const GRUPO_DA_ABA = { presenca: "presenca", localizar: "motocas", cadastro: "motocas", problema: "motocas", pgf: "financeiro", folha: "financeiro" };
 const ultimaSub = { motocas: "localizar", financeiro: "pgf" };
 try { ["motocas", "financeiro"].forEach(g => { const v = localStorage.getItem("logmax-sub-" + g); if (v && GRUPO_DA_ABA[v] === g) ultimaSub[g] = v; }); } catch (e) {}
 document.getElementById("abasOp").addEventListener("click", e => {
@@ -1640,7 +1849,7 @@ function telaEntrada(erro, espera) {
 }
 function liberar(nomePlanilha) {
   setTimeout(medirTopo, 0);
-  if (["#localizar", "#pgf", "#cadastro", "#problema"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
+  if (["#localizar", "#pgf", "#cadastro", "#problema", "#folha"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
   document.getElementById("entrada").innerHTML = "";
   document.body.classList.remove("trancado");
   const ft = document.getElementById("faixaTeste");
