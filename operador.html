@@ -385,6 +385,19 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .vazio-bonito span{font-size:.9rem;max-width:420px}
 .entrada .btn-entrar.esperando{background:var(--cinza);color:var(--cinza-tx);cursor:wait}
 .entrada input:disabled{opacity:.6}
+/* ===== Abas principais + barrinha das partes ===== */
+.sub-abas{background:var(--li);border-bottom:1px solid var(--linha);padding:8px max(16px, calc((100% - var(--larg)) / 2 + 16px))}
+.sub-grupo[hidden]{display:none}
+.sub-grupo{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.sub-grupo::-webkit-scrollbar{display:none}
+.sub-grupo button{font:inherit;font-size:.85rem;font-weight:700;white-space:nowrap;flex:none;border:1px solid var(--linha);background:var(--cartao);color:var(--tx2);border-radius:999px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
+.sub-grupo button:hover{color:var(--tx)}
+.sub-grupo button[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
+html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+.sub-grupo .t-curto{display:none}
+@media (max-width:560px){.sub-grupo .t-longo{display:none}.sub-grupo .t-curto{display:inline}.sub-grupo button{flex:1;padding:7px 8px}}
+.abas-op [data-grupo]{flex:none}
+@media (max-width:560px){.abas-op [data-grupo]{flex:1;text-align:center}}
 </style>
 </head>
 <body class="trancado">
@@ -406,11 +419,19 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
   </div>
   <nav class="dias" aria-label="Escolher o dia"><div class="trilho" id="trilhoDias"></div></nav>
 <nav class="abas-op" id="abasOp" aria-label="Telas do operador">
-  <button type="button" data-aba="presenca" aria-pressed="true">Presença</button>
-  <button type="button" data-aba="localizar" aria-pressed="false"><span class="t-longo">Localizar Motoca</span><span class="t-curto">Localizar</span></button>
-  <button type="button" data-aba="pgf" aria-pressed="false"><span class="t-longo">Pagamento no Final</span><span class="t-curto">PGF</span></button>
-  <button type="button" data-aba="cadastro" aria-pressed="false"><span class="t-longo">Novo Cadastro</span><span class="t-curto">Cadastro</span></button>
-  <button type="button" data-aba="problema" aria-pressed="false"><span class="t-longo">Relatar Problema</span><span class="t-curto">Problemas</span></button>
+  <button type="button" data-grupo="presenca" aria-pressed="true">Presença</button>
+  <button type="button" data-grupo="motocas" aria-pressed="false">Motocas</button>
+  <button type="button" data-grupo="financeiro" aria-pressed="false">Financeiro</button>
+</nav>
+<nav class="sub-abas" id="subAbas" aria-label="Partes da aba" hidden>
+  <div class="sub-grupo" data-de="motocas">
+    <button type="button" data-aba="localizar" aria-pressed="false"><span class="t-longo">Localizar Motoca</span><span class="t-curto">Localizar</span></button>
+    <button type="button" data-aba="cadastro" aria-pressed="false"><span class="t-longo">Novo Cadastro</span><span class="t-curto">Cadastro</span></button>
+    <button type="button" data-aba="problema" aria-pressed="false"><span class="t-longo">Relatar Problema</span><span class="t-curto">Problemas</span></button>
+  </div>
+  <div class="sub-grupo" data-de="financeiro">
+    <button type="button" data-aba="pgf" aria-pressed="false">Pagamento no Final</button>
+  </div>
 </nav>
 </header>
 <section id="probTela" class="cad-tela" hidden>
@@ -1216,14 +1237,29 @@ function mostrarAba(aba) {
   document.getElementById("conteudo").hidden = loc || pg || cad || pr;
   document.body.classList.toggle("aba-localizar", loc || cad || pr);
   document.body.classList.toggle("aba-pgf", pg);
-  document.querySelectorAll("#abasOp button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
+  const grupo = GRUPO_DA_ABA[aba] || "presenca";
+  document.querySelectorAll("#abasOp [data-grupo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.grupo === grupo)));
+  const sub = document.getElementById("subAbas");
+  sub.hidden = grupo === "presenca";
+  sub.querySelectorAll(".sub-grupo").forEach(g => { g.hidden = g.dataset.de !== grupo; });
+  sub.querySelectorAll("[data-aba]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
+  if (grupo !== "presenca") { ultimaSub[grupo] = aba; try { localStorage.setItem("logmax-sub-" + grupo, aba); } catch (e) {} }
+  setTimeout(medirTopo, 0);
   try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : pr ? "#problema" : location.pathname + location.search); } catch (e) {}
   if (cad) abrirCadastro();
   if (pr) desenharProblemas();
   if (loc) setTimeout(() => document.getElementById("campoBusca").focus(), 50);
   if (pg) desenharPgf();
 }
-document.getElementById("abasOp").addEventListener("click", e => { const b = e.target.closest("[data-aba]"); if (b) mostrarAba(b.dataset.aba); });
+// três abas principais; Motocas e Financeiro têm uma barrinha com as partes de cada uma
+const GRUPO_DA_ABA = { presenca: "presenca", localizar: "motocas", cadastro: "motocas", problema: "motocas", pgf: "financeiro" };
+const ultimaSub = { motocas: "localizar", financeiro: "pgf" };
+try { ["motocas", "financeiro"].forEach(g => { const v = localStorage.getItem("logmax-sub-" + g); if (v && GRUPO_DA_ABA[v] === g) ultimaSub[g] = v; }); } catch (e) {}
+document.getElementById("abasOp").addEventListener("click", e => {
+  const b = e.target.closest("[data-grupo]"); if (!b) return;
+  mostrarAba(b.dataset.grupo === "presenca" ? "presenca" : ultimaSub[b.dataset.grupo]);
+});
+document.getElementById("subAbas").addEventListener("click", e => { const b = e.target.closest("[data-aba]"); if (b) mostrarAba(b.dataset.aba); });
 
 /* ===== Localizar Motoca (a busca é feita na planilha; só volta quem bate) ===== */
 const fmtCpf = c => { const d = String(c).replace(/\D/g, ""); return d.length === 11 ? `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}` : String(c); };
