@@ -46,7 +46,7 @@
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
-const LM_DIAS_ANTES = 3, LM_DIAS_DEPOIS = 8;  // de 3 dias atrás (para PGF de dias anteriores) até daqui a 8 dias
+const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
 const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
 const LM_FRESCO_SEG = 25;                     // até 25 s a escala guardada vale sem montar de novo
@@ -355,25 +355,20 @@ function lmMarcar(p) {
   const dataLinha = String(atual[0]).trim(), nomeLinha = String(atual[col.nome]).replace(/\s*[\r\n]+\s*/g, ' ').trim();
   let chegada = '';
 
-  let presenca;
   if (p.acao === 'chegou') {
     if (agora === 'OK') return { ok: true, presenca: 'OK', jaEstava: true, chegada: lmChegadaTexto(lmLerChegadas(), p.loja, dataLinha, linha, nomeLinha) };
-    if (!lmPodeChegar(agora)) {
+    if (agora !== '' && agora !== 'N/D') {
       return { ok: false, erro: 'Na planilha está escrito "' + atual[col.pres] + '" para essa pessoa. Mude direto na planilha.' };
     }
     celula.setValue('OK');
-    // guarda o que estava antes (ex.: CONF) para o Desfazer voltar igual
-    chegada = lmGuardarChegada(p.loja, dataLinha, linha, nomeLinha, /^CONF/.test(agora) ? String(atual[col.pres]).trim() : '');
-    presenca = 'OK';
+    chegada = lmGuardarChegada(p.loja, dataLinha, linha, nomeLinha);
   } else {
-    let antes = '';
-    try { const g = JSON.parse(PropertiesService.getScriptProperties().getProperty(lmChaveChegada(p.loja, dataLinha, linha)) || '{}'); antes = g.a || ''; } catch (e) {}
     lmApagarChegada(p.loja, dataLinha, linha);
     if (agora !== 'OK') return { ok: true, presenca: atual[col.pres], jaEstava: true };
-    presenca = antes || 'N/D';
-    celula.setValue(presenca);
+    celula.setValue('N/D');
   }
   SpreadsheetApp.flush();
+  const presenca = p.acao === 'chegou' ? 'OK' : 'N/D';
   lmAtualizarGuardada(p.loja, linha, presenca, chegada);
   return { ok: true, presenca: presenca, chegada: chegada };
 }
@@ -432,11 +427,7 @@ function lmChegadaTexto(todas, loja, data, linha, nome) {   // "HH:mm|minutos de
     return o.h + '|' + o.m;
   } catch (e) { return ''; }
 }
-function lmPodeChegar(agora) {   // vazio, N/D ou CONF (confirmado) → pode marcar Chegou
-  const t = String(agora || '').trim().toUpperCase();
-  return t === '' || t === 'N/D' || /^CONF/.test(t);
-}
-function lmGuardarChegada(loja, data, linha, nome, antes) {
+function lmGuardarChegada(loja, data, linha, nome) {
   const a = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm').match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
   const e = String(data).match(/(\d{2})\/(\d{2})\/(\d{4})/);
   if (!a || !e) return '';
@@ -445,9 +436,7 @@ function lmGuardarChegada(loja, data, linha, nome, antes) {
   const hora = a[4] + ':' + a[5];
   try {
     const props = PropertiesService.getScriptProperties();
-    const reg = { n: String(nome).trim(), h: hora, m: min };
-    if (antes) reg.a = antes;
-    props.setProperty(lmChaveChegada(loja, data, linha), JSON.stringify(reg));
+    props.setProperty(lmChaveChegada(loja, data, linha), JSON.stringify({ n: String(nome).trim(), h: hora, m: min }));
     lmLimparChegadasVelhas(props);
   } catch (err) { return ''; }
   return hora + '|' + min;
