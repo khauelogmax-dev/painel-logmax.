@@ -346,6 +346,9 @@ html.escuro .btn-todos{color:#4ade80;border-color:#4ade80}
 .fo-st.st-pend{background-color:var(--ambar-claro);color:var(--ambar);border-color:transparent}
 .fo-st.st-nao{background-color:var(--vermelho-claro);color:var(--vermelho);border-color:transparent}
 .fo-st:disabled{opacity:.6;cursor:wait}
+.pgf-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.pgf-cab .pgf-titulo{margin:0}
+.btn-todos.azul{border-color:#4f46e5;color:#4f46e5}html.escuro .btn-todos.azul{border-color:#a5b4fc;color:#a5b4fc}
+.janela select.cad-sel{width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--linha);background:var(--cartao);color:var(--tx);margin-bottom:10px}
 .fo-dia-antigo{font-weight:800;margin:12px 4px 8px;color:var(--ambar)}
 .pgf-atrasados .fo-loja:last-child{margin-bottom:0}
 .fo-busca{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
@@ -559,7 +562,7 @@ let primeiraConferencia = true;
 let filtro = null;          // quadro do topo aberto
 let turno = "todos";        // todos | almoco | noite
 let somLigado = false, audio = null;
-let linhas = [], atualizadoEm = "", diaAtual = hojeSP(), diasDisponiveis = [];
+let linhas = [], linhasAntigas = [], atualizadoEm = "", diaAtual = hojeSP(), diasDisponiveis = [];
 
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const lerGuardado = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -642,7 +645,8 @@ function situacao(l) {
   if (l.vaga) return "vaga";
   return ehOK(presencaDe(l)) ? "chegou" : "falta";
 }
-function podeMarcar(l) { const p = presencaDe(l).trim().toUpperCase(); return p === "" || p === "N/D"; }   // ex.: "FALTOU" só muda na planilha
+function podeMarcar(l) { const p = presencaDe(l).trim().toUpperCase(); return p === "" || p === "N/D" || /^CONF/.test(p); }
+const ehConf = l => /^CONF/i.test(String(presencaDe(l)).trim());   // ex.: "FALTOU" só muda na planilha
 function noTurno(l) {
   if (turno === "todos") return true;
   const ini = inicioMin(l.horario) ?? 0;
@@ -668,12 +672,14 @@ async function carregar() {
     const tab = lerCSV(r.csv || "");
     atualizadoEm = (tab[1] && tab[1][7]) || "";
     const hoje = hojeSP(), domingo = ultimoDia(hoje);
-    linhas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
+    const todas = tab.slice(1).filter(c => c[0] && brParaISO((c[1] || "").trim()) && (c[4] || "").trim() && +c[6] > 0).map(c => {
       const nome = (c[4] || "").trim(), cod = (c[3] || "").trim();
       return { loja: c[0].trim(), data: brParaISO(c[1].trim()), dataBR: c[1].trim(), horario: (c[2] || "").trim(), codigo: cod, nome,
                presenca: (c[5] || "").trim(), chegada: lerChegada(c[8]), linha: +c[6], chave: c[0].trim() + "|" + c[6],
                vaga: /N[ÃA]O\s+LOCALIZAD/i.test(nome) };          // vaga = "NÃO LOCALIZADO" na coluna NOME
-    }).filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
+    });
+    linhas = todas.filter(l => l.data >= hoje && l.data <= domingo);          // só de hoje até domingo
+    linhasAntigas = todas.filter(l => l.data < hoje && !l.vaga);              // para PGF de dias anteriores
     diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
     const agoraMs = Date.now();   // a planilha já confirmou? então esquece a troca guardada aqui
     trocas.forEach((t, k) => { const l = linhas.find(x => x.chave === k); if (!l || ehOK(l.presenca) === ehOK(t.presenca) || agoraMs - t.quando > 90000) trocas.delete(k); });
@@ -844,7 +850,7 @@ function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.vaga ? "" : etqProblema(l.codigo)}</small>${l.vaga ? "" : `<span class="acoes-l">${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${botaoPgf(l)}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</span>`}</div><div class="dir">${botao(l)}</div></li>`;
+  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${l.s === "falta" && ehConf(l) ? `<span class="etq c" title="Na planilha está CONF">confirmado</span>` : ""}${atraso}${l.vaga ? "" : etqProblema(l.codigo)}</small>${l.vaga ? "" : `<span class="acoes-l">${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${botaoPgf(l)}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</span>`}</div><div class="dir">${botao(l)}</div></li>`;
 }
 
 /* ===== WhatsApp do motoboy (só nesta tela, que tem senha) ===== */
@@ -1019,7 +1025,8 @@ function desenharPgf() {
   const soma = ls => ls.reduce((t, x) => t + (+x.valor || 0), 0);
   const pagos = doDia.filter(x => x.pago), faltam = doDia.filter(x => !x.pago);
   el.innerHTML = `
-    <h2 class="pgf-titulo">Pagamento no Final <span>· ${esc(rotulo(diaAtual))}</span></h2>
+    <div class="pgf-cab"><h2 class="pgf-titulo">Pagamento no Final <span>· ${esc(rotulo(diaAtual))}</span></h2>
+      <button type="button" class="btn-todos azul" id="btnPgfAntigo">+ PGF de dia anterior</button></div>
     <section class="faixa pgf-faixa">
       <div class="num principal"><div class="rot">Falta pagar</div><div class="val">${esc(reais(soma(faltam)))}</div><div class="toque">${faltam.length} ${faltam.length === 1 ? "pessoa" : "pessoas"}</div></div>
       <div class="num"><div class="rot">Já pago</div><div class="val verde">${esc(reais(soma(pagos)))}</div><div class="toque">${pagos.length} ${pagos.length === 1 ? "pessoa" : "pessoas"}</div></div>
@@ -1029,6 +1036,7 @@ function desenharPgf() {
     ${doDia.length ? doDia.map(cartaoPgf).join("") : vazio("dinheiro", "Nenhum pagamento anotado neste dia", "Para anotar, toque em PGF embaixo do motoboy, na aba Presença.")}`;
 }
 document.getElementById("pgfTela").addEventListener("click", async e => {
+  if (e.target.closest("#btnPgfAntigo")) { abrirPgfAntigo(); return; }
   const c = e.target.closest("[data-copiar]"); if (c) { copiar(c.dataset.copiar, c); return; }
   const b = e.target.closest("[data-pgf-pago]"); if (!b) return;
   const pago = b.dataset.pgfPago === "1", x = pgfLista.find(i => i.id === b.dataset.id);
@@ -1045,6 +1053,65 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
   desenharPgf(); desenhar();
 });
 
+
+/* ===== PGF de dia anterior (pede a senha própria; a planilha confere) ===== */
+function abrirPgfAntigo() {
+  if (document.querySelector(".janela-fundo")) return;
+  const dias = [...new Set(linhasAntigas.map(l => l.data))].sort().reverse();
+  if (!dias.length) { toast("A escala carregada não tem dias anteriores. Tente de novo em instantes."); return; }
+  const el = document.createElement("div");
+  el.className = "janela-fundo";
+  el.innerHTML = `
+    <form class="janela" role="dialog" aria-modal="true" aria-labelledby="tituloPgfA" autocomplete="off">
+      <h2 id="tituloPgfA">PGF de dia anterior</h2>
+      <label for="paSenha">Senha</label>
+      <input id="paSenha" type="password" inputmode="numeric" required>
+      <label for="paDia">Dia</label>
+      <select id="paDia" class="cad-sel">${dias.map(d => `<option value="${d}">${esc(rotulo(d))}</option>`).join("")}</select>
+      <label for="paLoja">Loja</label>
+      <select id="paLoja" class="cad-sel"></select>
+      <label for="paQuem">Motoca</label>
+      <select id="paQuem" class="cad-sel"></select>
+      <label for="paValor">Valor combinado</label>
+      <input id="paValor" inputmode="decimal" placeholder="Ex.: 80" required>
+      <div class="erro" id="erroPgfA"></div>
+      <div class="janela-botoes"><button type="button" class="btn-cancelar" id="btnCancPgfA">Cancelar</button><button class="btn-chegou" id="btnSalvarPgfA">Salvar</button></div>
+    </form>`;
+  document.body.appendChild(el);
+  const $ = id => el.querySelector("#" + id);
+  const fechar = () => el.remove();
+  const doDia = () => linhasAntigas.filter(l => l.data === $("paDia").value);
+  const achar = () => linhasAntigas.find(i => i.chave === $("paQuem").value && i.data === $("paDia").value);
+  const valorDe = () => { const l = achar(), x = l && pgfDe(l); $("paValor").value = x ? String(x.valor).replace(".", ",") : ""; };
+  const encherQuem = () => {
+    const ls = doDia().filter(l => l.loja === $("paLoja").value).sort((a, b) => a.nome.localeCompare(b.nome));
+    $("paQuem").innerHTML = ls.map(l => { const x = pgfDe(l); return `<option value="${esc(l.chave)}">${esc(l.nome)}${l.codigo ? " #" + esc(l.codigo) : ""} · ${esc(fmtHora(l.horario))}${x ? " · já tem PGF " + esc(reais(x.valor)) + (x.pago ? " (pago)" : "") : ""}</option>`; }).join("");
+    valorDe();
+  };
+  const encherLojas = () => { $("paLoja").innerHTML = [...new Set(doDia().map(l => l.loja))].sort().map(l => `<option>${esc(l)}</option>`).join(""); encherQuem(); };
+  $("paDia").onchange = encherLojas; $("paLoja").onchange = encherQuem; $("paQuem").onchange = valorDe;
+  encherLojas();
+  $("paSenha").focus();
+  $("btnCancPgfA").onclick = fechar;
+  el.addEventListener("click", e => { if (e.target === el) fechar(); });
+  el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
+  el.querySelector("form").onsubmit = async ev => {
+    ev.preventDefault();
+    const l = achar(), bt = $("btnSalvarPgfA"), erro = $("erroPgfA");
+    if (!l) { erro.textContent = "Escolha o motoca."; return; }
+    if (!$("paValor").value.trim()) { erro.textContent = "Digite o valor."; return; }
+    bt.disabled = true; bt.textContent = "Gravando…"; erro.textContent = "";
+    try {
+      const r = await chamar({ acao: "pgf", loja: l.loja, linha: l.linha, data: l.dataBR, nome: l.nome, valor: $("paValor").value.trim(), senhaPgf: $("paSenha").value });
+      if (r.senha) { fechar(); sair(r.erro); return; }
+      if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Salvar"; if (r.senhaPgf) $("paSenha").select(); return; }
+      pgfLista = pgfLista.filter(i => i.id !== r.item.id); pgfLista.push(r.item);
+      fechar();
+      toast(`PGF ${reais(r.item.valor)} · ${l.nome} (${rotulo(l.data)})${r.semPix ? " (sem chave PIX no cadastro)" : ""}`, true);
+      desenharPgf();
+    } catch (e) { erro.textContent = "Não gravou: " + ((e && e.message) || "confira a internet") + "."; bt.disabled = false; bt.textContent = "Salvar"; }
+  };
+}
 
 /* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
 const FIN_PADRAO = "";   // endereço /exec do script FIN_SIS_SIMP (colocar depois de implantar)

@@ -44,9 +44,10 @@
  *   liberarSenha         → libera na hora a trava de "Muitas senhas erradas".
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
+const LM_SENHA_PGF_ANTIGO = 'COLOQUE_A_SENHA_DA_FOLHA';   // senha para anotar PGF de dias anteriores
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
-const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
+const LM_DIAS_ANTES = 3, LM_DIAS_DEPOIS = 8;  // de 3 dias atrás (para PGF de dias anteriores) até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
 const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
 const LM_FRESCO_SEG = 25;                     // até 25 s a escala guardada vale sem montar de novo
@@ -355,20 +356,25 @@ function lmMarcar(p) {
   const dataLinha = String(atual[0]).trim(), nomeLinha = String(atual[col.nome]).replace(/\s*[\r\n]+\s*/g, ' ').trim();
   let chegada = '';
 
+  let presenca;
   if (p.acao === 'chegou') {
     if (agora === 'OK') return { ok: true, presenca: 'OK', jaEstava: true, chegada: lmChegadaTexto(lmLerChegadas(), p.loja, dataLinha, linha, nomeLinha) };
-    if (agora !== '' && agora !== 'N/D') {
+    if (!lmPodeChegar(agora)) {
       return { ok: false, erro: 'Na planilha está escrito "' + atual[col.pres] + '" para essa pessoa. Mude direto na planilha.' };
     }
     celula.setValue('OK');
-    chegada = lmGuardarChegada(p.loja, dataLinha, linha, nomeLinha);
+    // guarda o que estava antes (ex.: CONF) para o Desfazer voltar igual
+    chegada = lmGuardarChegada(p.loja, dataLinha, linha, nomeLinha, /^CONF/.test(agora) ? String(atual[col.pres]).trim() : '');
+    presenca = 'OK';
   } else {
+    let antes = '';
+    try { const g = JSON.parse(PropertiesService.getScriptProperties().getProperty(lmChaveChegada(p.loja, dataLinha, linha)) || '{}'); antes = g.a || ''; } catch (e) {}
     lmApagarChegada(p.loja, dataLinha, linha);
     if (agora !== 'OK') return { ok: true, presenca: atual[col.pres], jaEstava: true };
-    celula.setValue('N/D');
+    presenca = antes || 'N/D';
+    celula.setValue(presenca);
   }
   SpreadsheetApp.flush();
-  const presenca = p.acao === 'chegou' ? 'OK' : 'N/D';
   lmAtualizarGuardada(p.loja, linha, presenca, chegada);
   return { ok: true, presenca: presenca, chegada: chegada };
 }
@@ -427,7 +433,11 @@ function lmChegadaTexto(todas, loja, data, linha, nome) {   // "HH:mm|minutos de
     return o.h + '|' + o.m;
   } catch (e) { return ''; }
 }
-function lmGuardarChegada(loja, data, linha, nome) {
+function lmPodeChegar(agora) {   // vazio, N/D ou CONF (confirmado) → pode marcar Chegou
+  const t = String(agora || '').trim().toUpperCase();
+  return t === '' || t === 'N/D' || /^CONF/.test(t);
+}
+function lmGuardarChegada(loja, data, linha, nome, antes) {
   const a = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd HH:mm').match(/(\d+)-(\d+)-(\d+) (\d+):(\d+)/);
   const e = String(data).match(/(\d{2})\/(\d{2})\/(\d{4})/);
   if (!a || !e) return '';
@@ -436,7 +446,9 @@ function lmGuardarChegada(loja, data, linha, nome) {
   const hora = a[4] + ':' + a[5];
   try {
     const props = PropertiesService.getScriptProperties();
-    props.setProperty(lmChaveChegada(loja, data, linha), JSON.stringify({ n: String(nome).trim(), h: hora, m: min }));
+    const reg = { n: String(nome).trim(), h: hora, m: min };
+    if (antes) reg.a = antes;
+    props.setProperty(lmChaveChegada(loja, data, linha), JSON.stringify(reg));
     lmLimparChegadasVelhas(props);
   } catch (err) { return ''; }
   return hora + '|' + min;
@@ -791,6 +803,12 @@ function lmPgfMarcar(p) {
   const achou = lmLocalizar(p);
   if (achou.erro) return achou.erro;
   const atual = achou.atual, col = achou.col, linha = achou.linha;
+  // PGF de dia anterior só com a senha própria
+  const dl = String(atual[0]).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  const hojeTxt = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd');
+  if (dl && (dl[3] + '-' + dl[2] + '-' + dl[1]) < hojeTxt && String(p.senhaPgf || '') !== LM_SENHA_PGF_ANTIGO) {
+    return { ok: false, erro: p.senhaPgf ? 'Senha errada para PGF de dia anterior.' : 'PGF de dia anterior precisa da senha.', senhaPgf: true };
+  }
   const limpa = function (x) { return String(x == null ? '' : x).replace(/\s*[\r\n]+\s*/g, ' ').trim(); };
   const nome = limpa(atual[col.nome]);
   if (!nome || /N[ÃA]O\s+LOCALIZAD/i.test(nome)) return { ok: false, erro: 'Vaga sem motoca não tem pagamento.' };
