@@ -208,6 +208,7 @@ body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #lo
 .dias{padding:0 0 14px}
 .dias .trilho{max-width:var(--larg);margin:0 auto;padding:0 16px;box-sizing:border-box;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .dias .trilho::-webkit-scrollbar{display:none}
+.dias .trilho button.ontem:not(.on){border-style:dashed}
 .dias button{flex:none;font:inherit;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:6px 10px 7px;min-width:62px;text-align:center;cursor:pointer;line-height:1.15;transition:background .15s,transform .1s}
 .dias button:not(.on):not(:disabled):hover{background:rgba(255,255,255,.14)}
 .dias button:active:not(:disabled){transform:scale(.96)}
@@ -677,7 +678,7 @@ async function carregar() {
     diasDisponiveis = [...new Set(linhas.map(l => l.data))].sort();
     const agoraMs = Date.now();   // a planilha já confirmou? então esquece a troca guardada aqui
     trocas.forEach((t, k) => { const l = linhas.find(x => x.chave === k); if (!l || ehOK(l.presenca) === ehOK(t.presenca) || agoraMs - t.quando > 90000) trocas.delete(k); });
-    if (diaAtual < hoje) diaAtual = hoje;
+    if (diaAtual < hoje && !(ehFinanceiro() && diaAtual === ontemSP())) diaAtual = hoje;
     ultimaLeitura = Date.now(); falhaLeitura = false; pintarStatus();
     desenhar();
     conferirAtrasos();
@@ -912,9 +913,13 @@ function cartaoCompleto(l) {
       </details>`;
 }
 /* ===== Faixa de dias: de hoje até o último dia liberado ===== */
+// no Financeiro (Pagamento no Final e Folha Geral) a faixa também mostra ONTEM: na segunda paga-se o domingo
+const ehFinanceiro = () => document.body.classList.contains("aba-pgf");
+function ontemSP() { const x = new Date(hojeSP() + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() - 1); return x.toISOString().slice(0, 10); }
 function desenharDias() {
   const hoje = hojeSP(), fim = ultimoDia(hoje), el = document.getElementById("trilhoDias");
-  const dias = [];
+  const dias = [], fin = ehFinanceiro(), ontem = ontemSP();
+  if (fin) dias.push(ontem);
   for (let d = hoje; d <= fim; ) {
     dias.push(d);
     const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + 1); d = x.toISOString().slice(0, 10);
@@ -925,8 +930,9 @@ function desenharDias() {
     // vermelho: tem vaga sem motoca · amarelo: hoje com gente para chegar · verde: completa (ou escala fechada, nos próximos dias)
     const cor = !ls.length ? "" : vagas ? "d-v" : d <= hoje && faltam ? "d-a" : "d-g";
     const dica = !ls.length ? "sem escala" : vagas ? `${vagas} ${vagas > 1 ? "vagas" : "vaga"} sem motoca` : d <= hoje && faltam ? `${faltam} para chegar` : "completa";
-    const sem = d === hoje ? "Hoje" : DIAS[new Date(d + "T12:00:00").getDay()].slice(0, 3);
-    return `<button type="button" class="${d === diaAtual ? "on" : ""}" data-dia="${d}" aria-pressed="${d === diaAtual}" ${ls.length ? "" : "disabled"} title="${esc(rotulo(d))} · ${dica}"><small>${sem}</small><b>${d.slice(8)}</b><i class="${cor}" aria-hidden="true"></i></button>`;
+    const sem = d === hoje ? "Hoje" : d === ontem ? "Ontem" : DIAS[new Date(d + "T12:00:00").getDay()].slice(0, 3);
+    const livre = ls.length || (fin && d === ontem);
+    return `<button type="button" class="${d === diaAtual ? "on" : ""}${d === ontem ? " ontem" : ""}" data-dia="${d}" aria-pressed="${d === diaAtual}" ${livre ? "" : "disabled"} title="${esc(rotulo(d))}${d === ontem ? "" : " · " + dica}"><small>${sem}</small><b>${d.slice(8)}</b><i class="${cor}" aria-hidden="true"></i></button>`;
   }).join("");
 }
 /* ===== Pagamento no Final (PGF) ===== */
@@ -1445,6 +1451,8 @@ function mostrarAba(aba) {
   document.getElementById("conteudo").hidden = loc || pg || cad || pr || fo;
   document.body.classList.toggle("aba-localizar", loc || cad || pr);
   document.body.classList.toggle("aba-pgf", pg || fo);
+  if (!(pg || fo) && diaAtual < hojeSP()) { diaAtual = hojeSP(); desenhar(); }   // ontem só vale no Financeiro
+  desenharDias();
   const grupo = GRUPO_DA_ABA[aba] || "presenca";
   document.querySelectorAll("#abasOp [data-grupo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.grupo === grupo)));
   const sub = document.getElementById("subAbas");

@@ -7,7 +7,7 @@
  *
  * O que faz:
  *  - lê das abas das lojas: COD, NOME, TELEFONE, HORÁRIO, PIX, TOTAL A PAGAR e STATUS
- *    (igual à escala: de hoje até daqui a 8 dias; só lê o pedaço final da aba onde estão esses dias);
+ *    (de ontem até daqui a 8 dias; só lê o pedaço final da aba onde estão esses dias);
  *  - o site SÓ muda o STATUS (uma pessoa por vez), usando as opções do menu da própria planilha;
  *  - "Todos pagos" (por loja e dia) pede a senha da folha e muda para PAGO só quem está pendente.
  *
@@ -18,7 +18,7 @@ const FIN_PLANILHA_ID = '1SUSjukHorUEWx1d-U5KijU8BuzCPmglW0WisuygqcXo';   // ESC
 const FIN_SENHA_OPERADOR = 'COLOQUE_A_SENHA_AQUI';   // a MESMA senha do site do operador (se trocar lá, troque aqui também)
 const FIN_SENHA_TODOS = 'COLOQUE_A_SENHA_DA_FOLHA';  // senha do botão "Todos pagos"
 const FIN_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
-const FIN_DIAS_ANTES = 0;          // igual à escala: de hoje...
+const FIN_DIAS_ANTES = 1;          // de ONTEM (na segunda paga-se o domingo)...
 const FIN_DIAS_DEPOIS = 8;         // ...até daqui a 8 dias
 const FIN_LINHAS_FINAIS = 700;     // lê só o final de cada aba
 const FIN_COLUNAS = 40;            // lê até a coluna AN (algumas lojas têm muitas colunas antes do TOTAL A PAGAR)
