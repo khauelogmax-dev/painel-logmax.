@@ -48,7 +48,8 @@ const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (
 const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE', 'MODELOS VAGAS SITE'];
 const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
-const LM_COLUNAS = 9;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna I, onde fica o ATRASO)
+const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
+const LM_COL_ATRASO = 8;                      // coluna H: onde o "ATRASOU" é anotado
 const LM_ATRASO_MIN = 15;                     // atraso só é anotado na planilha a partir de 15 min
 const LM_FRESCO_SEG = 25;                     // até 25 s a escala guardada vale sem montar de novo
 const LM_GUARDA_SEG = 21600;                  // guarda a última escala pronta por até 6 horas
@@ -257,7 +258,6 @@ function lmColunas(l) {
   const col = { cod: achar('COD'), nome: achar('NOME'), hora: achar('HORARIO'), pres: achar('PRESEN') };
   col.tel = achar('TELEF'); if (col.tel < 0) col.tel = achar('CELULAR'); if (col.tel < 0) col.tel = achar('FONE');
   if (col.pres < 0 && col.hora >= 0) col.pres = col.hora + 1;   // abas sem título "PRESENÇA" (ex.: PAMPLONA)
-  col.atraso = achar('ATRASO');   // coluna I criada por criarColunaAtraso()
   return col;
 }
 
@@ -389,7 +389,7 @@ function lmMarcar(p) {
     lmApagarChegada(p.loja, dataLinha, linha);
     if (agora !== 'OK') return { ok: true, presenca: atual[col.pres], jaEstava: true };
     celula.setValue('N/D');
-    if (col.atraso >= 0) aba.getRange(linha, col.atraso + 1).setValue('');
+    lmLimparAtraso(aba, linha);
   }
   SpreadsheetApp.flush();
   const presenca = p.acao === 'chegou' ? 'OK' : 'N/D';
@@ -1062,55 +1062,37 @@ function lmVagaApagar(id) {
   return { ok: true };
 }
 
-/* ============================== ATRASO NA PLANILHA (coluna I "ATRASO") ============================== */
-// Ao dar "Chegou" pelo site, escreve o atraso (a partir de 15 min) na coluna ATRASO da linha. Desfazer apaga.
-// Fica como TEXTO ("23 min", "1h05") para nenhuma soma da planilha contar esse número.
+/* ============================== ATRASO NA PLANILHA (coluna H) ============================== */
+// Ao dar "Chegou" pelo site com 15 min ou mais de atraso, escreve "ATRASOU 23 MIN" na coluna H da linha.
+// Segurança: só escreve se a célula H estiver VAZIA (nunca apaga valor ou fórmula). Desfazer só limpa se começar com "ATRASOU".
 function lmAnotarAtraso(aba, linha, col, atual, chegada) {
-  if (col.atraso < 0 || !chegada) return;
+  if (!chegada) return;
   try {
     const m = +String(chegada).split('|')[1];
     const h = String(atual[col.hora] || '').match(/(\d{1,2}):(\d{2})/);
     if (!isFinite(m) || !h) return;
     const atraso = m - (+h[1] * 60 + +h[2]);
-    const cel = aba.getRange(linha, col.atraso + 1);
-    if (atraso >= LM_ATRASO_MIN && atraso < 12 * 60) {
-      const t = atraso < 60 ? atraso + ' min' : Math.floor(atraso / 60) + 'h' + ('0' + (atraso % 60)).slice(-2);
-      cel.setNumberFormat('@').setValue(t);
-    } else cel.setValue('');
+    if (atraso < LM_ATRASO_MIN || atraso >= 12 * 60) return;
+    const cel = aba.getRange(linha, LM_COL_ATRASO);
+    if (cel.getFormula() || String(cel.getDisplayValue()).trim()) return;   // já tem algo: não mexe
+    const t = atraso < 60 ? atraso + ' MIN' : Math.floor(atraso / 60) + 'H' + ('0' + (atraso % 60)).slice(-2);
+    cel.setValue('ATRASOU ' + t);
   } catch (e) { console.warn('Não anotei o atraso: ' + e); }
 }
-
-// RODE UMA VEZ no editor: cria a coluna I "ATRASO" (entre H e I) em todas as abas de loja.
-// Antes, salve uma versão da planilha: Arquivo → Histórico de versões → Nomear versão atual.
-// Pode rodar de novo: pula as abas que já têm a coluna. Para aos 5 minutos (aí é só rodar de novo).
-function criarColunaAtraso() {
-  const inicio = Date.now();
-  SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (aba) {
-    if (!lmAbaDeLoja(aba)) return;
-    const nome = aba.getName();
-    if (Date.now() - inicio > 300000) { console.log('Parei aos 5 min. Rode de novo para continuar. Falta: ' + nome); return; }
-    const ult = aba.getLastRow();
-    if (ult < 2) { console.log(nome + ': vazia, pulei.'); return; }
-    if (lmTemColunaAtraso(aba)) { console.log(nome + ': já tem a coluna ATRASO.'); return; }
-    aba.insertColumnAfter(8);   // nova coluna I
-    const a = aba.getRange(1, 1, ult, 1).getDisplayValues();
-    let blocos = 0;
-    const novaI = a.map(function (r) { const t = String(r[0]).trim().toUpperCase() === 'DATA'; if (t) blocos++; return [t ? 'ATRASO' : '']; });
-    aba.getRange(1, 9, ult, 1).setNumberFormat('@').setValues(novaI)
-      .setFontWeights(novaI.map(function (r) { return [r[0] ? 'bold' : 'normal']; }));
-    console.log(nome + ': coluna ATRASO criada (' + blocos + ' blocos de dia).');
-  });
-  try { CacheService.getScriptCache().remove('escala_v4'); } catch (e) {}
+function lmLimparAtraso(aba, linha) {
+  try {
+    const cel = aba.getRange(linha, LM_COL_ATRASO);
+    if (!cel.getFormula() && /^ATRASOU/i.test(String(cel.getDisplayValue()).trim())) cel.setValue('');
+  } catch (e) {}
 }
-function lmTemColunaAtraso(aba) {
-  const ult = aba.getLastRow(), ini = Math.max(1, ult - 300);
-  const v = aba.getRange(ini, 1, ult - ini + 1, Math.min(9, aba.getMaxColumns())).getDisplayValues();
-  return v.some(function (r) { return String(r[0]).trim().toUpperCase() === 'DATA' && String(r[8] || '').trim().toUpperCase() === 'ATRASO'; });
-}
-// Para DESFAZER: apaga a coluna I "ATRASO" de todas as abas de loja (os atrasos anotados somem junto).
-function removerColunaAtraso() {
+// Rode no editor para conferir: mostra o título da coluna H no último dia de cada loja.
+function conferirColunaH() {
   SpreadsheetApp.getActiveSpreadsheet().getSheets().forEach(function (aba) {
     if (!lmAbaDeLoja(aba) || aba.getLastRow() < 2) return;
-    if (lmTemColunaAtraso(aba)) { aba.deleteColumn(9); console.log(aba.getName() + ': coluna ATRASO apagada.'); }
+    const ult = aba.getLastRow(), ini = Math.max(1, ult - 300);
+    const v = aba.getRange(ini, 1, ult - ini + 1, 8).getDisplayValues();
+    let tit = '(não achei a linha DATA)';
+    for (let i = v.length - 1; i >= 0; i--) if (String(v[i][0]).trim().toUpperCase() === 'DATA') { tit = String(v[i][7]).trim() || '(vazio)'; break; }
+    console.log(aba.getName() + ': coluna H = ' + tit);
   });
 }
