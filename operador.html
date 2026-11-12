@@ -488,6 +488,21 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
 .painel-loja .lista li.lin{grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"cod nome dir" "cod hor dir" "cod info info" "cod acoes acoes";gap:2px 10px}
 .painel-loja .lista li .t-cod{grid-area:cod;align-self:start;padding-top:2px}.painel-loja .lista li .t-nome{grid-area:nome}.painel-loja .lista li .t-hor{grid-area:hor;font-size:.85rem;color:var(--tx2)}
 .painel-loja .lista li .t-info{grid-area:info}.painel-loja .lista li .t-info:empty,.painel-loja .lista li .t-acoes:empty{display:none}.painel-loja .lista li .t-acoes{grid-area:acoes}.painel-loja .lista li.lin .dir{grid-area:dir}
+.lojas-cab{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.lojas-cab h2{margin-right:auto}
+.lemb-prox{width:100%;margin:6px 0 12px;white-space:normal;padding:10px 14px}
+.lemb-lista{max-height:50vh;overflow:auto;display:grid;gap:10px}
+.lemb-loja>b{display:block;margin:4px 0 6px}
+.lemb-linha{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;background:var(--li);margin-bottom:4px}
+.lemb-linha.ok{opacity:.65}.lemb-linha small{color:var(--tx2);margin-left:4px;white-space:nowrap}.lemb-linha .t-cod{font-weight:800;color:var(--laranja);margin-right:6px}
+.pgf-cab{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.pgf-cab .pgf-titulo{margin:0}
+.fo-modo{width:auto}
+.sem-rolar{overflow-x:auto;margin-bottom:8px}
+.sem-tab{width:100%;border-collapse:collapse;font-size:.92rem;background:var(--cartao);border:1px solid var(--linha);border-radius:12px;overflow:hidden}
+.sem-tab th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--tx2);text-align:left;padding:8px 10px;background:var(--fundo)}
+.sem-tab td{padding:9px 10px;border-top:1px solid var(--linha);white-space:nowrap}
+.sem-tab .v,.sem-tab .n{text-align:right;font-variant-numeric:tabular-nums}.sem-tab td.v{font-weight:700}
+.sem-tab .verde{color:var(--verde)}.sem-tab .ambar{color:var(--ambar)}.sem-tab .cinza{color:var(--tx2)}.sem-tab small{font-weight:600;color:var(--tx2)}
+.sem-tab tfoot td{background:var(--fundo);font-weight:800}
 </style>
 </head>
 <body class="trancado">
@@ -1342,6 +1357,89 @@ function ligarInfsLoja() {
   });
 }
 
+
+/* ===== Lembrete do turno (WhatsApp para todos os escalados do dia escolhido) ===== */
+const CHAVE_LEMBRETE = "logmax-lembrete:";
+function lembretesEnviados(dia) { try { return new Set(JSON.parse(localStorage.getItem(CHAVE_LEMBRETE + dia) || "[]")); } catch (e) { return new Set(); } }
+function marcarLembrete(dia, chave) {
+  const s = lembretesEnviados(dia); s.add(chave);
+  try { localStorage.setItem(CHAVE_LEMBRETE + dia, JSON.stringify([...s])); } catch (e) {}
+}
+function quandoTexto(dia) {
+  const hoje = hojeSP(), amanha = (() => { const x = new Date(hoje + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + 1); return x.toISOString().slice(0, 10); })();
+  const r = rotulo(dia).toLowerCase();
+  return dia === hoje ? `de hoje (${r})` : dia === amanha ? `de amanhã (${r})` : `de ${r}`;
+}
+function msgLembrete(l) {
+  const h = fmtHora(l.horario), m = h.match(/^(\d{1,2}:\d{2})–(\d{1,2}:\d{2})$/);
+  return `Oi ${primeiroNome(l.nome)}, tudo bem? Aqui é da LogMax. Passando para lembrar do seu turno ${quandoTexto(l.data)} na ${l.loja}, ${m ? `das ${m[1]} às ${m[2]}` : h}. Pode confirmar, por favor? 👍`;
+}
+function abrirLembretes() {
+  if (document.querySelector(".janela-fundo")) return;
+  const dia = diaAtual;
+  const el = document.createElement("div");
+  el.className = "janela-fundo";
+  document.body.appendChild(el);
+  const desenharL = () => {
+    const env = lembretesEnviados(dia);
+    const ls = linhas.filter(l => l.data === dia && !l.vaga && noTurno(l)).sort((a, b) => a.loja.localeCompare(b.loja) || porHorario(a, b));
+    const comTel = ls.filter(l => telefones[l.chave]), semTel = ls.filter(l => !telefones[l.chave]);
+    const falta = comTel.filter(l => !env.has(l.chave));
+    const lojas = [...new Set(comTel.map(l => l.loja))];
+    el.innerHTML = `<div class="janela janela-larga" role="dialog" aria-modal="true" aria-labelledby="tituloLemb">
+      <h2 id="tituloLemb">Lembrete do turno</h2>
+      <p class="janela-info"><b>${esc(rotulo(dia))}</b>${turno !== "todos" ? ` · só ${turno === "noite" ? "Noite" : "Almoço"}` : ""} · ${comTel.length} ${comTel.length === 1 ? "motoca" : "motocas"} · <b>${env.size ? `${comTel.length - falta.length} enviados` : "nenhum enviado ainda"}</b></p>
+      <p class="janela-dica">Toque em <b>Enviar próximo</b>: abre o WhatsApp com a mensagem pronta. Mande e volte aqui para o próximo. O WhatsApp não deixa mandar tudo de uma vez.</p>
+      ${falta.length ? `<button type="button" class="btn-chegou lemb-prox" data-lemb="${esc(falta[0].chave)}">Enviar próximo: ${esc(falta[0].nome)} · ${esc(falta[0].loja)}</button>` : comTel.length ? `<div class="ok-todos">✓ Todos os lembretes deste dia foram enviados.</div>` : ""}
+      <div class="lemb-lista">${lojas.map(n => `<div class="lemb-loja"><b>${esc(n)}</b>${comTel.filter(l => l.loja === n).map(l => `<div class="lemb-linha${env.has(l.chave) ? " ok" : ""}"><span><span class="t-cod">${esc(l.codigo || "—")}</span> ${esc(l.nome)} <small>${esc(fmtHora(l.horario))}</small></span>${env.has(l.chave) ? `<button type="button" class="btn-mini" data-lemb="${esc(l.chave)}">✓ Enviado · de novo</button>` : `<button type="button" class="btn-mini verde" data-lemb="${esc(l.chave)}">Enviar</button>`}</div>`).join("")}</div>`).join("") || vazio("calendario", "Ninguém escalado neste dia", "Escolha outro dia na faixa de dias.")}</div>
+      ${semTel.length ? `<p class="janela-dica">Sem telefone na escala: ${semTel.map(l => esc(l.nome)).join(", ")}.</p>` : ""}
+      <div class="janela-botoes">${env.size ? `<button type="button" class="btn-cancelar" id="lembZerar">Recomeçar</button>` : ""}<button type="button" class="btn-cancelar" id="lembFechar">Fechar</button></div>
+    </div>`;
+  };
+  desenharL();
+  el.addEventListener("click", e => {
+    if (e.target === el || e.target.id === "lembFechar") { el.remove(); return; }
+    if (e.target.id === "lembZerar") { if (confirm("Desmarcar todos os enviados deste dia?")) { try { localStorage.removeItem(CHAVE_LEMBRETE + dia); } catch (err) {} desenharL(); } return; }
+    const b = e.target.closest("[data-lemb]"); if (!b) return;
+    const l = linhas.find(x => x.chave === b.dataset.lemb && x.data === dia); if (!l) return;
+    window.open(`https://wa.me/${telefones[l.chave]}?text=${encodeURIComponent(msgLembrete(l))}`, "_blank", "noopener");
+    marcarLembrete(dia, l.chave); desenharL();
+  });
+  el.addEventListener("keydown", e => { if (e.key === "Escape") el.remove(); });
+}
+
+/* ===== Folha Geral: resumo da semana (segunda a domingo da semana do dia escolhido) ===== */
+let folhaModo = "dia";
+try { folhaModo = localStorage.getItem("logmax-folha-modo") === "semana" ? "semana" : "dia"; } catch (e) {}
+function semanaSegDom(iso) {
+  const d = new Date(iso + "T12:00:00Z"), dow = (d.getUTCDay() + 6) % 7;   // 0 = segunda
+  const ini = new Date(d); ini.setUTCDate(d.getUTCDate() - dow);
+  return Array.from({ length: 7 }, (_, i) => { const x = new Date(ini); x.setUTCDate(ini.getUTCDate() + i); return x.toISOString().slice(0, 10); });
+}
+function resumoSemana() {
+  const dias = semanaSegDom(diaAtual), hoje = hojeSP();
+  const ate = dias.filter(d => d <= hoje);
+  const its = folha.itens.filter(x => ate.includes(brParaISO(x.data)));
+  const temDesde = folha.itens.map(x => brParaISO(x.data)).filter(Boolean).sort()[0];
+  const soma = ls => ls.reduce((t, x) => t + (+x.total || 0), 0);
+  const nao = x => stClasse(x.status) === "st-nao";
+  const linhaT = (rot, ls) => { const p = ls.filter(ehPago), f = ls.filter(contaPagar), n = ls.filter(nao);
+    return `<tr${f.length ? ' class="falta"' : ""}><td>${rot}</td><td class="n">${ls.length}</td><td class="v">${esc(reais(soma(ls)))}</td><td class="v verde">${esc(reais(soma(p)))}</td><td class="v${f.length ? " ambar" : ""}">${esc(reais(soma(f)))}${f.length ? ` <small>(${f.length})</small>` : ""}</td><td class="v cinza">${n.length ? esc(reais(soma(n))) + ` <small>(${n.length})</small>` : "—"}</td></tr>`; };
+  const cab = `<thead><tr><th></th><th class="n">Pessoas</th><th class="v">Total</th><th class="v">Pago</th><th class="v">Falta pagar</th><th class="v">Não pagar</th></tr></thead>`;
+  const lojas = [...new Set(its.map(x => x.loja))].sort((a, b) => soma(its.filter(x => x.loja === b && contaPagar(x))) - soma(its.filter(x => x.loja === a && contaPagar(x))) || a.localeCompare(b));
+  const p = its.filter(ehPago), f = its.filter(contaPagar);
+  return `
+    <section class="faixa pgf-faixa">
+      <div class="num principal"><div class="rot">Falta pagar na semana</div><div class="val">${esc(reais(soma(f)))}</div><div class="toque">${f.length} ${f.length === 1 ? "pessoa" : "pessoas"}</div></div>
+      <div class="num"><div class="rot">Já pago</div><div class="val verde">${esc(reais(soma(p)))}</div><div class="toque">${p.length} ${p.length === 1 ? "pessoa" : "pessoas"}</div></div>
+      <div class="num"><div class="rot">Total da semana</div><div class="val">${esc(reais(soma(its)))}</div><div class="toque">${lojas.length} ${lojas.length === 1 ? "loja" : "lojas"}</div></div>
+    </section>
+    ${temDesde && temDesde > dias[0] ? `<p class="loc-dica">A folha carregada começa em ${esc(rotulo(temDesde))}; dias antes disso não entram no resumo.</p>` : ""}
+    ${its.length ? `<h3 class="sec">Por loja</h3><div class="sem-rolar"><table class="sem-tab">${cab}<tbody>${lojas.map(l => linhaT(`<b>${esc(l)}</b>`, its.filter(x => x.loja === l))).join("")}</tbody><tfoot>${linhaT("<b>Total</b>", its)}</tfoot></table></div>
+    <h3 class="sec">Por dia</h3><div class="sem-rolar"><table class="sem-tab">${cab}<tbody>${ate.map(d => linhaT(esc(rotulo(d)), its.filter(x => brParaISO(x.data) === d))).join("")}</tbody></table></div>`
+      : vazio("dinheiro", "Nada na folha desta semana", "As lojas ainda não têm valores nesses dias.")}`;
+}
+
 /* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
 const FIN_PADRAO = "";   // vazio = usa o mesmo endereço da planilha (o FIN_SIS_SIMP.gs fica no mesmo projeto do SIST_SIMP)
 const FIN_API = new URLSearchParams(location.search).get("fin") || FIN_PADRAO || API;
@@ -1405,7 +1503,10 @@ function lojaFolha(loja, itens, opcoes, iso) {
 function desenharFolha() {
   const el = document.getElementById("folhaConteudo");
   if (!el || document.getElementById("folhaTela").hidden) return;
-  const titulo = `<h2 class="pgf-titulo">Folha Geral <span>· ${esc(rotulo(diaAtual))}</span></h2>`;
+  const sem = semanaSegDom(diaAtual);
+  const titulo = `<div class="pgf-cab"><h2 class="pgf-titulo">Folha Geral <span>· ${folhaModo === "semana" ? `semana ${esc(ddmm(sem[0]))} a ${esc(ddmm(sem[6]))}` : esc(rotulo(diaAtual))}</span></h2>
+    <div class="segmento fo-modo" role="group" aria-label="Ver"><button type="button" data-fo-modo="dia" aria-pressed="${folhaModo === "dia"}">Dia</button><button type="button" data-fo-modo="semana" aria-pressed="${folhaModo === "semana"}">Semana</button></div></div>`;
+  if (folha && folhaModo === "semana") { el.innerHTML = titulo + resumoSemana(); return; }
   if (!folha) {
     el.innerHTML = titulo + (folhaErro ? vazio("dinheiro", "Não consegui ler a folha", folhaErro + ". Tento de novo em 1 minuto.") : `<div class="esqueleto"></div><div class="esqueleto"></div>`);
     return;
@@ -1420,7 +1521,7 @@ function desenharFolha() {
     return (fb - fa) || a.localeCompare(b);
   });
   const hoje = hojeSP();
-  const antigos = folha.itens.filter(x => contaPagar(x) && brParaISO(x.data) && brParaISO(x.data) < diaAtual && brParaISO(x.data) <= hoje);
+  const antigos = folha.itens.filter(x => contaPagar(x) && brParaISO(x.data) && brParaISO(x.data) < diaAtual && brParaISO(x.data) <= hoje && brParaISO(x.data) >= ontemSP());
   const diasAntigos = [...new Set(antigos.map(x => x.data))];
   el.innerHTML = `${titulo}
     <section class="faixa pgf-faixa">
@@ -1472,6 +1573,8 @@ const telaFolha = document.getElementById("folhaTela");
 telaFolha.addEventListener("toggle", e => { const d = e.target.closest && e.target.closest(".fo-loja"); if (d) { d.open ? folhaAbertas.add(d.dataset.chave) : folhaAbertas.delete(d.dataset.chave); } }, true);
 telaFolha.addEventListener("input", e => { if (e.target.id === "folhaBusca") { folhaFiltro = e.target.value; e.target.dataset.foco = "1"; desenharFolha(); const b = document.getElementById("folhaBusca"); if (b) { b.focus(); b.setSelectionRange(b.value.length, b.value.length); } } });
 telaFolha.addEventListener("click", async e => {
+  const md = e.target.closest("[data-fo-modo]");
+  if (md) { folhaModo = md.dataset.foModo; try { localStorage.setItem("logmax-folha-modo", folhaModo); } catch (err) {} desenharFolha(); return; }
   const c = e.target.closest("[data-copiar]"); if (c) { copiar(c.dataset.copiar, c); return; }
   const t = e.target.closest("[data-todos]"); if (!t) return;
   e.preventDefault(); e.stopPropagation();
@@ -1565,7 +1668,7 @@ function desenhar() {
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
 
-    <h2 id="todas-lojas">Lojas do dia (${lojas.length})</h2>
+    <div class="lojas-cab"><h2 id="todas-lojas">Lojas do dia (${lojas.length})</h2><button type="button" class="btn-mini verde" data-lembrete="1">📣 Lembrete do turno</button></div>
     ${pendentes.length ? `<div class="lojas">${pendentes.map(cartaoLoja).join("")}</div>` : `<div class="vazio">Todas as lojas do dia estão completas.</div>`}
     ${completas.length ? `<h2>Completas (${completas.length})</h2><div class="lojas completas">${completas.map(cartaoCompleto).join("")}</div>` : ""}`}
 `;
@@ -2191,7 +2294,7 @@ document.getElementById("trilhoDias").addEventListener("click", e => {
 });
 document.getElementById("btnReconectar").onclick = reconectar;
 ligarInfsLoja();
-document.getElementById("conteudo").addEventListener("click", e => { const b = e.target.closest("[data-exportar]"); if (b) { e.preventDefault(); e.stopPropagation(); abrirExportar(b.dataset.exportar); } }, true);
+document.getElementById("conteudo").addEventListener("click", e => { if (e.target.closest("[data-lembrete]")) { abrirLembretes(); return; } const b = e.target.closest("[data-exportar]"); if (b) { e.preventDefault(); e.stopPropagation(); abrirExportar(b.dataset.exportar); } }, true);
 document.getElementById("btnSom").onclick = () => { ligarSom(!somLigado); if (somLigado) bipe(); };
 document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.documentElement.classList.contains("escuro"));
 document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));

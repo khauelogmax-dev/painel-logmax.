@@ -1096,3 +1096,38 @@ function conferirColunaH() {
     console.log(aba.getName() + ': coluna H = ' + tit);
   });
 }
+
+/* ============================== ATUALIZAÇÃO AUTOMÁTICA (gatilho a cada 30 min) ============================== */
+// Deixa a escala e a Folha Geral já montadas, para as telas abrirem na hora.
+// Ligar: rode UMA VEZ "ligarAtualizacaoAutomatica" no editor (vai pedir autorização). Desligar: "desligarAtualizacaoAutomatica".
+// Cuidado com o limite do Google para contas gratuitas (90 min de gatilhos por dia): por isso roda a cada 30 min,
+// a escala só das 9h às 2h e a folha só das 8h às 20h, e pula quando já está fresca.
+function lmAtualizarSozinho() {
+  const h = +Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'H');
+  if (h >= 9 || h < 2) {
+    const g = lmLerGuardada();
+    if (!g || Date.now() - g.t > 5 * 60000) {   // ninguém atualizou nos últimos 5 min
+      const trava = LockService.getDocumentLock() || LockService.getUserLock();
+      if (trava.tryLock(1000)) {
+        try { const r = lmMontar(); lmGuardarTexto(LM_CHAVE_TEL, JSON.stringify(r.tel), Date.now()); lmGuardar(r.csv, Date.now()); }
+        finally { trava.releaseLock(); }
+      }
+    }
+  }
+  if (h >= 8 && h < 20 && typeof finMontar === 'function') {
+    const f = finLerGuardada();
+    if (!f || Date.now() - f.t > 20 * 60000) {
+      const lock = LockService.getUserLock();
+      if (lock.tryLock(1000)) { try { finGuardar(finMontar()); } finally { lock.releaseLock(); } }
+    }
+  }
+}
+function ligarAtualizacaoAutomatica() {
+  desligarAtualizacaoAutomatica();
+  ScriptApp.newTrigger('lmAtualizarSozinho').timeBased().everyMinutes(30).create();
+  console.log('Pronto: a escala e a Folha Geral serão atualizadas sozinhas a cada 30 minutos.');
+  lmAtualizarSozinho();
+}
+function desligarAtualizacaoAutomatica() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { if (t.getHandlerFunction() === 'lmAtualizarSozinho') ScriptApp.deleteTrigger(t); });
+}
