@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Transcore · Presença</title>
+<title>LogMax · Presença</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" type="image/png" href="transcore-icone-96.png">
-<link rel="apple-touch-icon" href="transcore-icone.png">
+<link rel="icon" type="image/png" href="lume-96.png">
+<link rel="apple-touch-icon" href="lume.png">
 <style>
 :root{--larg:1100px;
-  --marinho:#111111;--marinho2:#262626;--laranja:#d71920;--laranja-claro:#fff1f1;
+  --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
   --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--mini:#f0fdf4;--luz-bg:#fef9c3;--luz-tx:#854d0e;--sombra:rgba(15,23,42,.08);
@@ -22,10 +22,10 @@ body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 "Inter",syst
 header{background:var(--marinho);color:#fff;position:sticky;top:calc(-1 * var(--topo-h, 0px));z-index:40;box-shadow:0 2px 12px rgba(15,23,42,.18)}
 .topo{max-width:var(--larg);margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
-.marca img{height:2.9rem;width:auto;display:block}
+.marca img{width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
 .nome-marca{display:flex;flex-direction:column;line-height:1.1}
 .nome-marca b{font-size:1.2rem;font-weight:800;letter-spacing:-.01em}
-.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fca5a5;margin-top:2px}
+.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fdba74;margin-top:2px}
 .dia{display:flex;align-items:center;gap:8px}
 .dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
 .dia button:disabled{opacity:.35;cursor:default}
@@ -53,7 +53,7 @@ main{max-width:var(--larg);margin:0 auto;padding:16px 16px 48px}
 .segmento button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:var(--tx2);border-radius:9px;padding:7px 18px;cursor:pointer;transition:background .15s,color .15s}
 .segmento button:not([aria-pressed="true"]):hover{background:var(--li);color:var(--tx)}
 .segmento button[aria-pressed="true"]{background:var(--marinho);color:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25)}
-html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#fff}
+html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#0b1322}
 .dica-turno{font-size:13px;font-weight:600;color:var(--tx2)}
 .num .curto{display:none}
 @media (max-width:720px){.num .curto{display:inline}}
@@ -62,13 +62,13 @@ html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);colo
 .faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
 .num{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
 .num:hover{border-color:var(--laranja)}
-.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(215,25,32,.18)}
+.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
 .num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
 .num .val{font-size:2.5rem;font-weight:800;line-height:1.1;margin-top:4px}
 .num .de{font-size:1.1rem;font-weight:600;color:var(--tx2)}
 .num.principal{background:var(--marinho2);color:#fff;border:0}.num.principal .rot,.num.principal .de{color:#cbd5e1}
-.num.principal.ativo{border:2px solid #f87171}
-.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fca5a5}
+.num.principal.ativo{border:2px solid #fb923c}
+.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fdba74}
 .semana{margin-top:2px;font-size:14px;font-weight:700;color:var(--vermelho)}
 .barra{height:10px;border-radius:999px;background:rgba(148,163,184,.3);overflow:hidden;margin-top:10px}
 .barra i{display:block;height:100%;background:#4ade80;border-radius:999px}
@@ -147,14 +147,14 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 @media (prefers-reduced-motion:reduce){.grito,.festa-texto img,.confete i{animation:none}.confete{display:none}}
 /* ===== Modo escuro ===== */
 html.escuro{
-  --marinho:#000000;--marinho2:#1f1f1f;--fundo:#0d0d0d;--cartao:#171717;--linha:#2e2e2e;--tx:#e8edf5;--tx2:#9aa8bf;
+  --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
   --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
-  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#f04444;--laranja-claro:rgba(240,68,68,.12);
-  --cinza:#2e2e2e;--cinza-tx:#d4d4d4;--li:#1c1c1c;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
+  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
+  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
   color-scheme:dark}
 html.escuro .toast{background:#b91c1c}html.escuro .toast.ok{background:#15803d}
 html.escuro .lista li.r{background:var(--vermelho-claro)}html.escuro .lista li.a{background:var(--ambar-claro)}
-html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#fff}
+html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
 html.escuro .loja .barra i{background:#22c55e}
 /* ===== Modo TV ===== */
 html.tv{font-size:22px}
@@ -187,8 +187,8 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 .dias button i{display:block;margin:4px auto 0;width:7px;height:7px;border-radius:50%;background:transparent}
 .dias button.on{background:#fff;color:var(--marinho);border-color:#fff}
 .dias button.on small{color:var(--laranja)}
-html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#fff}
-html.escuro .dias button.on small{color:#fff}
+html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .dias button.on small{color:#0b1322}
 .dias button:disabled{opacity:.35;cursor:default}
 .dias i.d-v{background:#ef4444}.dias i.d-a{background:#f59e0b}.dias i.d-g{background:#22c55e}
 html.tv .dias{padding-left:32px;padding-right:32px}
@@ -233,8 +233,7 @@ html.tv .dias button small{font-size:.6rem}
 .vazio-bonito b{color:var(--tx);font-size:1.02rem}
 .vazio-bonito span{font-size:.9rem;max-width:420px}
 
-/* ===== Transcore: logo e linha em tabela ===== */
-.nome-marca small{color:#fca5a5}
+/* ===== Linha em tabela ===== */
 .lista ul.tab-lista{gap:4px}
 .lista li.lin,.lista li.cab-lista{display:grid;grid-template-columns:52px minmax(0,1fr) 108px 190px 120px;align-items:center;gap:6px 12px}
 .lista li.lin .dir{justify-content:flex-end}
@@ -261,7 +260,7 @@ html.tv .dias button small{font-size:.6rem}
 <body>
 <header>
   <div class="topo">
-    <div class="marca"><img src="transcore-logo-branco.png" alt="Transcore Logística"><div class="nome-marca"><small>Presença ao vivo</small></div></div>
+    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div class="nome-marca"><b>LogMax</b><small>Presença ao vivo</small></div></div>
     <div class="acoes">
       <button type="button" id="btnSom" aria-pressed="false" title="Ligar som" aria-label="Ligar som"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg><span class="rot-btn">Ligar som</span></button>
       <button type="button" id="btnEscuro" aria-pressed="false" title="Modo escuro" aria-label="Modo escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="rot-btn">Modo escuro</span></button>
@@ -477,13 +476,13 @@ function fanfarra() {
   });
 }
 function comemorar() {
-  const cores = ["#ef4444", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
+  const cores = ["#fb923c", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
   const confete = Array.from({ length: 90 }, (_, i) =>
     `<i style="left:${(i * 37) % 100}%;background:${cores[i % cores.length]};animation-delay:${(i % 15) * 0.12}s;animation-duration:${2.6 + (i % 7) * 0.35}s;transform:rotate(${i * 23}deg)"></i>`).join("");
   const el = document.createElement("div");
   el.className = "festa"; el.setAttribute("role", "alert");
   el.innerHTML = `<div class="confete" aria-hidden="true">${confete}</div>
-    <div class="festa-texto"><img src="transcore-icone.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
+    <div class="festa-texto"><img src="lume.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
   el.addEventListener("click", () => el.remove());
   document.querySelectorAll("#toasts .toast").forEach(t => t.remove()); // a festa ocupa a tela toda
   document.body.appendChild(el);

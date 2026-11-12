@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Transcore · Operador</title>
+<title>LogMax · Operador</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" type="image/png" href="transcore-icone-96.png">
-<link rel="apple-touch-icon" href="transcore-icone.png">
+<link rel="icon" type="image/png" href="lume-96.png">
+<link rel="apple-touch-icon" href="lume.png">
 <style>
 :root{--larg:1100px;
-  --marinho:#111111;--marinho2:#262626;--laranja:#d71920;--laranja-claro:#fff1f1;
+  --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
   --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--mini:#f0fdf4;--luz-bg:#fef9c3;--luz-tx:#854d0e;--sombra:rgba(15,23,42,.08);
@@ -22,10 +22,10 @@ body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 "Inter",syst
 header{background:var(--marinho);color:#fff;position:sticky;top:calc(-1 * var(--topo-h, 0px));z-index:40;box-shadow:0 2px 12px rgba(15,23,42,.18)}
 .topo{max-width:var(--larg);margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
-.marca img{height:2.9rem;width:auto;display:block}
+.marca img{width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
 .nome-marca{display:flex;flex-direction:column;line-height:1.1}
 .nome-marca b{font-size:1.2rem;font-weight:800;letter-spacing:-.01em}
-.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fca5a5;margin-top:2px}
+.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fdba74;margin-top:2px}
 .dia{display:flex;align-items:center;gap:8px}
 .dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
 .dia button:disabled{opacity:.35;cursor:default}
@@ -53,7 +53,7 @@ main{max-width:var(--larg);margin:0 auto;padding:16px 16px 48px}
 .segmento button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:var(--tx2);border-radius:9px;padding:7px 18px;cursor:pointer;transition:background .15s,color .15s}
 .segmento button:not([aria-pressed="true"]):hover{background:var(--li);color:var(--tx)}
 .segmento button[aria-pressed="true"]{background:var(--marinho);color:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25)}
-html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#fff}
+html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#0b1322}
 .dica-turno{font-size:13px;font-weight:600;color:var(--tx2)}
 .num .curto{display:none}
 @media (max-width:720px){.num .curto{display:inline}}
@@ -62,13 +62,13 @@ html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);colo
 .faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
 .num{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
 .num:hover{border-color:var(--laranja)}
-.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(215,25,32,.18)}
+.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
 .num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
 .num .val{font-size:2.5rem;font-weight:800;line-height:1.1;margin-top:4px}
 .num .de{font-size:1.1rem;font-weight:600;color:var(--tx2)}
 .num.principal{background:var(--marinho2);color:#fff;border:0}.num.principal .rot,.num.principal .de{color:#cbd5e1}
-.num.principal.ativo{border:2px solid #f87171}
-.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fca5a5}
+.num.principal.ativo{border:2px solid #fb923c}
+.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fdba74}
 .semana{margin-top:2px;font-size:14px;font-weight:700;color:var(--vermelho)}
 .barra{height:10px;border-radius:999px;background:rgba(148,163,184,.3);overflow:hidden;margin-top:10px}
 .barra i{display:block;height:100%;background:#4ade80;border-radius:999px}
@@ -147,14 +147,14 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 @media (prefers-reduced-motion:reduce){.grito,.festa-texto img,.confete i{animation:none}.confete{display:none}}
 /* ===== Modo escuro ===== */
 html.escuro{
-  --marinho:#000000;--marinho2:#1f1f1f;--fundo:#0d0d0d;--cartao:#171717;--linha:#2e2e2e;--tx:#e8edf5;--tx2:#9aa8bf;
+  --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
   --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
-  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#f04444;--laranja-claro:rgba(240,68,68,.12);
-  --cinza:#2e2e2e;--cinza-tx:#d4d4d4;--li:#1c1c1c;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
+  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
+  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
   color-scheme:dark}
 html.escuro .toast{background:#b91c1c}html.escuro .toast.ok{background:#15803d}
 html.escuro .lista li.r{background:var(--vermelho-claro)}html.escuro .lista li.a{background:var(--ambar-claro)}
-html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#fff}
+html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
 html.escuro .loja .barra i{background:#22c55e}
 /* ===== Modo TV ===== */
 html.tv{font-size:22px}
@@ -184,13 +184,13 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 @media (prefers-reduced-motion:reduce){.ponto-on{animation:none}}
 .faixa-teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
 .btn-chegou{font:inherit;font-weight:800;font-size:.95rem;border:0;border-radius:10px;background:var(--laranja);color:#fff;padding:0 16px;min-height:42px;min-width:104px;cursor:pointer;white-space:nowrap}
-html.escuro .btn-chegou{color:#fff}
+html.escuro .btn-chegou{color:#0b1322}
 .btn-chegou:active{transform:scale(.97)}
 .btn-chegou:disabled{opacity:.6;cursor:wait}
 .btn-desfazer{font:inherit;background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:.82rem;cursor:pointer;padding:6px 2px}
 .lista li{min-height:52px}
 .entrada{max-width:380px;margin:10vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:22px;padding:30px 24px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;position:relative}
-.entrada img{width:240px;max-width:80%;height:auto;margin:0 auto 4px;display:block}
+.entrada img{width:104px;height:104px;border-radius:50%;border:4px solid #fb923c;object-fit:cover;margin-top:-82px;background:var(--marinho);box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .entrada h1{font-size:1.5rem;font-weight:800;letter-spacing:-.01em;margin:12px 0 4px}
 .entrada h1 span{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--laranja);margin-top:2px}
 .entrada p{color:var(--tx2);margin:0 0 18px;font-size:.92rem}
@@ -200,7 +200,7 @@ html.escuro body.trancado{background:radial-gradient(900px 520px at 50% -10%,#14
 .entrada input[type=password]{width:100%;font:inherit;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
 .entrada label{display:flex;gap:8px;justify-content:center;align-items:center;margin:12px 0;font-size:14px;color:var(--tx2)}
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
-html.escuro .entrada .btn-entrar{background:var(--laranja);color:#fff}
+html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
 body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar,body.trancado #pgfTela,body.trancado #cadTela,body.trancado #probTela{display:none}
 @media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
@@ -217,8 +217,8 @@ body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #lo
 .dias button i{display:block;margin:4px auto 0;width:7px;height:7px;border-radius:50%;background:transparent}
 .dias button.on{background:#fff;color:var(--marinho);border-color:#fff}
 .dias button.on small{color:var(--laranja)}
-html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#fff}
-html.escuro .dias button.on small{color:#fff}
+html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .dias button.on small{color:#0b1322}
 .dias button:disabled{opacity:.35;cursor:default}
 .dias i.d-v{background:#ef4444}.dias i.d-a{background:#f59e0b}.dias i.d-g{background:#22c55e}
 html.tv .dias{padding-left:32px;padding-right:32px}
@@ -376,7 +376,7 @@ html.escuro .btn-todos{color:#4ade80;border-color:#4ade80}
 .cad-campo{display:grid;gap:5px}
 .cad-campo label{font-weight:700;font-size:.9rem}
 .cad-col{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--marinho);color:#fff;font-size:.72rem;font-weight:800;margin-right:4px}
-html.escuro .cad-col{background:var(--laranja);color:#fff}
+html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .cad-campo input,.cad-campo select{font:inherit;font-size:1rem;padding:11px 12px;border-radius:10px;border:2px solid var(--linha);background:var(--li);color:var(--tx);width:100%;box-sizing:border-box}
 .cad-campo input:focus,.cad-campo select:focus{outline:none;border-color:var(--laranja)}
 .cad-campo small{font-size:.8rem;color:var(--tx2)}
@@ -440,15 +440,13 @@ html.escuro .cad-col{background:var(--laranja);color:#fff}
 .sub-grupo button{font:inherit;font-size:.85rem;font-weight:700;white-space:nowrap;flex:none;border:1px solid var(--linha);background:var(--cartao);color:var(--tx2);border-radius:999px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
 .sub-grupo button:hover{color:var(--tx)}
 .sub-grupo button[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
-html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#fff}
+html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
 .sub-grupo .t-curto{display:none}
 @media (max-width:560px){.sub-grupo .t-longo{display:none}.sub-grupo .t-curto{display:inline}.sub-grupo button{flex:1;padding:7px 8px}}
 .abas-op [data-grupo]{flex:none}
 @media (max-width:560px){.abas-op [data-grupo]{flex:1;text-align:center}}
 
-/* ===== Transcore: logo, linha em tabela, infs da loja ===== */
-html.escuro .entrada img{content:url(transcore-logo-branco.png)}
-.nome-marca small{color:#fca5a5}
+/* ===== Linha em tabela, infs da loja ===== */
 #btnReconectar .rot-btn{display:none!important}
 #btnReconectar.girando svg{animation:girar 1s linear infinite}
 @keyframes girar{to{transform:rotate(360deg)}}
@@ -497,7 +495,7 @@ html.escuro .entrada img{content:url(transcore-logo-branco.png)}
 <div class="faixa-teste" id="faixaTeste" hidden></div>
 <header>
   <div class="topo">
-    <div class="marca"><img src="transcore-logo-branco.png" alt="Transcore Logística"><div class="nome-marca"><small>Operador</small></div></div>
+    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div class="nome-marca"><b>LogMax</b><small>Operador</small></div></div>
     <div class="acoes">
       <button type="button" id="btnReconectar" title="Reconectar a planilha" aria-label="Reconectar a planilha"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="rot-btn">Reconectar</span></button>
       <button type="button" id="btnSom" aria-pressed="false" title="Ligar som" aria-label="Ligar som"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg><span class="rot-btn">Ligar som</span></button>
@@ -811,13 +809,13 @@ function fanfarra() {
   });
 }
 function comemorar() {
-  const cores = ["#ef4444", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
+  const cores = ["#fb923c", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
   const confete = Array.from({ length: 90 }, (_, i) =>
     `<i style="left:${(i * 37) % 100}%;background:${cores[i % cores.length]};animation-delay:${(i % 15) * 0.12}s;animation-duration:${2.6 + (i % 7) * 0.35}s;transform:rotate(${i * 23}deg)"></i>`).join("");
   const el = document.createElement("div");
   el.className = "festa"; el.setAttribute("role", "alert");
   el.innerHTML = `<div class="confete" aria-hidden="true">${confete}</div>
-    <div class="festa-texto"><img src="transcore-icone.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
+    <div class="festa-texto"><img src="lume.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
   el.addEventListener("click", () => el.remove());
   document.querySelectorAll("#toasts .toast").forEach(t => t.remove()); // a festa ocupa a tela toda
   document.body.appendChild(el);
@@ -926,8 +924,8 @@ function linkWhats(l) {
   const ini = fmtHora(l.horario).split("–")[0];
   const quando = l.data === hojeSP() ? "" : ` de ${DIAS[new Date(l.data + "T12:00:00").getDay()].toLowerCase()} (${ddmm(l.data)})`;
   const msg = l.s === "falta" && estaAtrasado(l)
-    ? `Oi ${pn}, tudo bem? Aqui é da Transcore. Seu turno na ${l.loja} começou às ${ini}. Você já está chegando?`
-    : `Oi ${pn}, tudo bem? Aqui é da Transcore, sobre o seu turno${quando} na ${l.loja} (${fmtHora(l.horario)}).`;
+    ? `Oi ${pn}, tudo bem? Aqui é da LogMax. Seu turno na ${l.loja} começou às ${ini}. Você já está chegando?`
+    : `Oi ${pn}, tudo bem? Aqui é da LogMax, sobre o seu turno${quando} na ${l.loja} (${fmtHora(l.horario)}).`;
   return `https://wa.me/${t}?text=${encodeURIComponent(msg)}`;
 }
 function botaoWhats(l) {
@@ -1070,7 +1068,7 @@ function abrirPgf(l) {
 }
 function cartaoPgf(x) {
   const pn = String(x.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
-  const wa = x.whats ? `https://wa.me/${x.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da Transcore, sobre o pagamento do seu turno na ${x.loja} (${x.data}).`)}` : "";
+  const wa = x.whats ? `https://wa.me/${x.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da LogMax, sobre o pagamento do seu turno na ${x.loja} (${x.data}).`)}` : "";
   return `<article class="pgf-card${x.pago ? " pago" : ""}">
     <div class="pgf-topo">
       <div><b>${esc(x.nome)}</b>${x.cod ? ` <span class="cod">#${esc(x.cod)}</span>` : ""}<div class="pgf-sub">${esc(x.loja)} · ${esc(x.data)}${x.horario ? " · " + esc(fmtHora(x.horario)) : ""}</div></div>
@@ -1129,7 +1127,7 @@ function primeiroNome(n) { return String(n).trim().split(/\s+/)[0].toLowerCase()
 function textoEscalaMotoboy(cod, nome) {
   const ls = escalaDoMotoboy(cod, nome);
   if (!ls.length) return "";
-  return `Oi ${primeiroNome(nome)}, tudo bem? Aqui é da Transcore. Segue a sua escala:\n` +
+  return `Oi ${primeiroNome(nome)}, tudo bem? Aqui é da LogMax. Segue a sua escala:\n` +
     ls.map(l => `• ${rotulo(l.data)} · ${l.loja} · ${fmtHora(l.horario)}`).join("\n") +
     `\nQualquer dúvida, é só chamar. Bom trabalho!`;
 }
@@ -1142,7 +1140,7 @@ function linkEscalaMotoboy(tel55, cod, nome) {
 let logoExport = null;
 function carregarLogo() {
   if (logoExport) return Promise.resolve(logoExport);
-  return new Promise(res => { const i = new Image(); i.onload = () => { logoExport = i; res(i); }; i.onerror = () => res(null); i.src = "transcore-logo.png"; });
+  return new Promise(res => { const i = new Image(); i.onload = () => { logoExport = i; res(i); }; i.onerror = () => res(null); i.src = "lume.png"; });
 }
 function linhasExport(loja) {
   return linhas.filter(l => l.loja === loja && l.data === diaAtual && !l.vaga).sort(porHorario).map(l => ({
@@ -1161,15 +1159,17 @@ async function imagemExport(loja) {
   const g = c.getContext("2d");
   const fonte = (p, w) => `${w || 600} ${p}px Inter, system-ui, sans-serif`;
   g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
-  g.fillStyle = "#d71920"; g.fillRect(0, 0, W, 10);
-  if (logo) { const lh = 120, lw = logo.width * lh / logo.height; g.drawImage(logo, pad, 34, lw, lh); }
-  g.fillStyle = "#111"; g.font = fonte(44, 800); g.textAlign = "right";
+  g.fillStyle = "#c2410c"; g.fillRect(0, 0, W, 10);
+  g.fillStyle = "#0f1f3d"; g.fillRect(0, 10, W, 180);
+  if (logo) { g.save(); g.beginPath(); g.arc(pad + 55, 100, 55, 0, Math.PI * 2); g.clip(); g.drawImage(logo, pad, 45, 110, 110); g.restore(); }
+  g.fillStyle = "#fff"; g.font = fonte(52, 800); g.textAlign = "left"; g.fillText("LogMax", pad + 130, 115);
+  g.fillStyle = "#fff"; g.font = fonte(44, 800); g.textAlign = "right";
   g.fillText(loja, W - pad, 92);
-  g.fillStyle = "#555"; g.font = fonte(30, 600); g.fillText(`Escala · ${rotulo(diaAtual)}`, W - pad, 138);
+  g.fillStyle = "#fdba74"; g.font = fonte(30, 600); g.fillText(`Escala · ${rotulo(diaAtual)}`, W - pad, 138);
   g.textAlign = "left";
   const cols = [{ t: "DATA", x: pad, w: 88 }, { t: "CÓD", x: pad + 98, w: 88 }, { t: "MOTOBOY", x: pad + 196, w: 330 }, { t: "TELEFONE", x: pad + 540, w: 240 }, { t: "HORÁRIO", x: pad + 794, w: 190 }];
   let y = topo;
-  g.fillStyle = "#111"; g.fillRect(pad - 12, y - 6, W - 2 * pad + 24, cab);
+  g.fillStyle = "#0f1f3d"; g.fillRect(pad - 12, y - 6, W - 2 * pad + 24, cab);
   g.fillStyle = "#fff"; g.font = fonte(24, 800);
   cols.forEach(k => g.fillText(k.t, k.x, y + 30));
   y += cab;
@@ -1180,12 +1180,12 @@ async function imagemExport(loja) {
     g.font = fonte(28, 600); g.fillStyle = "#111";
     [x.data, x.cod, x.nome, x.tel, x.hor].forEach((v, j) => {
       g.font = fonte(28, j === 2 ? 700 : j === 1 ? 800 : 600);
-      g.fillStyle = j === 1 ? "#d71920" : "#111";
+      g.fillStyle = j === 1 ? "#c2410c" : "#111";
       g.fillText(corta(v, cols[j].w), cols[j].x, y + 41);
     });
     y += linhaH;
   });
-  g.fillStyle = "#d71920"; g.fillRect(pad - 12, y + 18, W - 2 * pad + 24, 4);
+  g.fillStyle = "#c2410c"; g.fillRect(pad - 12, y + 18, W - 2 * pad + 24, 4);
   g.fillStyle = "#777"; g.font = fonte(22, 600);
   g.fillText(`${ls.length} ${ls.length === 1 ? "motoboy" : "motoboys"} · gerado em ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }).slice(0, 17)}`, pad, y + 62);
   return await new Promise(res => c.toBlob(b => res(b), "image/png"));
@@ -1784,7 +1784,7 @@ function escalaDoMotoboy(cod, nome) {   // onde ele está na escala carregada (d
 function cartaoMotoboy(m) {
   const esc2 = escalaDoMotoboy(m.cod, m.nome);
   const pn = String(m.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
-  const wa = m.whats ? `https://wa.me/${m.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da Transcore.`)}` : "";
+  const wa = m.whats ? `https://wa.me/${m.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da LogMax.`)}` : "";
   return `<article class="loc-card">
     <div class="loc-cab"><b>${esc(m.nome)}</b>${m.cod ? `<span class="cod">#${esc(m.cod)}</span>` : ""}</div>
     <dl class="loc-dados">
@@ -2113,8 +2113,8 @@ function telaEntrada(erro, espera) {
   document.body.classList.add("trancado");
   document.getElementById("entrada").innerHTML = `
     <form class="entrada" id="formEntrada">
-      <img src="transcore-logo.png" alt="Transcore Logística">
-      <h1><span>Operador</span></h1>
+      <img src="lume.png" alt="Lume, assistente da LogMax">
+      <h1>LogMax <span>Operador</span></h1>
       <p>Entre com a senha da equipe para marcar as chegadas.</p>
       <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
       <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
