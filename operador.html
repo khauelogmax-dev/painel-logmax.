@@ -513,7 +513,7 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
   <button type="button" data-grupo="presenca" aria-pressed="true">Presença</button>
   <button type="button" data-grupo="motocas" aria-pressed="false">Motocas</button>
   <button type="button" data-grupo="financeiro" aria-pressed="false">Financeiro</button>
-  <button type="button" data-grupo="lojas" aria-pressed="false"><span class="t-longo">Infs da Loja</span><span class="t-curto">Lojas</span></button>
+  <button type="button" data-grupo="lojas" aria-pressed="false"><span class="t-longo">Infos da Loja</span><span class="t-curto">Lojas</span></button>
 </nav>
 <nav class="sub-abas" id="subAbas" aria-label="Partes da aba" hidden>
   <div class="sub-grupo" data-de="motocas">
@@ -955,7 +955,7 @@ function cartaoLoja(l) {
           <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
           <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
           <div class="etqs">
-            ${l.falta ? `<span class="etq a">${l.falta} ${l.falta > 1 ? "faltam chegar" : "falta chegar"}</span>` : ""}
+            ${l.falta ? `<span class="etq a">${l.falta > 1 ? "Faltam" : "Falta"} ${l.falta}</span>` : ""}
             ${l.vagas ? `<span class="etq r">${l.vagas} sem motoca</span>` : ""}
             ${!l.falta && !l.vagas && l.total ? `<span class="etq v">completa</span>` : ""}
           </div>
@@ -1252,7 +1252,7 @@ async function reconectar() {
   finally { reconectando = false; b.classList.remove("girando"); b.disabled = false; }
 }
 
-/* ===== Infs da Loja: Endereços e Valores (aba ENDEREÇOS da planilha) ===== */
+/* ===== Infos da Loja: Endereços e Valores (aba ENDEREÇOS da planilha) ===== */
 let lojasInfo = null, lojasFiltro = "";
 async function abrirEnderecos() {
   desenharEnderecos();
@@ -1279,7 +1279,7 @@ function desenharEnderecos() {
     <p class="loc-dica">Vem da aba <b>${esc(lojasInfo.aba || "ENDEREÇOS")}</b> da planilha. Para mudar, edite lá e toque em Reconectar.</p>`;
 }
 
-/* ===== Infs da Loja: Modelos de script de vagas (bloco de anotações compartilhado) ===== */
+/* ===== Infos da Loja: Modelos de script de vagas (bloco de anotações compartilhado) ===== */
 let vagasLista = null, vagaEditando = null;
 async function abrirVagas() {
   desenharVagas();
@@ -1394,7 +1394,7 @@ function lojaFolha(loja, itens, opcoes, iso) {
   const falta = itens.filter(contaPagar), pagos = itens.filter(ehPago);
   const chave = iso + "|" + loja, aberta = folhaAbertas.has(chave) || !!folhaFiltro;
   return `<details class="fo-loja ${falta.length ? "tem-falta" : "tudo-pago"}" data-chave="${esc(chave)}"${aberta ? " open" : ""}>
-    <summary><span class="nm">${esc(loja)}<small>${pagos.length} de ${itens.length} pagos</small></span>
+    <summary><span class="nm">${esc(loja)}<small>${pagos.length} de ${itens.length} ${itens.length === 1 ? "pago" : "pagos"}</small></span>
       <span class="falta${falta.length ? "" : " zero"}">${falta.length ? "Falta " + esc(reais(soma(falta))) : "✓ Tudo pago"}</span>
       <button type="button" class="btn-todos" data-todos="${esc(loja)}" data-dia="${esc(iso)}"${falta.length ? "" : " disabled"}>Todos pagos</button></summary>
     <table class="fo-tab"><thead><tr><th>Motoca</th><th>Horário</th><th>Telefone</th><th>PIX</th><th class="v">Total a pagar</th><th>Status</th></tr></thead>
@@ -1447,7 +1447,7 @@ function pedirSenhaFolha(loja, iso, qtd, total) {
       <input id="campoSenhaFolha" type="password" inputmode="numeric" autocomplete="off" required>
       <p class="janela-dica">Só muda quem está pendente. "Não pagar" continua igual.</p>
       <div class="erro" id="erroTodos"></div>
-      <div class="janela-botoes"><button type="button" class="btn-cancelar" id="btnCancTodos">Cancelar</button><button class="btn-chegou" id="btnOkTodos">Marcar pagos</button></div>
+      <div class="janela-botoes"><button type="button" class="btn-cancelar" id="btnCancTodos">Cancelar</button><button class="btn-chegou" id="btnOkTodos">Marcar como pagos</button></div>
     </form>`;
     document.body.appendChild(el);
     const campo = el.querySelector("#campoSenhaFolha"); campo.focus();
@@ -1461,9 +1461,9 @@ function pedirSenhaFolha(loja, iso, qtd, total) {
       bt.disabled = true; bt.textContent = "Gravando…"; erro.textContent = "";
       try {
         const r = await chamarFin({ acao: "folhaTodosPagos", loja, data: brParaBR(iso), senhaFolha: campo.value });
-        if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Marcar pagos"; campo.select(); return; }
+        if (!r.ok) { erro.textContent = r.erro || "Não gravou."; bt.disabled = false; bt.textContent = "Marcar como pagos"; campo.select(); return; }
         fechar(r);
-      } catch (e) { erro.textContent = "Não gravou: " + ((e && e.message) || "confira a internet") + "."; bt.disabled = false; bt.textContent = "Marcar pagos"; }
+      } catch (e) { erro.textContent = "Não gravou: " + ((e && e.message) || "confira a internet") + "."; bt.disabled = false; bt.textContent = "Marcar como pagos"; }
     };
   });
 }
@@ -1481,7 +1481,7 @@ telaFolha.addEventListener("click", async e => {
   const r = await pedirSenhaFolha(loja, iso, pend.length, pend.reduce((s, x) => s + (+x.total || 0), 0));
   if (!r) return;
   (r.itens || []).forEach(n => { const x = folha.itens.find(i => i.id === n.id); if (x) Object.assign(x, n); });
-  toast(`✓ ${loja}: ${r.mudou || pend.length} marcados como pagos`, true);
+  toast(`✓ ${loja}: ${r.mudou || pend.length} ${(r.mudou || pend.length) === 1 ? "marcado como pago" : "marcados como pagos"}`, true);
   desenharFolha();
 });
 telaFolha.addEventListener("change", async e => {
@@ -1560,7 +1560,7 @@ function desenhar() {
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot"><span class="longo">Chegaram</span><span class="curto">Chegaram</span></div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
       ${btn("falta", "", `<div class="rot"><span class="longo">Falta chegar</span><span class="curto">Faltam</span></div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
-      ${btn("lojas", "", `<div class="rot"><span class="longo">Lojas no dia</span><span class="curto">Lojas</span></div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
+      ${btn("lojas", "", `<div class="rot"><span class="longo">Lojas do dia</span><span class="curto">Lojas</span></div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
       ${btn("vaga", "", `<div class="rot"><span class="longo">Vagas sem motoca</span><span class="curto">Vagas</span></div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} <span class="longo">até domingo</span><span class="curto">até dom.</span></div><div class="toque">ver onde ›</div>`)}
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}

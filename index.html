@@ -587,7 +587,7 @@ function cartaoLoja(l) {
           <div class="conta">${l.chegou} <small>de ${l.total} chegaram</small></div>
           <div class="barra" aria-hidden="true"><i style="width:${l.total ? Math.round(l.chegou / l.total * 100) : 0}%"></i></div>
           <div class="etqs">
-            ${l.falta ? `<span class="etq a">${l.falta} ${l.falta > 1 ? "faltam chegar" : "falta chegar"}</span>` : ""}
+            ${l.falta ? `<span class="etq a">${l.falta > 1 ? "Faltam" : "Falta"} ${l.falta}</span>` : ""}
             ${l.vagas ? `<span class="etq r">${l.vagas} sem motoca</span>` : ""}
             ${!l.falta && !l.vagas && l.total ? `<span class="etq v">completa</span>` : ""}
           </div>
@@ -687,7 +687,7 @@ function desenhar() {
     <section class="faixa" aria-label="Resumo do dia. Toque num quadro para ver a lista">
       ${btn("chegou", "principal", `<div class="rot"><span class="longo">Chegaram</span><span class="curto">Chegaram</span></div><div class="val">${chegou} <span class="de">de ${pessoas.length}</span></div><div class="barra" aria-hidden="true"><i style="width:${pct}%"></i></div><div class="toque">ver quem chegou ›</div>`)}
       ${btn("falta", "", `<div class="rot"><span class="longo">Falta chegar</span><span class="curto">Faltam</span></div><div class="val ambar">${falta}</div><div class="toque">ver quem ›</div>`)}
-      ${btn("lojas", "", `<div class="rot"><span class="longo">Lojas no dia</span><span class="curto">Lojas</span></div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
+      ${btn("lojas", "", `<div class="rot"><span class="longo">Lojas do dia</span><span class="curto">Lojas</span></div><div class="val">${lojas.length}</div><div class="toque">ver lojas ›</div>`)}
       ${btn("vaga", "", `<div class="rot"><span class="longo">Vagas sem motoca</span><span class="curto">Vagas</span></div><div class="val vermelho">${vagas}</div><div class="semana">${vagasSemana.length} <span class="longo">até domingo</span><span class="curto">até dom.</span></div><div class="toque">ver onde ›</div>`)}
     </section>
     ${filtro && filtro !== "lojas" ? painelFiltro(doDia, filtro) + (filtro === "vaga" ? painelVagasSemana(vagasSemana, seg, dom) : "") : ""}
