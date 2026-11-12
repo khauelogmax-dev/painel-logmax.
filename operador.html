@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>LogMax · Operador</title>
+<title>Transcore · Operador</title>
 <link rel="preload" href="inter.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" type="image/png" href="lume-96.png">
-<link rel="apple-touch-icon" href="lume.png">
+<link rel="icon" type="image/png" href="transcore-icone-96.png">
+<link rel="apple-touch-icon" href="transcore-icone.png">
 <style>
 :root{--larg:1100px;
-  --marinho:#0f1f3d;--marinho2:#1b2f57;--laranja:#c2410c;--laranja-claro:#fff3eb;
+  --marinho:#111111;--marinho2:#262626;--laranja:#d71920;--laranja-claro:#fff1f1;
   --verde:#15803d;--verde-claro:#dcfce7;--vermelho:#b91c1c;--vermelho-claro:#fee2e2;
   --ambar:#a16207;--ambar-claro:#fef3c7;--tx:#0f172a;--tx2:#475569;--linha:#e2e8f0;--fundo:#f1f5f9;--cartao:#fff;
   --cinza:#e2e8f0;--cinza-tx:#334155;--li:#f8fafc;--mini:#f0fdf4;--luz-bg:#fef9c3;--luz-tx:#854d0e;--sombra:rgba(15,23,42,.08);
@@ -22,10 +22,10 @@ body{margin:0;background:var(--fundo);color:var(--tx);font:1rem/1.5 "Inter",syst
 header{background:var(--marinho);color:#fff;position:sticky;top:calc(-1 * var(--topo-h, 0px));z-index:40;box-shadow:0 2px 12px rgba(15,23,42,.18)}
 .topo{max-width:var(--larg);margin:0 auto;padding:14px 16px 12px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
 .marca{display:flex;align-items:center;gap:10px;margin-right:auto;order:0}
-.marca img{width:2.6rem;height:2.6rem;border-radius:50%;border:2px solid #fb923c;object-fit:cover}
+.marca img{height:2.9rem;width:auto;display:block}
 .nome-marca{display:flex;flex-direction:column;line-height:1.1}
 .nome-marca b{font-size:1.2rem;font-weight:800;letter-spacing:-.01em}
-.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fdba74;margin-top:2px}
+.nome-marca small{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#fca5a5;margin-top:2px}
 .dia{display:flex;align-items:center;gap:8px}
 .dia button{width:40px;height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:18px;cursor:pointer}
 .dia button:disabled{opacity:.35;cursor:default}
@@ -53,7 +53,7 @@ main{max-width:var(--larg);margin:0 auto;padding:16px 16px 48px}
 .segmento button{font:inherit;font-size:14px;font-weight:700;border:0;background:transparent;color:var(--tx2);border-radius:9px;padding:7px 18px;cursor:pointer;transition:background .15s,color .15s}
 .segmento button:not([aria-pressed="true"]):hover{background:var(--li);color:var(--tx)}
 .segmento button[aria-pressed="true"]{background:var(--marinho);color:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25)}
-html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#0b1322}
+html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);color:#fff}
 .dica-turno{font-size:13px;font-weight:600;color:var(--tx2)}
 .num .curto{display:none}
 @media (max-width:720px){.num .curto{display:inline}}
@@ -62,13 +62,13 @@ html.escuro .segmento button[aria-pressed="true"]{background:var(--laranja);colo
 .faixa{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:20px}
 .num{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;background:var(--cartao);border:1px solid var(--linha);border-radius:14px;padding:14px 16px;font:inherit;text-align:left;cursor:pointer;color:inherit;transition:box-shadow .15s,border-color .15s}
 .num:hover{border-color:var(--laranja)}
-.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(194,65,12,.18)}
+.num.ativo{border:2px solid var(--laranja);box-shadow:0 4px 14px rgba(215,25,32,.18)}
 .num .rot{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
 .num .val{font-size:2.5rem;font-weight:800;line-height:1.1;margin-top:4px}
 .num .de{font-size:1.1rem;font-weight:600;color:var(--tx2)}
 .num.principal{background:var(--marinho2);color:#fff;border:0}.num.principal .rot,.num.principal .de{color:#cbd5e1}
-.num.principal.ativo{border:2px solid #fb923c}
-.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fdba74}
+.num.principal.ativo{border:2px solid #f87171}
+.toque{margin-top:6px;font-size:13px;font-weight:700;color:var(--laranja)}.num.principal .toque{color:#fca5a5}
 .semana{margin-top:2px;font-size:14px;font-weight:700;color:var(--vermelho)}
 .barra{height:10px;border-radius:999px;background:rgba(148,163,184,.3);overflow:hidden;margin-top:10px}
 .barra i{display:block;height:100%;background:#4ade80;border-radius:999px}
@@ -147,14 +147,14 @@ details.loja .lista{border-top:1px solid var(--linha);padding:10px 14px 14px}
 @media (prefers-reduced-motion:reduce){.grito,.festa-texto img,.confete i{animation:none}.confete{display:none}}
 /* ===== Modo escuro ===== */
 html.escuro{
-  --marinho:#060d1c;--marinho2:#14284d;--fundo:#0b1322;--cartao:#121c30;--linha:#26344f;--tx:#e8edf5;--tx2:#9aa8bf;
+  --marinho:#000000;--marinho2:#1f1f1f;--fundo:#0d0d0d;--cartao:#171717;--linha:#2e2e2e;--tx:#e8edf5;--tx2:#9aa8bf;
   --verde:#4ade80;--verde-claro:rgba(74,222,128,.16);--vermelho:#f87171;--vermelho-claro:rgba(248,113,113,.16);
-  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#fb923c;--laranja-claro:rgba(251,146,60,.12);
-  --cinza:#26344f;--cinza-tx:#cbd5e1;--li:#18233a;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
+  --ambar:#fbbf24;--ambar-claro:rgba(251,191,36,.16);--laranja:#f04444;--laranja-claro:rgba(240,68,68,.12);
+  --cinza:#2e2e2e;--cinza-tx:#d4d4d4;--li:#1c1c1c;--mini:#0f2a1f;--luz-bg:rgba(250,204,21,.18);--luz-tx:#fde047;--sombra:rgba(0,0,0,.45);
   color-scheme:dark}
 html.escuro .toast{background:#b91c1c}html.escuro .toast.ok{background:#15803d}
 html.escuro .lista li.r{background:var(--vermelho-claro)}html.escuro .lista li.a{background:var(--ambar-claro)}
-html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .chip[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#fff}
 html.escuro .loja .barra i{background:#22c55e}
 /* ===== Modo TV ===== */
 html.tv{font-size:22px}
@@ -184,13 +184,13 @@ html.tv body{cursor:none}html.tv body:hover{cursor:auto}
 @media (prefers-reduced-motion:reduce){.ponto-on{animation:none}}
 .faixa-teste{background:#facc15;color:#422006;font-weight:800;text-align:center;font-size:13px;padding:4px 12px}
 .btn-chegou{font:inherit;font-weight:800;font-size:.95rem;border:0;border-radius:10px;background:var(--laranja);color:#fff;padding:0 16px;min-height:42px;min-width:104px;cursor:pointer;white-space:nowrap}
-html.escuro .btn-chegou{color:#0b1322}
+html.escuro .btn-chegou{color:#fff}
 .btn-chegou:active{transform:scale(.97)}
 .btn-chegou:disabled{opacity:.6;cursor:wait}
 .btn-desfazer{font:inherit;background:none;border:0;color:var(--tx2);text-decoration:underline;font-size:.82rem;cursor:pointer;padding:6px 2px}
 .lista li{min-height:52px}
 .entrada{max-width:380px;margin:10vh auto 0;background:var(--cartao);border:1px solid var(--linha);border-radius:22px;padding:30px 24px 24px;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;position:relative}
-.entrada img{width:104px;height:104px;border-radius:50%;border:4px solid #fb923c;object-fit:cover;margin-top:-82px;background:var(--marinho);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.entrada img{width:240px;max-width:80%;height:auto;margin:0 auto 4px;display:block}
 .entrada h1{font-size:1.5rem;font-weight:800;letter-spacing:-.01em;margin:12px 0 4px}
 .entrada h1 span{display:block;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--laranja);margin-top:2px}
 .entrada p{color:var(--tx2);margin:0 0 18px;font-size:.92rem}
@@ -200,7 +200,7 @@ html.escuro body.trancado{background:radial-gradient(900px 520px at 50% -10%,#14
 .entrada input[type=password]{width:100%;font:inherit;padding:13px 14px;border-radius:12px;border:1px solid var(--linha);background:var(--li);color:var(--tx);font-size:17px;text-align:center}
 .entrada label{display:flex;gap:8px;justify-content:center;align-items:center;margin:12px 0;font-size:14px;color:var(--tx2)}
 .entrada .btn-entrar{width:100%;font:inherit;font-weight:800;border:0;border-radius:12px;min-height:46px;background:var(--marinho);color:#fff;cursor:pointer}
-html.escuro .entrada .btn-entrar{background:var(--laranja);color:#0b1322}
+html.escuro .entrada .btn-entrar{background:var(--laranja);color:#fff}
 .erro{color:var(--vermelho);font-weight:700;min-height:1.4em;margin-top:10px}
 body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #localizar,body.trancado #pgfTela,body.trancado #cadTela,body.trancado #probTela{display:none}
 @media (max-width:560px){.btn-chegou{min-width:92px;padding:0 12px}.lista li .dir{max-width:55%}}
@@ -217,8 +217,8 @@ body.trancado header,body.trancado main,body.trancado .abas-op,body.trancado #lo
 .dias button i{display:block;margin:4px auto 0;width:7px;height:7px;border-radius:50%;background:transparent}
 .dias button.on{background:#fff;color:var(--marinho);border-color:#fff}
 .dias button.on small{color:var(--laranja)}
-html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
-html.escuro .dias button.on small{color:#0b1322}
+html.escuro .dias button.on{background:var(--laranja);border-color:var(--laranja);color:#fff}
+html.escuro .dias button.on small{color:#fff}
 .dias button:disabled{opacity:.35;cursor:default}
 .dias i.d-v{background:#ef4444}.dias i.d-a{background:#f59e0b}.dias i.d-g{background:#22c55e}
 html.tv .dias{padding-left:32px;padding-right:32px}
@@ -376,7 +376,7 @@ html.escuro .btn-todos{color:#4ade80;border-color:#4ade80}
 .cad-campo{display:grid;gap:5px}
 .cad-campo label{font-weight:700;font-size:.9rem}
 .cad-col{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--marinho);color:#fff;font-size:.72rem;font-weight:800;margin-right:4px}
-html.escuro .cad-col{background:var(--laranja);color:#0b1322}
+html.escuro .cad-col{background:var(--laranja);color:#fff}
 .cad-campo input,.cad-campo select{font:inherit;font-size:1rem;padding:11px 12px;border-radius:10px;border:2px solid var(--linha);background:var(--li);color:var(--tx);width:100%;box-sizing:border-box}
 .cad-campo input:focus,.cad-campo select:focus{outline:none;border-color:var(--laranja)}
 .cad-campo small{font-size:.8rem;color:var(--tx2)}
@@ -440,11 +440,56 @@ html.escuro .cad-col{background:var(--laranja);color:#0b1322}
 .sub-grupo button{font:inherit;font-size:.85rem;font-weight:700;white-space:nowrap;flex:none;border:1px solid var(--linha);background:var(--cartao);color:var(--tx2);border-radius:999px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s}
 .sub-grupo button:hover{color:var(--tx)}
 .sub-grupo button[aria-pressed="true"]{background:var(--marinho);border-color:var(--marinho);color:#fff}
-html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#0b1322}
+html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);border-color:var(--laranja);color:#fff}
 .sub-grupo .t-curto{display:none}
 @media (max-width:560px){.sub-grupo .t-longo{display:none}.sub-grupo .t-curto{display:inline}.sub-grupo button{flex:1;padding:7px 8px}}
 .abas-op [data-grupo]{flex:none}
 @media (max-width:560px){.abas-op [data-grupo]{flex:1;text-align:center}}
+
+/* ===== Transcore: logo, linha em tabela, infs da loja ===== */
+html.escuro .entrada img{content:url(transcore-logo-branco.png)}
+.nome-marca small{color:#fca5a5}
+#btnReconectar .rot-btn{display:none!important}
+#btnReconectar.girando svg{animation:girar 1s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}
+.lista ul.tab-lista{gap:4px}
+.lista li.lin{display:grid;grid-template-columns:52px minmax(0,1fr) 108px 150px 230px 200px;align-items:center;gap:6px 12px}
+.lista li.cab-lista{display:grid;grid-template-columns:52px minmax(0,1fr) 108px 150px 230px 200px;gap:6px 12px;padding:2px 10px;background:none;min-height:0;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2)}
+.lista li .t-cod{font-weight:800;font-variant-numeric:tabular-nums;color:var(--laranja)}
+.lista li .t-nome{min-width:0}.lista li .t-nome b{font-weight:700;overflow-wrap:anywhere}
+.lista li .t-hor{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lista li .t-info{display:flex;flex-wrap:wrap;gap:4px;min-width:0}.lista li .t-info .etq{font-size:.75rem;padding:1px 8px}
+.lista li .t-acoes{margin-top:0}
+.lista li.lin .dir{max-width:none;justify-content:flex-end}
+.lista li.lin .t-acoes{justify-content:flex-start}
+.loja-acoes{display:flex;justify-content:flex-end}
+@media (max-width:900px){
+  .lista li.cab-lista{display:none}
+  .lista li.lin{grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"cod nome nome" "cod hor dir" "cod info info" "cod acoes acoes";gap:2px 10px}
+  .lista li .t-cod{grid-area:cod;align-self:start;padding-top:2px}
+  .lista li .t-nome{grid-area:nome}.lista li .t-hor{grid-area:hor;font-size:.85rem;color:var(--tx2)}
+  .lista li .t-info{grid-area:info}.lista li .t-info:empty{display:none}
+  .lista li .t-acoes{grid-area:acoes;margin-top:4px}.lista li .t-acoes:empty{display:none}
+  .lista li.lin .dir{grid-area:dir}
+}
+.janela-larga{max-width:760px;width:calc(100% - 24px)}
+.exp-previa{border:1px solid var(--linha);border-radius:12px;overflow:auto;max-height:55vh;background:#fff;margin:8px 0 12px}
+.exp-previa img{display:block;width:100%;height:auto}
+.exp-botoes{flex-wrap:wrap}
+.cad-tela.larga{max-width:var(--larg)}
+.end-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:12px 0}
+.end-card,.vaga-card{background:var(--cartao);border:1px solid var(--linha);border-left:6px solid var(--laranja);border-radius:14px;padding:14px 16px}
+.end-cab b,.vaga-cab b{font-size:1.05rem}
+.vaga-cab{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:8px}.vaga-cab small{color:var(--tx2)}
+.vaga-card{margin-bottom:10px}
+.vaga-texto{white-space:pre-wrap;font-size:.92rem;background:var(--li);border-radius:10px;padding:10px 12px;max-height:260px;overflow:auto}
+.end-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn-mini.perigo{color:var(--vermelho);border-color:var(--vermelho-claro)}
+.vaga-form textarea{width:100%;font:inherit;box-sizing:border-box}
+.painel-loja .lista li.cab-lista{display:none}
+.painel-loja .lista li.lin{grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"cod nome dir" "cod hor dir" "cod info info" "cod acoes acoes";gap:2px 10px}
+.painel-loja .lista li .t-cod{grid-area:cod;align-self:start;padding-top:2px}.painel-loja .lista li .t-nome{grid-area:nome}.painel-loja .lista li .t-hor{grid-area:hor;font-size:.85rem;color:var(--tx2)}
+.painel-loja .lista li .t-info{grid-area:info}.painel-loja .lista li .t-info:empty,.painel-loja .lista li .t-acoes:empty{display:none}.painel-loja .lista li .t-acoes{grid-area:acoes}.painel-loja .lista li.lin .dir{grid-area:dir}
 </style>
 </head>
 <body class="trancado">
@@ -452,8 +497,9 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
 <div class="faixa-teste" id="faixaTeste" hidden></div>
 <header>
   <div class="topo">
-    <div class="marca"><img src="lume.png" alt="Lume, assistente da LogMax"><div class="nome-marca"><b>LogMax</b><small>Operador</small></div></div>
+    <div class="marca"><img src="transcore-logo-branco.png" alt="Transcore Logística"><div class="nome-marca"><small>Operador</small></div></div>
     <div class="acoes">
+      <button type="button" id="btnReconectar" title="Reconectar a planilha" aria-label="Reconectar a planilha"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span class="rot-btn">Reconectar</span></button>
       <button type="button" id="btnSom" aria-pressed="false" title="Ligar som" aria-label="Ligar som"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5"/><path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="m2 2 20 20"/></svg><span class="rot-btn">Ligar som</span></button>
       <button type="button" id="btnEscuro" aria-pressed="false" title="Modo escuro" aria-label="Modo escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="rot-btn">Modo escuro</span></button>
       <button type="button" id="btnTv" aria-pressed="false" title="Modo TV" aria-label="Modo TV"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/></svg><span class="rot-btn">Modo TV</span></button>
@@ -469,6 +515,7 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
   <button type="button" data-grupo="presenca" aria-pressed="true">Presença</button>
   <button type="button" data-grupo="motocas" aria-pressed="false">Motocas</button>
   <button type="button" data-grupo="financeiro" aria-pressed="false">Financeiro</button>
+  <button type="button" data-grupo="lojas" aria-pressed="false"><span class="t-longo">Infs da Loja</span><span class="t-curto">Lojas</span></button>
 </nav>
 <nav class="sub-abas" id="subAbas" aria-label="Partes da aba" hidden>
   <div class="sub-grupo" data-de="motocas">
@@ -479,6 +526,10 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
   <div class="sub-grupo" data-de="financeiro">
     <button type="button" data-aba="pgf" aria-pressed="false"><span class="t-longo">Pagamento no Final</span><span class="t-curto">Pag. no Final</span></button>
     <button type="button" data-aba="folha" aria-pressed="false">Folha Geral</button>
+  </div>
+  <div class="sub-grupo" data-de="lojas">
+    <button type="button" data-aba="enderecos" aria-pressed="false"><span class="t-longo">Endereços e Valores</span><span class="t-curto">Endereços</span></button>
+    <button type="button" data-aba="vagas" aria-pressed="false"><span class="t-longo">Modelos de Vagas</span><span class="t-curto">Vagas</span></button>
   </div>
 </nav>
 </header>
@@ -503,6 +554,15 @@ html.escuro .sub-grupo button[aria-pressed="true"]{background:var(--laranja);bor
   <h2>Novo Cadastro</h2>
   <p class="loc-dica">Os dados vão para a aba de cadastro dos motoboys da planilha, na mesma ordem das colunas.</p>
   <div id="cadConteudo"><p class="loc-info">Carregando o formulário…</p></div>
+</section>
+<section id="endTela" class="cad-tela larga" hidden>
+  <h2>Endereços e Valores das lojas</h2>
+  <div id="endConteudo"></div>
+</section>
+<section id="vagasTela" class="cad-tela" hidden>
+  <h2>Modelos de Script de Vagas</h2>
+  <p class="loc-dica">Bloco de anotações da equipe: deixe aqui os textos de vagas já aprovados para copiar e mandar.</p>
+  <div id="vagasConteudo"></div>
 </section>
 <section id="folhaTela" class="pgf-tela" hidden>
   <div id="folhaConteudo"></div>
@@ -751,13 +811,13 @@ function fanfarra() {
   });
 }
 function comemorar() {
-  const cores = ["#fb923c", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
+  const cores = ["#ef4444", "#facc15", "#4ade80", "#38bdf8", "#f472b6", "#ffffff"];
   const confete = Array.from({ length: 90 }, (_, i) =>
     `<i style="left:${(i * 37) % 100}%;background:${cores[i % cores.length]};animation-delay:${(i % 15) * 0.12}s;animation-duration:${2.6 + (i % 7) * 0.35}s;transform:rotate(${i * 23}deg)"></i>`).join("");
   const el = document.createElement("div");
   el.className = "festa"; el.setAttribute("role", "alert");
   el.innerHTML = `<div class="confete" aria-hidden="true">${confete}</div>
-    <div class="festa-texto"><img src="lume.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
+    <div class="festa-texto"><img src="transcore-icone.png" alt=""><div class="grito">BOAAA TIMEEE!<br>VAMO PRA CIMA BOCA!!</div><div class="sub">Todas as lojas de hoje estão completas ✓</div></div>`;
   el.addEventListener("click", () => el.remove());
   document.querySelectorAll("#toasts .toast").forEach(t => t.remove()); // a festa ocupa a tela toda
   document.body.appendChild(el);
@@ -845,8 +905,17 @@ function fmtHora(h) { const m = String(h).match(/(\d{1,2}:\d{2})\s*(?:AS|ÀS|A|-
 function pessoa(l) {
   const m = l.s === "falta" ? minutosAtraso(l) : null;
   const atraso = m !== null && m >= PISCAR_MIN && m < 12 * 60 ? `<span class="etq r">atrasado ${fmtMin(m)}</span>` : l.s === "chegou" ? textoChegada(l) : "";
-  return `<li class="${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}"><div class="quem"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b>${l.codigo && l.codigo !== "0" ? `<span class="cod">#${esc(l.codigo)}</span>` : ""}<small><span class="hr">${esc(fmtHora(l.horario))}</span>${atraso}${l.vaga ? "" : etqProblema(l.codigo)}</small>${l.vaga ? "" : `<span class="acoes-l">${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${botaoPgf(l)}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}</span>`}</div><div class="dir">${botao(l)}</div></li>`;
+  const tel = telefones[l.chave], escala = !l.vaga && tel ? linkEscalaMotoboy(tel, l.codigo, l.nome) : "";
+  const acoes = l.vaga ? "" : `${l.s === "falta" && podeMarcar(l) && !gravando.has(l.chave) ? `<button type="button" class="btn-trocar" data-acao="codigo" data-chave="${esc(l.chave)}" title="Trocar o motoboy desta vaga pelo código">Trocar</button>` : ""}${botaoPgf(l)}${escala ? `<a class="lnk-whats" href="${esc(escala)}" target="_blank" rel="noopener" title="Mandar a escala dele (hoje até o último dia liberado) no WhatsApp">Enviar escala</a>` : ""}${l.s === "chegou" && linkWhats(l) ? `<a class="lnk-whats" href="${esc(linkWhats(l))}" target="_blank" rel="noopener">WhatsApp</a>` : ""}`;
+  return `<li class="lin ${l.s === "vaga" ? "r" : l.s === "falta" ? "a" : ""}">
+    <span class="t-cod">${l.codigo && l.codigo !== "0" ? esc(l.codigo) : "—"}</span>
+    <span class="t-nome"><b>${esc(l.vaga ? "Vaga sem motoca" : l.nome)}</b></span>
+    <span class="t-hor">${esc(fmtHora(l.horario))}</span>
+    <span class="t-info">${atraso}${l.vaga ? "" : etqProblema(l.codigo)}</span>
+    <span class="t-acoes acoes-l">${acoes}</span>
+    <div class="dir">${botao(l)}</div></li>`;
 }
+const CAB_LISTA = `<li class="cab-lista" aria-hidden="true"><span>Cód</span><span>Motoboy</span><span>Horário</span><span>Situação</span><span></span><span></span></li>`;
 
 /* ===== WhatsApp do motoboy (só nesta tela, que tem senha) ===== */
 const ICO_MSG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
@@ -857,8 +926,8 @@ function linkWhats(l) {
   const ini = fmtHora(l.horario).split("–")[0];
   const quando = l.data === hojeSP() ? "" : ` de ${DIAS[new Date(l.data + "T12:00:00").getDay()].toLowerCase()} (${ddmm(l.data)})`;
   const msg = l.s === "falta" && estaAtrasado(l)
-    ? `Oi ${pn}, tudo bem? Aqui é da LogMax. Seu turno na ${l.loja} começou às ${ini}. Você já está chegando?`
-    : `Oi ${pn}, tudo bem? Aqui é da LogMax, sobre o seu turno${quando} na ${l.loja} (${fmtHora(l.horario)}).`;
+    ? `Oi ${pn}, tudo bem? Aqui é da Transcore. Seu turno na ${l.loja} começou às ${ini}. Você já está chegando?`
+    : `Oi ${pn}, tudo bem? Aqui é da Transcore, sobre o seu turno${quando} na ${l.loja} (${fmtHora(l.horario)}).`;
   return `https://wa.me/${t}?text=${encodeURIComponent(msg)}`;
 }
 function botaoWhats(l) {
@@ -895,10 +964,11 @@ function cartaoLoja(l) {
           <div class="abrir"><span class="seta">›</span> ${faltando.length ? `Ver quem falta chegar (${faltando.length})` : "Ver motoboys"}</div>
         </summary>
         <div class="lista">
+          <div class="loja-acoes"><button type="button" class="btn-mini" data-exportar="${esc(l.nome)}">📋 Exportar escala para a loja</button></div>
           <div><h3>Falta chegar (${faltando.length})</h3>
-            ${faltando.length ? `<ul>${faltando.map(pessoa).join("")}</ul>` : `<div class="ok-todos">Todos já chegaram.</div>`}</div>
-          ${vagasL.length ? `<div><h3>Vagas sem motoca (${vagasL.length})</h3><ul>${vagasL.map(pessoa).join("")}</ul></div>` : ""}
-          ${chegaram.length ? `<div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>` : ""}
+            ${faltando.length ? `<ul class="tab-lista">${CAB_LISTA}${faltando.map(pessoa).join("")}</ul>` : `<div class="ok-todos">Todos já chegaram.</div>`}</div>
+          ${vagasL.length ? `<div><h3>Vagas sem motoca (${vagasL.length})</h3><ul class="tab-lista">${CAB_LISTA}${vagasL.map(pessoa).join("")}</ul></div>` : ""}
+          ${chegaram.length ? `<div><h3>Já chegaram (${chegaram.length})</h3><ul class="tab-lista">${CAB_LISTA}${chegaram.map(pessoa).join("")}</ul></div>` : ""}
         </div>
       </details>`;
 }
@@ -908,7 +978,8 @@ function cartaoCompleto(l) {
       <details class="loja p3 mini" data-loja="${esc(l.nome)}" ${abertas.has(l.nome) ? "open" : ""}>
         <summary><span class="ponto-verde" aria-hidden="true"></span><b>${esc(l.nome)}</b>${l.graves ? `<span class="luz-grave"><i aria-hidden="true"></i>${l.graves}</span>` : ""}<span class="mini-conta">✓ ${l.chegou}/${l.total}</span></summary>
         <div class="lista">
-          <div><h3>Já chegaram (${chegaram.length})</h3><ul>${chegaram.map(pessoa).join("")}</ul></div>
+          <div class="loja-acoes"><button type="button" class="btn-mini" data-exportar="${esc(l.nome)}">📋 Exportar escala para a loja</button></div>
+          <div><h3>Já chegaram (${chegaram.length})</h3><ul class="tab-lista">${CAB_LISTA}${chegaram.map(pessoa).join("")}</ul></div>
         </div>
       </details>`;
 }
@@ -999,7 +1070,7 @@ function abrirPgf(l) {
 }
 function cartaoPgf(x) {
   const pn = String(x.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
-  const wa = x.whats ? `https://wa.me/${x.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da LogMax, sobre o pagamento do seu turno na ${x.loja} (${x.data}).`)}` : "";
+  const wa = x.whats ? `https://wa.me/${x.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da Transcore, sobre o pagamento do seu turno na ${x.loja} (${x.data}).`)}` : "";
   return `<article class="pgf-card${x.pago ? " pago" : ""}">
     <div class="pgf-topo">
       <div><b>${esc(x.nome)}</b>${x.cod ? ` <span class="cod">#${esc(x.cod)}</span>` : ""}<div class="pgf-sub">${esc(x.loja)} · ${esc(x.data)}${x.horario ? " · " + esc(fmtHora(x.horario)) : ""}</div></div>
@@ -1051,6 +1122,225 @@ document.getElementById("pgfTela").addEventListener("click", async e => {
   desenharPgf(); desenhar();
 });
 
+
+
+/* ===== Enviar escala do motoboy pelo WhatsApp ===== */
+function primeiroNome(n) { return String(n).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase()); }
+function textoEscalaMotoboy(cod, nome) {
+  const ls = escalaDoMotoboy(cod, nome);
+  if (!ls.length) return "";
+  return `Oi ${primeiroNome(nome)}, tudo bem? Aqui é da Transcore. Segue a sua escala:\n` +
+    ls.map(l => `• ${rotulo(l.data)} · ${l.loja} · ${fmtHora(l.horario)}`).join("\n") +
+    `\nQualquer dúvida, é só chamar. Bom trabalho!`;
+}
+function linkEscalaMotoboy(tel55, cod, nome) {
+  const t = textoEscalaMotoboy(cod, nome);
+  return tel55 && t ? `https://wa.me/${tel55}?text=${encodeURIComponent(t)}` : "";
+}
+
+/* ===== Exportar a escala da loja como imagem (para mandar no WhatsApp) ===== */
+let logoExport = null;
+function carregarLogo() {
+  if (logoExport) return Promise.resolve(logoExport);
+  return new Promise(res => { const i = new Image(); i.onload = () => { logoExport = i; res(i); }; i.onerror = () => res(null); i.src = "transcore-logo.png"; });
+}
+function linhasExport(loja) {
+  return linhas.filter(l => l.loja === loja && l.data === diaAtual && !l.vaga).sort(porHorario).map(l => ({
+    data: l.dataBR.slice(0, 5), cod: l.codigo && l.codigo !== "0" ? l.codigo : "—", nome: l.nome,
+    tel: telefones[l.chave] ? fmtFone(telefones[l.chave]) : "—", hor: fmtHora(l.horario) }));
+}
+function textoExport(loja) {
+  const ls = linhasExport(loja);
+  return `*Escala ${loja} · ${rotulo(diaAtual)}*\n` + ls.map(x => `${x.data} · ${x.cod} · ${x.nome} · ${x.tel} · ${x.hor}`).join("\n");
+}
+async function imagemExport(loja) {
+  const ls = linhasExport(loja), logo = await carregarLogo();
+  const W = 1080, pad = 48, linhaH = 64, topo = 250, cab = 56;
+  const H = topo + cab + Math.max(1, ls.length) * linhaH + 110;
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  const fonte = (p, w) => `${w || 600} ${p}px Inter, system-ui, sans-serif`;
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#d71920"; g.fillRect(0, 0, W, 10);
+  if (logo) { const lh = 120, lw = logo.width * lh / logo.height; g.drawImage(logo, pad, 34, lw, lh); }
+  g.fillStyle = "#111"; g.font = fonte(44, 800); g.textAlign = "right";
+  g.fillText(loja, W - pad, 92);
+  g.fillStyle = "#555"; g.font = fonte(30, 600); g.fillText(`Escala · ${rotulo(diaAtual)}`, W - pad, 138);
+  g.textAlign = "left";
+  const cols = [{ t: "DATA", x: pad, w: 88 }, { t: "CÓD", x: pad + 98, w: 88 }, { t: "MOTOBOY", x: pad + 196, w: 330 }, { t: "TELEFONE", x: pad + 540, w: 240 }, { t: "HORÁRIO", x: pad + 794, w: 190 }];
+  let y = topo;
+  g.fillStyle = "#111"; g.fillRect(pad - 12, y - 6, W - 2 * pad + 24, cab);
+  g.fillStyle = "#fff"; g.font = fonte(24, 800);
+  cols.forEach(k => g.fillText(k.t, k.x, y + 30));
+  y += cab;
+  const corta = (txt, w) => { let s = String(txt); if (g.measureText(s).width <= w) return s; while (s.length > 1 && g.measureText(s + "…").width > w) s = s.slice(0, -1); return s + "…"; };
+  if (!ls.length) { g.fillStyle = "#555"; g.font = fonte(28, 600); g.fillText("Sem motoboys escalados neste dia.", pad, y + 42); }
+  ls.forEach((x, i) => {
+    if (i % 2) { g.fillStyle = "#f5f5f5"; g.fillRect(pad - 12, y, W - 2 * pad + 24, linhaH); }
+    g.font = fonte(28, 600); g.fillStyle = "#111";
+    [x.data, x.cod, x.nome, x.tel, x.hor].forEach((v, j) => {
+      g.font = fonte(28, j === 2 ? 700 : j === 1 ? 800 : 600);
+      g.fillStyle = j === 1 ? "#d71920" : "#111";
+      g.fillText(corta(v, cols[j].w), cols[j].x, y + 41);
+    });
+    y += linhaH;
+  });
+  g.fillStyle = "#d71920"; g.fillRect(pad - 12, y + 18, W - 2 * pad + 24, 4);
+  g.fillStyle = "#777"; g.font = fonte(22, 600);
+  g.fillText(`${ls.length} ${ls.length === 1 ? "motoboy" : "motoboys"} · gerado em ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }).slice(0, 17)}`, pad, y + 62);
+  return await new Promise(res => c.toBlob(b => res(b), "image/png"));
+}
+async function abrirExportar(loja) {
+  if (document.querySelector(".janela-fundo")) return;
+  const el = document.createElement("div");
+  el.className = "janela-fundo";
+  el.innerHTML = `<div class="janela janela-larga" role="dialog" aria-modal="true" aria-labelledby="tituloExp">
+    <h2 id="tituloExp">Escala para a loja</h2>
+    <p class="janela-info"><b>${esc(loja)}</b> · ${esc(rotulo(diaAtual))}</p>
+    <div class="exp-previa" id="expPrevia"><div class="esqueleto"></div></div>
+    <div class="janela-botoes exp-botoes">
+      <button type="button" class="btn-cancelar" id="expFechar">Fechar</button>
+      <button type="button" class="btn-cancelar" id="expTexto">Copiar texto</button>
+      <button type="button" class="btn-cancelar" id="expBaixar">Baixar imagem</button>
+      <button type="button" class="btn-chegou" id="expEnviar">Enviar / Copiar imagem</button>
+    </div>
+    <div class="erro" id="expErro"></div>
+  </div>`;
+  document.body.appendChild(el);
+  const fechar = () => { el.remove(); if (url) URL.revokeObjectURL(url); };
+  el.addEventListener("click", e => { if (e.target === el) fechar(); });
+  el.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
+  el.querySelector("#expFechar").onclick = fechar;
+  el.querySelector("#expTexto").onclick = e => copiar(textoExport(loja), e.currentTarget);
+  let blob = null, url = null;
+  try { blob = await imagemExport(loja); url = URL.createObjectURL(blob); el.querySelector("#expPrevia").innerHTML = `<img src="${url}" alt="Escala ${esc(loja)}">`; }
+  catch (e) { el.querySelector("#expErro").textContent = "Não consegui montar a imagem. Use Copiar texto."; }
+  const nomeArq = `escala-${loja.replace(/[^\w]+/g, "-").toLowerCase()}-${diaAtual}.png`;
+  el.querySelector("#expBaixar").onclick = () => { if (!url) return; const a = document.createElement("a"); a.href = url; a.download = nomeArq; document.body.appendChild(a); a.click(); a.remove(); };
+  el.querySelector("#expEnviar").onclick = async ev => {
+    if (!blob) return;
+    const b = ev.currentTarget, arq = new File([blob], nomeArq, { type: "image/png" });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [arq] })) { await navigator.share({ files: [arq], title: `Escala ${loja}` }); return; }
+      if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        b.textContent = "Imagem copiada ✓ (cole no WhatsApp)"; setTimeout(() => { b.textContent = "Enviar / Copiar imagem"; }, 2500); return;
+      }
+      el.querySelector("#expErro").textContent = "Este aparelho não deixa enviar direto. Use Baixar imagem.";
+    } catch (e) { if (e && e.name !== "AbortError") el.querySelector("#expErro").textContent = "Não deu para enviar. Use Baixar imagem."; }
+  };
+}
+
+/* ===== Reconectar a planilha ===== */
+let reconectando = false;
+async function reconectar() {
+  if (reconectando) return;
+  reconectando = true;
+  const b = document.getElementById("btnReconectar"); b.classList.add("girando"); b.disabled = true;
+  toast("Reconectando à planilha… pode levar até 1 minuto.", true);
+  try {
+    const r = await chamar({ acao: "ler", sessao: SESSAO, forcar: true }, 120);
+    if (r.senha) { sair(r.erro); return; }
+    if (!r.ok) throw new Error(r.erro || "erro");
+    lendo = false;
+    await carregar();
+    if (!document.getElementById("folhaTela").hidden) { folha = null; desenharFolha(); try { const f = await chamarFin({ acao: "folha", forcar: true }, 300); if (f.ok) { folha = f; folhaErro = ""; } } catch (e) {} desenharFolha(); }
+    if (!document.getElementById("endTela").hidden) { lojasInfo = null; abrirEnderecos(); }
+    if (!document.getElementById("vagasTela").hidden) { vagasLista = null; abrirVagas(); }
+    toast("✓ Planilha reconectada", true);
+  } catch (e) { toast("Não reconectou: " + ((e && e.message) || "confira a internet") + "."); }
+  finally { reconectando = false; b.classList.remove("girando"); b.disabled = false; }
+}
+
+/* ===== Infs da Loja: Endereços e Valores (aba ENDEREÇOS da planilha) ===== */
+let lojasInfo = null, lojasFiltro = "";
+async function abrirEnderecos() {
+  desenharEnderecos();
+  if (lojasInfo && lojasInfo.ok) return;
+  try { lojasInfo = await chamar({ acao: "lojasInfo" }); if (lojasInfo.senha) { sair(lojasInfo.erro); return; } }
+  catch (e) { lojasInfo = { ok: false, erro: (e && e.message) || "confira a internet" }; }
+  desenharEnderecos();
+}
+function desenharEnderecos() {
+  const el = document.getElementById("endConteudo");
+  if (!el || document.getElementById("endTela").hidden) return;
+  if (!lojasInfo) { el.innerHTML = `<div class="esqueleto"></div><div class="esqueleto"></div>`; return; }
+  if (!lojasInfo.ok) { el.innerHTML = vazio("busca", "Não consegui ler os endereços", lojasInfo.erro || ""); return; }
+  const T = lojasInfo.titulos || [], q = lojasFiltro.trim().toLowerCase();
+  const iEnd = T.findIndex(t => /ENDERE/i.test(t));
+  const ls = (lojasInfo.linhas || []).filter(l => !q || l.join(" ").toLowerCase().includes(q));
+  el.innerHTML = `<input id="endBusca" class="prob-filtro" type="search" placeholder="Filtrar por loja, bairro, valor…" value="${esc(lojasFiltro)}">
+    <div class="end-grade">${ls.map(l => {
+      const tit = l[0] || "(sem nome)", end = iEnd >= 0 ? l[iEnd] : "";
+      return `<article class="end-card"><div class="end-cab"><b>${esc(tit)}</b></div>
+        <dl class="loc-dados">${l.map((v, j) => j === 0 || !v ? "" : `<div><dt>${esc(T[j] || "Coluna " + (j + 1))}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+        ${end ? `<div class="end-acoes"><button type="button" class="btn-mini" data-copiar="${esc(end)}">Copiar endereço</button><a class="btn-mini" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(end)}" target="_blank" rel="noopener">Abrir no mapa</a></div>` : ""}
+      </article>`; }).join("") || vazio("busca", "Nada encontrado", "Tente outro filtro.")}</div>
+    <p class="loc-dica">Vem da aba <b>${esc(lojasInfo.aba || "ENDEREÇOS")}</b> da planilha. Para mudar, edite lá e toque em Reconectar.</p>`;
+}
+
+/* ===== Infs da Loja: Modelos de script de vagas (bloco de anotações compartilhado) ===== */
+let vagasLista = null, vagaEditando = null;
+async function abrirVagas() {
+  desenharVagas();
+  if (vagasLista) return;
+  try { const r = await chamar({ acao: "vagasModelos" }); if (r.senha) { sair(r.erro); return; } vagasLista = r.ok ? r.lista : []; if (!r.ok) toast(r.erro || "Não consegui ler os modelos."); }
+  catch (e) { vagasLista = []; toast("Não consegui ler os modelos: " + ((e && e.message) || "confira a internet")); }
+  desenharVagas();
+}
+function desenharVagas() {
+  const el = document.getElementById("vagasConteudo");
+  if (!el || document.getElementById("vagasTela").hidden) return;
+  const ed = vagaEditando;
+  const form = `<form class="cad-form vaga-form" id="formVaga" autocomplete="off">
+      <div class="cad-campo"><label for="vagaTitulo">Título</label><input id="vagaTitulo" maxlength="120" placeholder="Ex.: Vaga BIRITUS noite (aprovada)" value="${esc(ed ? ed.titulo : "")}"></div>
+      <div class="cad-campo"><label for="vagaTexto">Texto</label><textarea id="vagaTexto" rows="7" placeholder="Cole ou escreva aqui o script da vaga…">${esc(ed ? ed.texto : "")}</textarea></div>
+      <div class="cad-botoes">${ed ? `<button type="button" class="btn-cancelar" id="vagaCancelar">Cancelar</button>` : ""}<button class="btn-chegou" id="vagaSalvar">${ed ? "Salvar alterações" : "Salvar modelo"}</button></div>
+    </form>`;
+  const lista = vagasLista === null ? `<div class="esqueleto"></div>`
+    : vagasLista.length ? vagasLista.slice().reverse().map(v => `<article class="vaga-card">
+        <div class="vaga-cab"><b>${esc(v.titulo || "(sem título)")}</b><small>${esc(v.quando)}${v.por ? " · " + esc(v.por) : ""}</small></div>
+        <div class="vaga-texto">${esc(v.texto)}</div>
+        <div class="end-acoes"><button type="button" class="btn-mini verde" data-copiar="${esc(v.texto)}">Copiar texto</button><button type="button" class="btn-mini" data-vaga-editar="${esc(v.id)}">Editar</button><button type="button" class="btn-mini perigo" data-vaga-apagar="${esc(v.id)}">Apagar</button></div>
+      </article>`).join("")
+    : vazio("ok", "Nenhum modelo salvo ainda", "Escreva acima e toque em Salvar modelo.");
+  el.innerHTML = `${form}<h3 class="sec">Modelos salvos${vagasLista ? ` (${vagasLista.length})` : ""}</h3>${lista}`;
+}
+function ligarInfsLoja() {
+  document.getElementById("endTela").addEventListener("input", e => { if (e.target.id === "endBusca") { lojasFiltro = e.target.value; desenharEnderecos(); const b = document.getElementById("endBusca"); b.focus(); b.setSelectionRange(b.value.length, b.value.length); } });
+  document.getElementById("endTela").addEventListener("click", e => { const c = e.target.closest("[data-copiar]"); if (c) copiar(c.dataset.copiar, c); });
+  const tv = document.getElementById("vagasTela");
+  tv.addEventListener("click", async e => {
+    const c = e.target.closest("[data-copiar]"); if (c) { copiar(c.dataset.copiar, c); return; }
+    if (e.target.id === "vagaCancelar") { vagaEditando = null; desenharVagas(); return; }
+    const ed = e.target.closest("[data-vaga-editar]");
+    if (ed) { vagaEditando = (vagasLista || []).find(v => v.id === ed.dataset.vagaEditar) || null; desenharVagas(); document.getElementById("vagaTitulo").focus(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    const ap = e.target.closest("[data-vaga-apagar]");
+    if (ap) {
+      const v = (vagasLista || []).find(x => x.id === ap.dataset.vagaApagar); if (!v) return;
+      if (!confirm(`Apagar o modelo "${v.titulo || "(sem título)"}"?`)) return;
+      ap.disabled = true;
+      try { const r = await chamar({ acao: "vagaApagar", id: v.id }); if (r.senha) { sair(r.erro); return; } if (!r.ok) { toast(r.erro || "Não apagou."); ap.disabled = false; return; }
+        vagasLista = vagasLista.filter(x => x.id !== v.id); if (vagaEditando && vagaEditando.id === v.id) vagaEditando = null; toast("Modelo apagado", true); desenharVagas(); }
+      catch (err) { toast("Não apagou: " + ((err && err.message) || "confira a internet")); ap.disabled = false; }
+    }
+  });
+  tv.addEventListener("submit", async e => {
+    if (e.target.id !== "formVaga") return;
+    e.preventDefault();
+    const titulo = document.getElementById("vagaTitulo").value.trim(), texto = document.getElementById("vagaTexto").value.trim();
+    if (!titulo && !texto) { toast("Escreva um título ou um texto."); return; }
+    const b = document.getElementById("vagaSalvar"); b.disabled = true; b.textContent = "Salvando…";
+    let por = ""; try { por = localStorage.getItem("logmax-prob-por") || ""; } catch (err) {}
+    try {
+      const r = await chamar({ acao: "vagaSalvar", id: vagaEditando ? vagaEditando.id : "", titulo, texto, por });
+      if (r.senha) { sair(r.erro); return; }
+      if (!r.ok) { toast(r.erro || "Não salvou."); b.disabled = false; b.textContent = "Salvar"; return; }
+      vagasLista = (vagasLista || []).filter(x => x.id !== r.item.id); vagasLista.push(r.item);
+      vagaEditando = null; toast("✓ Modelo salvo", true); desenharVagas();
+    } catch (err) { toast("Não salvou: " + ((err && err.message) || "confira a internet")); b.disabled = false; b.textContent = "Salvar"; }
+  });
+}
 
 /* ===== Folha Geral (script separado FIN_SIS_SIMP; o site só muda o STATUS) ===== */
 const FIN_PADRAO = "";   // vazio = usa o mesmo endereço da planilha (o FIN_SIS_SIMP.gs fica no mesmo projeto do SIST_SIMP)
@@ -1290,7 +1580,7 @@ function painelFiltro(doDia, f) {
   return `<section class="painel" id="painel" aria-live="polite">
     <div class="painel-cab"><h2>${TITULO[f]} (${ls.length})</h2><button type="button" class="fechar" data-f="${f}">Fechar ✕</button></div>
     ${ls.length === 0 ? `<div class="vazio" style="margin-top:12px">${vazio}</div>` :
-      `<div class="painel-lojas">${grupos.map(g => `<div class="painel-loja"><div class="pl-cab"><b>${esc(g.n)}</b><span class="etq ${f === "vaga" ? "r" : f === "falta" ? "a" : "v"}">${g.ls.length}</span></div><div class="lista"><ul>${g.ls.map(pessoa).join("")}</ul></div></div>`).join("")}</div>`}
+      `<div class="painel-lojas">${grupos.map(g => `<div class="painel-loja"><div class="pl-cab"><b>${esc(g.n)}</b><span class="etq ${f === "vaga" ? "r" : f === "falta" ? "a" : "v"}">${g.ls.length}</span></div><div class="lista"><ul class="tab-lista">${CAB_LISTA}${g.ls.map(pessoa).join("")}</ul></div></div>`).join("")}</div>`}
   </section>`;
 }
 function painelVagasSemana(ls, seg, dom) {
@@ -1441,15 +1731,13 @@ function abrirCodigo(l) {
 }
 
 /* ===== Abas: Presença | Localizar motoboy ===== */
+const TELA_DA_ABA = { localizar: "localizar", pgf: "pgfTela", cadastro: "cadTela", problema: "probTela", folha: "folhaTela", enderecos: "endTela", vagas: "vagasTela" };
 function mostrarAba(aba) {
-  const loc = aba === "localizar", pg = aba === "pgf", cad = aba === "cadastro", pr = aba === "problema", fo = aba === "folha";
-  document.getElementById("folhaTela").hidden = !fo;
-  document.getElementById("localizar").hidden = !loc;
-  document.getElementById("pgfTela").hidden = !pg;
-  document.getElementById("cadTela").hidden = !cad;
-  document.getElementById("probTela").hidden = !pr;
-  document.getElementById("conteudo").hidden = loc || pg || cad || pr || fo;
-  document.body.classList.toggle("aba-localizar", loc || cad || pr);
+  if (!TELA_DA_ABA[aba]) aba = "presenca";
+  Object.entries(TELA_DA_ABA).forEach(([a, id]) => { document.getElementById(id).hidden = a !== aba; });
+  document.getElementById("conteudo").hidden = aba !== "presenca";
+  const pg = aba === "pgf", fo = aba === "folha";
+  document.body.classList.toggle("aba-localizar", ["localizar", "cadastro", "problema", "enderecos", "vagas"].includes(aba));
   document.body.classList.toggle("aba-pgf", pg || fo);
   if (!(pg || fo) && diaAtual < hojeSP()) { diaAtual = hojeSP(); desenhar(); }   // ontem só vale no Financeiro
   desenharDias();
@@ -1461,17 +1749,19 @@ function mostrarAba(aba) {
   sub.querySelectorAll("[data-aba]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.aba === aba)));
   if (grupo !== "presenca") { ultimaSub[grupo] = aba; try { localStorage.setItem("logmax-sub-" + grupo, aba); } catch (e) {} }
   setTimeout(medirTopo, 0);
-  try { history.replaceState(null, "", loc ? "#localizar" : pg ? "#pgf" : cad ? "#cadastro" : pr ? "#problema" : fo ? "#folha" : location.pathname + location.search); } catch (e) {}
-  if (cad) abrirCadastro();
-  if (pr) desenharProblemas();
-  if (loc) setTimeout(() => document.getElementById("campoBusca").focus(), 50);
+  try { history.replaceState(null, "", aba === "presenca" ? location.pathname + location.search : "#" + aba); } catch (e) {}
+  if (aba === "cadastro") abrirCadastro();
+  if (aba === "problema") desenharProblemas();
+  if (aba === "localizar") setTimeout(() => document.getElementById("campoBusca").focus(), 50);
   if (pg) desenharPgf();
   if (fo) abrirFolha();
+  if (aba === "enderecos") abrirEnderecos();
+  if (aba === "vagas") abrirVagas();
 }
 // três abas principais; Motocas e Financeiro têm uma barrinha com as partes de cada uma
-const GRUPO_DA_ABA = { presenca: "presenca", localizar: "motocas", cadastro: "motocas", problema: "motocas", pgf: "financeiro", folha: "financeiro" };
-const ultimaSub = { motocas: "localizar", financeiro: "pgf" };
-try { ["motocas", "financeiro"].forEach(g => { const v = localStorage.getItem("logmax-sub-" + g); if (v && GRUPO_DA_ABA[v] === g) ultimaSub[g] = v; }); } catch (e) {}
+const GRUPO_DA_ABA = { presenca: "presenca", localizar: "motocas", cadastro: "motocas", problema: "motocas", pgf: "financeiro", folha: "financeiro", enderecos: "lojas", vagas: "lojas" };
+const ultimaSub = { motocas: "localizar", financeiro: "pgf", lojas: "enderecos" };
+try { ["motocas", "financeiro", "lojas"].forEach(g => { const v = localStorage.getItem("logmax-sub-" + g); if (v && GRUPO_DA_ABA[v] === g) ultimaSub[g] = v; }); } catch (e) {}
 document.getElementById("abasOp").addEventListener("click", e => {
   const b = e.target.closest("[data-grupo]"); if (!b) return;
   mostrarAba(b.dataset.grupo === "presenca" ? "presenca" : ultimaSub[b.dataset.grupo]);
@@ -1494,11 +1784,11 @@ function escalaDoMotoboy(cod, nome) {   // onde ele está na escala carregada (d
 function cartaoMotoboy(m) {
   const esc2 = escalaDoMotoboy(m.cod, m.nome);
   const pn = String(m.nome).trim().split(/\s+/)[0].toLowerCase().replace(/^./, c => c.toUpperCase());
-  const wa = m.whats ? `https://wa.me/${m.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da LogMax.`)}` : "";
+  const wa = m.whats ? `https://wa.me/${m.whats}?text=${encodeURIComponent(`Oi ${pn}, tudo bem? Aqui é da Transcore.`)}` : "";
   return `<article class="loc-card">
     <div class="loc-cab"><b>${esc(m.nome)}</b>${m.cod ? `<span class="cod">#${esc(m.cod)}</span>` : ""}</div>
     <dl class="loc-dados">
-      <div><dt>Telefone</dt><dd>${m.tel ? `${esc(fmtFone(m.tel))} <button type="button" class="btn-mini" data-copiar="${esc(m.tel.replace(/\D/g, ""))}">Copiar</button>${wa ? ` <a class="btn-mini verde" href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}` : "—"}</dd></div>
+      <div><dt>Telefone</dt><dd>${m.tel ? `${esc(fmtFone(m.tel))} <button type="button" class="btn-mini" data-copiar="${esc(m.tel.replace(/\D/g, ""))}">Copiar</button>${wa ? ` <a class="btn-mini verde" href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ""}${m.whats && linkEscalaMotoboy(m.whats, m.cod, m.nome) ? ` <a class="btn-mini verde" href="${esc(linkEscalaMotoboy(m.whats, m.cod, m.nome))}" target="_blank" rel="noopener">Enviar escala</a>` : ""}` : "—"}</dd></div>
       <div><dt>CPF</dt><dd>${m.cpf ? `${esc(fmtCpf(m.cpf))} <button type="button" class="btn-mini" data-copiar="${esc(m.cpf.replace(/\D/g, ""))}">Copiar</button>` : "—"}</dd></div>
       <div><dt>PIX</dt><dd>${m.pix ? `<span class="pix">${esc(m.pix)}</span> <button type="button" class="btn-mini" data-copiar="${esc(m.pix)}">Copiar</button>` : "—"}</dd></div>
     </dl>
@@ -1823,8 +2113,8 @@ function telaEntrada(erro, espera) {
   document.body.classList.add("trancado");
   document.getElementById("entrada").innerHTML = `
     <form class="entrada" id="formEntrada">
-      <img src="lume.png" alt="Lume, assistente da LogMax">
-      <h1>LogMax <span>Operador</span></h1>
+      <img src="transcore-logo.png" alt="Transcore Logística">
+      <h1><span>Operador</span></h1>
       <p>Entre com a senha da equipe para marcar as chegadas.</p>
       <input type="password" id="campoSenha" placeholder="Senha" autocomplete="current-password" required>
       <label><input type="checkbox" id="lembrar" checked> Lembrar neste aparelho</label>
@@ -1857,7 +2147,7 @@ function telaEntrada(erro, espera) {
 }
 function liberar(nomePlanilha) {
   setTimeout(medirTopo, 0);
-  if (["#localizar", "#pgf", "#cadastro", "#problema", "#folha"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
+  if (["#localizar", "#pgf", "#cadastro", "#problema", "#folha", "#enderecos", "#vagas"].includes(location.hash)) { const a = location.hash.slice(1); setTimeout(() => mostrarAba(a), 0); }
   document.getElementById("entrada").innerHTML = "";
   document.body.classList.remove("trancado");
   const ft = document.getElementById("faixaTeste");
@@ -1899,6 +2189,9 @@ document.getElementById("trilhoDias").addEventListener("click", e => {
   if (!b || b.disabled || b.dataset.dia === diaAtual) return;
   diaAtual = b.dataset.dia; filtro = null; desenhar();
 });
+document.getElementById("btnReconectar").onclick = reconectar;
+ligarInfsLoja();
+document.getElementById("conteudo").addEventListener("click", e => { const b = e.target.closest("[data-exportar]"); if (b) { e.preventDefault(); e.stopPropagation(); abrirExportar(b.dataset.exportar); } }, true);
 document.getElementById("btnSom").onclick = () => { ligarSom(!somLigado); if (somLigado) bipe(); };
 document.getElementById("btnEscuro").onclick = () => modoEscuro(!document.documentElement.classList.contains("escuro"));
 document.getElementById("btnTv").onclick = () => modoTv(!document.documentElement.classList.contains("tv"));

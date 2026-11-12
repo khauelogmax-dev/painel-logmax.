@@ -17,7 +17,7 @@
 const FIN_PLANILHA_ID = '1SUSjukHorUEWx1d-U5KijU8BuzCPmglW0WisuygqcXo';   // ESCALAS LOGMAX - FOOD
 const FIN_SENHA_OPERADOR = 'COLOQUE_A_SENHA_AQUI';   // a MESMA senha do site do operador (se trocar lá, troque aqui também)
 const FIN_SENHA_TODOS = 'COLOQUE_A_SENHA_DA_FOLHA';  // senha do botão "Todos pagos"
-const FIN_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
+const FIN_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE', 'MODELOS VAGAS SITE'];
 const FIN_DIAS_ANTES = 1;          // de ONTEM (na segunda paga-se o domingo)...
 const FIN_DIAS_DEPOIS = 8;         // ...até daqui a 8 dias
 const FIN_LINHAS_FINAIS = 700;     // lê só o final de cada aba
@@ -44,7 +44,7 @@ function finDoPost(e) {   // chamado pelo doPost do SIST_SIMP (ações que come�
     return finResposta({ ok: false, senha: true, erro: 'A senha da Folha Geral não confere com a do site (confira FIN_SENHA_OPERADOR no FIN_SIS_SIMP).' });
   }
 
-  if (p.acao === 'folha') return finResposta(finFolha());
+  if (p.acao === 'folha') return finResposta(finFolha(!!p.forcar));
 
   if (p.acao === 'folhaStatus' || p.acao === 'folhaTodosPagos') {
     if (p.acao === 'folhaTodosPagos' && String(p.senhaFolha || '') !== FIN_SENHA_TODOS) {
@@ -73,9 +73,9 @@ function finResposta(obj) {
 
 /* ============================== LER A FOLHA ============================== */
 
-function finFolha() {
+function finFolha(forcar) {
   const g = finLerGuardada();
-  if (g && Date.now() - g.t < FIN_FRESCO_SEG * 1000) return g.dados;
+  if (g && !forcar && Date.now() - g.t < FIN_FRESCO_SEG * 1000) return g.dados;
   const lock = LockService.getUserLock();   // só uma montagem por vez (separada da trava de gravação)
   if (!lock.tryLock(g ? 100 : 280000)) {
     if (g) return g.dados;   // alguém já está montando: devolve a última pronta
@@ -83,7 +83,7 @@ function finFolha() {
   }
   try {
     const g2 = finLerGuardada();
-    if (g2 && Date.now() - g2.t < FIN_FRESCO_SEG * 1000) return g2.dados;
+    if (g2 && !forcar && Date.now() - g2.t < FIN_FRESCO_SEG * 1000) return g2.dados;
     const dados = finMontar();
     finGuardar(dados);
     return dados;

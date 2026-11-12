@@ -45,7 +45,7 @@
  *   conferirCadastro     → mostra quais colunas do cadastro a busca usa (só os títulos, sem dados pessoais).
  */
 const LM_SENHA = 'COLOQUE_A_SENHA_AQUI';               // senha dos operadores (para trocar: mude aqui e faça "Nova versão")
-const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE'];
+const LM_ABAS_IGNORADAS = ['RESUMO', 'FOLHA DE PAGAMENTO', 'CADASTRO MOTORISTA', 'ENDEREÇOS', 'PAG FNAL', 'PGF SITE', 'PROBLEMAS SITE', 'MODELOS VAGAS SITE'];
 const LM_DIAS_ANTES = 1, LM_DIAS_DEPOIS = 8;  // de ontem até daqui a 8 dias
 const LM_LINHAS_FINAIS = 700;                 // lê só o final de cada aba (onde ficam os dias recentes)
 const LM_COLUNAS = 8;                         // DATA, COD, NOME, TELEFONE, HORARIO, PRESENÇA... (até a coluna H)
@@ -114,8 +114,23 @@ function doPost(e) {
     return lmResposta({ ok: true, planilha: SpreadsheetApp.getActiveSpreadsheet().getName(), token: novo });
   }
   if (pedido.acao === 'ler') {
+    if (pedido.forcar) {   // botão "Reconectar": monta tudo de novo (no máximo 1 vez a cada 20 s)
+      if (!cache.get('lm_forcou')) {
+        cache.put('lm_forcou', '1', 20);
+        ['pgf_v1', 'prob_v1', 'lojas_v1', 'vagas_v1'].forEach(function (k) { cache.remove(k); });
+        try { const m = JSON.parse(cache.get(LM_CHAVE) || 'null'); if (m) { m.t = 0; cache.put(LM_CHAVE, JSON.stringify(m), LM_GUARDA_SEG); } } catch (e) {}   // a escala guardada deixa de ser "fresca"
+      }
+    }
     const csv = lmEscala();   // primeiro a escala (se precisar, ela também guarda os telefones)
     return lmResposta({ ok: true, csv: csv, tel: lmLerTelefones(), pgf: lmPgfLista(), problemas: lmProblemas(), online: lmOnline('o', pedido.sessao) });
+  }
+  if (pedido.acao === 'lojasInfo') return lmResposta(lmLojasInfo());
+  if (pedido.acao === 'vagasModelos') return lmResposta({ ok: true, lista: lmVagasLista() });
+  if (pedido.acao === 'vagaSalvar' || pedido.acao === 'vagaApagar') {
+    const travaV = LockService.getScriptLock();
+    if (!travaV.tryLock(15000)) return lmResposta({ ok: false, erro: 'A planilha está ocupada. Tente de novo.' });
+    try { return lmResposta(pedido.acao === 'vagaSalvar' ? lmVagaSalvar(pedido) : lmVagaApagar(pedido.id)); }
+    finally { travaV.releaseLock(); }
   }
   if (pedido.acao === 'buscar') return lmResposta(lmBuscar(pedido.q, pedido.campo));
   if (pedido.acao === 'cadastroInfo') return lmResposta(lmCadastroInfo());
@@ -951,4 +966,94 @@ function diagnosticarLentidao() {
       ' s | leitura: ' + leitura);
   }
   console.log('TOTAL: ' + ((Date.now() - inicioGeral) / 1000).toFixed(1) + ' segundos');
+}
+
+/* ============================== INFS DA LOJA ============================== */
+// Endereços e valores: lê a aba ENDEREÇOS inteira (só texto, como aparece na planilha). Guardado 10 min.
+function lmAbaEnderecos() {
+  const abas = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  for (let i = 0; i < abas.length; i++) if (/ENDERE/.test(lmSemAcento(abas[i].getName()))) return abas[i];
+  return null;
+}
+function lmLojasInfo() {
+  const cache = CacheService.getScriptCache();
+  const c = cache.get('lojas_v1');
+  if (c) { try { return JSON.parse(c); } catch (e) {} }
+  const aba = lmAbaEnderecos();
+  if (!aba) return { ok: false, erro: 'Não achei a aba ENDEREÇOS na planilha.' };
+  const ult = Math.min(aba.getLastRow(), 400), cols = Math.min(aba.getLastColumn(), 26);
+  if (ult < 1 || cols < 1) return { ok: true, aba: aba.getName(), titulos: [], linhas: [] };
+  const v = aba.getRange(1, 1, ult, cols).getDisplayValues().map(function (l) { return l.map(function (x) { return String(x).replace(/\s+$/g, '').trim(); }); });
+  // linha de títulos = primeira linha com 2 ou mais células preenchidas
+  let iTit = v.findIndex(function (l) { return l.filter(String).length >= 2; });
+  if (iTit < 0) iTit = 0;
+  const usadas = [];   // colunas com algum conteúdo
+  for (let j = 0; j < cols; j++) if (v.some(function (l) { return l[j]; })) usadas.push(j);
+  const titulos = usadas.map(function (j) { return v[iTit][j] || ''; });
+  const linhas = v.slice(iTit + 1).map(function (l) { return usadas.map(function (j) { return l[j]; }); })
+    .filter(function (l) { return l.some(String); });
+  const r = { ok: true, aba: aba.getName(), titulos: titulos, linhas: linhas };
+  try { cache.put('lojas_v1', JSON.stringify(r), 600); } catch (e) {}
+  return r;
+}
+function conferirEnderecos() {   // rode no editor: mostra só os títulos e quantas linhas
+  const r = lmLojasInfo();
+  if (!r.ok) { console.log(r.erro); return; }
+  console.log('Aba: ' + r.aba + ' | títulos: ' + r.titulos.join(' | ') + ' | linhas: ' + r.linhas.length);
+}
+
+// Modelos de script de vagas: bloco de anotações compartilhado (aba MODELOS VAGAS SITE, criada sozinha)
+const LM_ABA_VAGAS = 'MODELOS VAGAS SITE';
+const LM_VAGAS_TITULOS = ['ID', 'TÍTULO', 'TEXTO', 'ATUALIZADO EM', 'POR'];
+function lmAbaVagas(criar) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let aba = ss.getSheetByName(LM_ABA_VAGAS);
+  if (!aba && criar) {
+    aba = ss.insertSheet(LM_ABA_VAGAS);
+    aba.getRange(1, 1, 1, LM_VAGAS_TITULOS.length).setValues([LM_VAGAS_TITULOS]).setFontWeight('bold');
+    aba.setFrozenRows(1);
+    aba.getRange('A:A').setNumberFormat('@');
+  }
+  return aba;
+}
+function lmVagasLerAba(aba) {
+  if (!aba || aba.getLastRow() < 2) return [];
+  return aba.getRange(2, 1, aba.getLastRow() - 1, LM_VAGAS_TITULOS.length).getDisplayValues()
+    .map(function (v, i) { return { id: String(v[0]).trim(), titulo: String(v[1]), texto: String(v[2]), quando: String(v[3]).trim(), por: String(v[4]).trim(), _linhaAba: i + 2 }; })
+    .filter(function (x) { return x.id; });
+}
+function lmVagasLista() {
+  const cache = CacheService.getScriptCache();
+  const c = cache.get('vagas_v1');
+  if (c) { try { return JSON.parse(c); } catch (e) {} }
+  const lista = lmVagasLerAba(lmAbaVagas(false)).map(function (x) { delete x._linhaAba; return x; });
+  try { cache.put('vagas_v1', JSON.stringify(lista), 600); } catch (e) {}
+  return lista;
+}
+function lmVagaSalvar(p) {
+  const titulo = String(p.titulo || '').trim().slice(0, 120), texto = String(p.texto || '').replace(/\r/g, '').trim().slice(0, 5000);
+  if (!titulo && !texto) return { ok: false, erro: 'Escreva um título ou um texto.' };
+  const aba = lmAbaVagas(true);
+  const agora = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'dd/MM/yyyy HH:mm');
+  const por = String(p.por || '').trim().slice(0, 40);
+  let item;
+  const existente = p.id ? lmVagasLerAba(aba).filter(function (x) { return x.id === String(p.id); })[0] : null;
+  if (existente) {
+    aba.getRange(existente._linhaAba, 2, 1, 4).setValues([[titulo, texto, agora, por]]);
+    item = { id: existente.id, titulo: titulo, texto: texto, quando: agora, por: por };
+  } else {
+    const id = Utilities.getUuid().replace(/-/g, '').slice(0, 10);
+    aba.appendRow([id, titulo, texto, agora, por]);
+    item = { id: id, titulo: titulo, texto: texto, quando: agora, por: por };
+  }
+  CacheService.getScriptCache().remove('vagas_v1');
+  return { ok: true, item: item };
+}
+function lmVagaApagar(id) {
+  const aba = lmAbaVagas(false);
+  const x = lmVagasLerAba(aba).filter(function (i) { return i.id === String(id || ''); })[0];
+  if (!x) return { ok: true, sumiu: true };
+  aba.deleteRow(x._linhaAba);
+  CacheService.getScriptCache().remove('vagas_v1');
+  return { ok: true };
 }
